@@ -236,13 +236,13 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  /* ── Check NEXUS Agent status on mount ─────────────────────────────────── */
+  /* ── Check NEXUS Agent status on mount (uses native route, always works) ── */
   useEffect(() => {
-    fetch("/api/ai/api/v1/nexus-agent/info")
+    fetch("/api/nexus-agent")
       .then(r => r.json())
       .then((d: { status?: string; model?: string }) => {
         setNexusStatus(d.status === "online" ? "online" : "offline");
-        if (d.model) setNexusModel(d.model.replace("models/", ""));
+        if (d.model) setNexusModel(d.model.replace("models/", "").replace("Nexus Auto (", "").replace(")", ""));
       })
       .catch(() => setNexusStatus("offline"));
   }, []);
@@ -281,20 +281,28 @@ export default function ChatPage() {
     ]);
     setLoading(true);
 
+    // Build history from current messages for context
+    const history = nexusMessages
+      .filter(m => m.role !== "system" && m.id !== "welcome" && !m.error)
+      .slice(-8)
+      .map(m => ({ role: m.role as "user" | "assistant", content: m.content }));
+
     try {
-      const res = await fetch("/api/ai/api/v1/nexus-agent/chat/stream", {
+      // Use native Next.js route — works without FastAPI being running
+      const res = await fetch("/api/nexus-agent", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message:    text,
           session_id: sessionId,
-          model:      "gpt-4o",
-          reflect:    true,
+          history,
+          model:      "auto",
         }),
       });
 
       if (!res.ok || !res.body) {
-        throw new Error(`NEXUS Agent returned ${res.status}`);
+        const errData = await res.json().catch(() => ({ error: `HTTP ${res.status}` })) as { error?: string };
+        throw new Error(errData.error ?? `NEXUS Agent returned ${res.status}`);
       }
 
       const reader  = res.body.getReader();
@@ -841,207 +849,7 @@ export default function ChatPage() {
             </div>
           </main>
 
-          {/* ─────────────────────────── RIGHT: Info panel ─────────────────── */}
-          <aside className="w-64 shrink-0 border-l border-white/[0.06] bg-dark-900/70 p-5 overflow-y-auto hidden lg:flex flex-col gap-5">
-
-            {mode === "nexus" ? (
-              /* ── NEXUS Agent info ───────────────────────────────────────── */
-              <>
-                <div>
-                  <div className="text-4xl mb-3">🧠</div>
-                  <h2 className="text-sm font-extrabold text-white mb-1">NEXUS Agent</h2>
-                  <p className="text-xs text-dark-300 leading-relaxed">
-                    Python-trained agent with multi-domain knowledge, chain-of-thought reasoning,
-                    and self-reflection quality checks.
-                  </p>
-                </div>
-
-                {/* Status */}
-                <div className={cn(
-                  "flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold border",
-                  nexusStatus === "online"   && "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-                  nexusStatus === "offline"  && "bg-red-500/10 text-red-400 border-red-500/20",
-                  nexusStatus === "checking" && "bg-amber-500/10 text-amber-400 border-amber-500/20",
-                )}>
-                  <StatusDot status={nexusStatus} />
-                  <div>
-                    <p>{nexusStatus === "online" ? "Online" : nexusStatus === "offline" ? "Offline" : "Checking…"}</p>
-                    {nexusStatus === "online" && <p className="font-normal text-[10px] text-emerald-300/60">{nexusModel}</p>}
-                  </div>
-                </div>
-
-                {/* Capabilities */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 mb-2">
-                    Capabilities
-                  </p>
-                  <div className="space-y-1.5">
-                    {[
-                      { icon: "🔍", label: "Domain detection (7 types)" },
-                      { icon: "🤔", label: "Chain-of-thought reasoning" },
-                      { icon: "🪞", label: "Self-reflection quality check" },
-                      { icon: "🧩", label: "Session memory (multi-turn)" },
-                      { icon: "📚", label: "Built-in knowledge base" },
-                      { icon: "💻", label: "Code generation" },
-                      { icon: "🏗️", label: "Architecture diagrams" },
-                      { icon: "📊", label: "Structured tables & docs" },
-                    ].map(cap => (
-                      <div key={cap.label} className="flex items-center gap-2 text-[11px] text-dark-300">
-                        <span>{cap.icon}</span>
-                        <span>{cap.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Example prompts */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 mb-2">
-                    Example Prompts
-                  </p>
-                  <div className="space-y-1.5">
-                    {NEXUS_EXAMPLES.map(e => (
-                      <button
-                        key={e}
-                        type="button"
-                        onClick={() => { setInput(e); textareaRef.current?.focus(); }}
-                        className="w-full text-left rounded-lg bg-indigo-500/8 border border-indigo-500/15 px-2.5 py-2 text-[11px] text-indigo-300/80 hover:bg-indigo-500/15 transition-colors italic"
-                      >
-                        "{e}"
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {nexusStatus === "offline" && (
-                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                    <p className="text-[11px] text-red-400 font-semibold mb-1">Service offline</p>
-                    <p className="text-[10px] text-red-300/70 font-mono">
-                      cd backend/ai-service<br />
-                      uvicorn main:app --port 8001 --reload
-                    </p>
-                  </div>
-                )}
-              </>
-            ) : (
-              /* ── API Chat info ───────────────────────────────────────────── */
-              <>
-                <div>
-                  <div className="text-4xl mb-3">⚡</div>
-                  <h2 className="text-sm font-extrabold text-white mb-1">API Chat</h2>
-                  <p className="text-xs text-dark-300 leading-relaxed">
-                    Direct streaming chat using Nexus Auto Router — connects to the best
-                    available AI provider using your API keys.
-                  </p>
-                </div>
-
-                {/* Sub-mode toggle */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 mb-2">Mode</p>
-                  <div className="flex rounded-xl border border-white/10 bg-dark-800 p-0.5 gap-0.5">
-                    <button
-                      type="button"
-                      onClick={() => setShowAgents(false)}
-                      className={cn(
-                        "flex-1 rounded-lg py-1.5 text-[11px] font-semibold transition-colors",
-                        !showAgents ? "bg-brand-600 text-white" : "text-dark-400 hover:text-white"
-                      )}
-                    >
-                      ⚡ Direct
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowAgents(true)}
-                      className={cn(
-                        "flex-1 rounded-lg py-1.5 text-[11px] font-semibold transition-colors",
-                        showAgents ? "bg-brand-600 text-white" : "text-dark-400 hover:text-white"
-                      )}
-                    >
-                      🤖 Agents
-                    </button>
-                  </div>
-                </div>
-
-                {showAgents ? (
-                  /* Specialist agents list */
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 mb-2">
-                      13 Specialist Agents
-                    </p>
-                    <div className="space-y-1 max-h-72 overflow-y-auto">
-                      {agentList.map(a => (
-                        <button
-                          key={a.type}
-                          type="button"
-                          onClick={() => setSelectedAgent(a.type)}
-                          className={cn(
-                            "w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-[11px] transition-colors text-left",
-                            selectedAgent === a.type
-                              ? "bg-brand-600/20 text-brand-300"
-                              : "text-dark-400 hover:bg-white/5 hover:text-white"
-                          )}
-                        >
-                          <span>{a.icon}</span>
-                          <span>{a.name.replace(" Agent", "")}</span>
-                        </button>
-                      ))}
-                    </div>
-                    {currentAgent && (
-                      <div className="mt-3 p-2.5 rounded-xl bg-dark-800/60 border border-white/[0.06]">
-                        <p className="text-[11px] text-white font-semibold mb-1">{currentAgent.name}</p>
-                        <p className="text-[10px] text-dark-400 leading-relaxed">{currentAgent.description}</p>
-                        <button
-                          type="button"
-                          onClick={() => { setInput(currentAgent.example_task); textareaRef.current?.focus(); }}
-                          className="mt-2 w-full text-left text-[10px] text-brand-300/70 italic hover:text-brand-300 transition-colors"
-                        >
-                          Try: "{currentAgent.example_task}"
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  /* Direct API info */
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 mb-2">
-                      How it works
-                    </p>
-                    <div className="space-y-2 text-[11px] text-dark-300">
-                      {[
-                        { icon: "1️⃣", text: "Tries Gemini 2.5 Flash (free)" },
-                        { icon: "2️⃣", text: "Falls back to Anthropic Claude" },
-                        { icon: "3️⃣", text: "Falls back to OpenAI GPT-4o" },
-                        { icon: "🔄", text: "Real-time token streaming" },
-                      ].map(item => (
-                        <div key={item.text} className="flex gap-2">
-                          <span>{item.icon}</span>
-                          <span>{item.text}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-dark-500 mb-2">
-                        Example Prompts
-                      </p>
-                      <div className="space-y-1.5">
-                        {API_EXAMPLES.map(e => (
-                          <button
-                            key={e}
-                            type="button"
-                            onClick={() => { setInput(e); textareaRef.current?.focus(); }}
-                            className="w-full text-left rounded-lg bg-brand-500/8 border border-brand-500/15 px-2.5 py-2 text-[11px] text-brand-300/80 hover:bg-brand-500/15 transition-colors italic"
-                          >
-                            "{e}"
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </aside>
+          {/* Right panel removed — clean full-width chat */}
         </div>
       </div>
     </div>
