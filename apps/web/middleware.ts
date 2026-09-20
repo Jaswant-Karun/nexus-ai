@@ -9,7 +9,10 @@ const PROTECTED_PREFIXES = [
   "/dashboard",
   "/chat",
   "/workflow",
+  "/workflows",
   "/workspace",
+  "/agents",
+  "/projects",
   "/settings",
   "/billing",
   "/notifications",
@@ -17,6 +20,15 @@ const PROTECTED_PREFIXES = [
   "/analytics",
   "/reports",
   "/storage",
+  "/search",
+  "/knowledge-graph",
+  "/memory",
+  "/calendar",
+  "/integrations",
+  "/organization",
+  "/admin",
+  "/developer",
+  "/help",
 ];
 
 // Routes only for unauthenticated users (redirect to /dashboard if already logged in)

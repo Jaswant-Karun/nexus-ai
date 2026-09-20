@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sidebar } from "@nexus/ui";
 import { AppNavbar } from "@/components/layout/AppNavbar";
+import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { APP_NAV } from "@/constants/navigation";
 
 /* ── Types ─────────────────────────────────────────────────────── */
 interface DashboardStats {
@@ -27,15 +28,6 @@ interface DashboardStats {
     createdAt: string;
   }[];
 }
-
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: "📊", active: true },
-  { id: "chat", label: "AI Agent Studio", href: "/chat", icon: "🤖" },
-  { id: "workflow", label: "Workflow Builder", href: "/workflow", icon: "⚡" },
-  { id: "workspace", label: "Knowledge Engine", href: "/workspace", icon: "🧠" },
-  { id: "storage", label: "Storage", href: "/storage", icon: "☁️" },
-  { id: "settings", label: "Platform Settings", href: "/settings", icon: "⚙️" },
-];
 
 /* ── Animated KPI Card with Framer Motion ───────────────────────── */
 function KpiCard({
@@ -115,15 +107,31 @@ export default function DashboardPage() {
       <AppNavbar brandName="NEXUS AI" />
 
       <div className="flex flex-1">
-        <Sidebar
-          items={sidebarItems}
-          currentPath="/dashboard"
-          onNavigate={(href) => {
-            window.location.href = href;
-          }}
-        />
+        <AppSidebar activeNav="dashboard" className="hidden xl:flex" />
 
-        <main className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto max-w-7xl mx-auto w-full">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <nav
+            aria-label="Platform modules"
+            className="flex xl:hidden gap-1 overflow-x-auto border-b border-slate-200 bg-white px-4 py-2 dark:border-white/[0.06] dark:bg-dark-950/90"
+          >
+            {APP_NAV.map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={cn(
+                  "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors",
+                  item.id === "dashboard"
+                    ? "bg-brand-600 text-white"
+                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-dark-300 dark:hover:bg-white/[0.06] dark:hover:text-white"
+                )}
+              >
+                <span aria-hidden="true">{item.icon}</span>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full">
           {/* Header & Status Indicator */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -404,7 +412,8 @@ export default function DashboardPage() {
               </>
             )
           )}
-        </main>
+          </main>
+        </div>
       </div>
     </div>
   );

@@ -4,7 +4,9 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AppNavbar } from "@/components/layout/AppNavbar";
+import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { cn } from "@/lib/utils";
+import { APP_NAV } from "@/constants/navigation";
 
 export interface SubnavItem {
   label: string;
@@ -22,26 +24,7 @@ export interface ModuleLayoutProps {
   activeNav?: string;
 }
 
-export const MAIN_NAV_ITEMS = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: "📊" },
-  { id: "agents", label: "AI Agents", href: "/agents", icon: "🤖" },
-  { id: "workflows", label: "Workflows", href: "/workflows", icon: "⚡" },
-  { id: "chat", label: "AI Chat", href: "/chat", icon: "💬" },
-  { id: "projects", label: "Projects", href: "/projects", icon: "📁" },
-  { id: "storage", label: "Storage", href: "/storage", icon: "☁️" },
-  { id: "search", label: "Search", href: "/search", icon: "🔍" },
-  { id: "knowledge-graph", label: "Knowledge Graph", href: "/knowledge-graph", icon: "🕸️" },
-  { id: "memory", label: "AI Memory", href: "/memory", icon: "🧠" },
-  { id: "analytics", label: "Analytics", href: "/analytics", icon: "📈" },
-  { id: "reports", label: "Reports", href: "/reports", icon: "📑" },
-  { id: "calendar", label: "Calendar", href: "/calendar", icon: "📅" },
-  { id: "integrations", label: "Integrations", href: "/integrations", icon: "🔌" },
-  { id: "organization", label: "Organization", href: "/organization", icon: "🏢" },
-  { id: "admin", label: "Admin Portal", href: "/admin", icon: "🛡️" },
-  { id: "developer", label: "Developer", href: "/developer", icon: "💻" },
-  { id: "help", label: "Help Center", href: "/help", icon: "❓" },
-  { id: "settings", label: "Settings", href: "/settings", icon: "⚙️" },
-];
+export const MAIN_NAV_ITEMS = APP_NAV;
 
 export function ModuleLayout({
   title,
@@ -60,13 +43,15 @@ export function ModuleLayout({
       <AppNavbar brandName="NEXUS AI" />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Main Navigation Sidebar */}
-        <aside className="w-64 border-r border-white/[0.06] bg-dark-950/80 backdrop-blur-md hidden xl:flex flex-col justify-between p-4 shrink-0 overflow-y-auto">
-          <div className="space-y-1">
-            <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-dark-500 mb-2">
-              Platform Modules
-            </p>
-            {MAIN_NAV_ITEMS.map((item) => {
+        <AppSidebar activeNav={activeNav} className="hidden xl:flex" />
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-y-auto">
+          <nav
+            aria-label="Platform modules"
+            className="flex xl:hidden gap-1 overflow-x-auto border-b border-white/[0.06] bg-dark-950/90 px-4 py-2"
+          >
+            {APP_NAV.map((item) => {
               const isActive =
                 activeNav === item.id ||
                 pathname === item.href ||
@@ -77,41 +62,19 @@ export function ModuleLayout({
                   key={item.id}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150",
+                    "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors",
                     isActive
-                      ? "bg-brand-600/20 text-brand-300 border border-brand-500/30 shadow-sm"
-                      : "text-dark-300 hover:text-white hover:bg-white/[0.04]"
+                      ? "bg-brand-600 text-white"
+                      : "text-dark-300 hover:bg-white/[0.06] hover:text-white"
                   )}
                 >
-                  <span className="text-sm">{item.icon}</span>
-                  <span className="truncate">{item.label}</span>
-                  {isActive && (
-                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-brand-400" />
-                  )}
+                  <span aria-hidden="true">{item.icon}</span>
+                  {item.label}
                 </Link>
               );
             })}
-          </div>
+          </nav>
 
-          {/* Quick System Badge */}
-          <div className="pt-4 mt-4 border-t border-white/[0.06]">
-            <div className="rounded-xl border border-brand-500/20 bg-brand-500/5 p-3 text-[11px] text-dark-300 space-y-1">
-              <div className="flex items-center justify-between text-white font-bold">
-                <span>NEXUS Engine</span>
-                <span className="flex items-center gap-1 text-emerald-400 text-[10px]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  v1.0 Live
-                </span>
-              </div>
-              <p className="text-[10px] text-dark-400">
-                Multi-agent DAG orchestrator with distributed memory & vector storage.
-              </p>
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-y-auto">
           {/* Header & Sub-navigation Strip */}
           <header className="border-b border-white/[0.06] bg-dark-900/40 backdrop-blur-md px-6 py-5 shrink-0">
             <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">

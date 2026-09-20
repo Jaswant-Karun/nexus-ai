@@ -4,17 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LayoutDashboardIcon,
-  BotIcon,
-  ZapIcon,
-  BrainIcon,
-  SettingsIcon,
-  BarChart3Icon,
-  GitBranchIcon,
-  FolderOpenIcon,
-  MessageSquareIcon,
-} from "@/components/ui/Icons";
+import { APP_NAV } from "@/constants/navigation";
 
 interface NavItem {
   id: string;
@@ -24,35 +14,22 @@ interface NavItem {
   badge?: string | number;
 }
 
-function CloudIcon({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
-    </svg>
-  );
-}
-
-const navItems: NavItem[] = [
-  { id: "dashboard",  label: "Dashboard",        href: "/dashboard",  icon: <LayoutDashboardIcon size={18} /> },
-  { id: "chat",       label: "AI Agent Studio",   href: "/chat",       icon: <BotIcon size={18} /> },
-  { id: "workflow",   label: "Workflow Builder",  href: "/workflow",   icon: <ZapIcon size={18} /> },
-  { id: "workspace",  label: "Knowledge Engine",  href: "/workspace",  icon: <BrainIcon size={18} /> },
-  { id: "storage",    label: "Storage",           href: "/storage",    icon: <CloudIcon size={18} /> },
-  { id: "analytics",  label: "Analytics",         href: "/analytics",  icon: <BarChart3Icon size={18} /> },
-  { id: "reports",    label: "Reports",           href: "/reports",    icon: <GitBranchIcon size={18} /> },
-  { id: "projects",   label: "Projects",          href: "/projects",   icon: <FolderOpenIcon size={18} /> },
-  { id: "messages",   label: "Messages",          href: "/messages",   icon: <MessageSquareIcon size={18} />, badge: 3 },
-];
+const navItems: NavItem[] = APP_NAV.map((item) => ({
+  ...item,
+  icon: <span aria-hidden="true">{item.icon}</span>,
+}));
 
 const bottomItems: NavItem[] = [
-  { id: "settings", label: "Platform Settings", href: "/settings", icon: <SettingsIcon size={18} /> },
+  { id: "profile", label: "My Profile", href: "/profile", icon: <span aria-hidden="true">👤</span> },
+  { id: "settings", label: "Platform Settings", href: "/settings", icon: <span aria-hidden="true">⚙️</span> },
 ];
 
 interface AppSidebarProps {
   className?: string;
+  activeNav?: string;
 }
 
-export function AppSidebar({ className }: AppSidebarProps) {
+export function AppSidebar({ className, activeNav }: AppSidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -82,7 +59,7 @@ export function AppSidebar({ className }: AppSidebarProps) {
       {/* Main nav */}
       <nav className="flex flex-1 flex-col gap-0.5 px-2 pt-2 overflow-y-auto">
         {navItems.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(item.href + "/");
+          const active = activeNav === item.id || pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.id}
