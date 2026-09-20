@@ -29,8 +29,17 @@ function BotIcon()     { return <svg width={16} height={16} viewBox="0 0 24 24" 
 function SearchIcon()  { return <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>; }
 function SettingsIcon(){ return <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>; }
 
+function BackArrowIcon() {
+  return (
+    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+    </svg>
+  );
+}
+
 const TOP_NAV: SidebarSection[] = [
-  { id: "overview",  label: "Dashboard",       href: "/storage",          icon: <HomeIcon /> },
+  { id: "main-dashboard", label: "Main Dashboard",  href: "/dashboard",        icon: <BackArrowIcon /> },
+  { id: "overview",  label: "Storage Dashboard",href: "/storage",          icon: <HomeIcon /> },
   { id: "upload",    label: "Upload",           href: "/storage/upload",   icon: <UploadIcon /> },
   { id: "files",     label: "My Files",         href: "/storage/files",    icon: <FolderIcon /> },
   { id: "shared",    label: "Shared with me",   href: "/storage/shared",   icon: <ShareIcon /> },
@@ -104,9 +113,18 @@ export function StorageSidebar({ className }: { className?: string }) {
       "flex flex-col w-60 shrink-0 h-full border-r border-white/[0.06] bg-dark-900/80 backdrop-blur-sm overflow-y-auto",
       className
     )}>
-      {/* Logo */}
-      <div className="px-5 py-5 border-b border-white/[0.06]">
-        <div className="flex items-center gap-2.5">
+      {/* Back to Dashboard & Logo */}
+      <div className="px-5 py-4 border-b border-white/[0.06] space-y-3">
+        <Link
+          href="/dashboard"
+          className="flex items-center justify-center gap-2 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 px-3 py-2 text-xs font-semibold text-brand-300 hover:text-white transition-all shadow-sm group"
+        >
+          <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:-translate-x-0.5">
+            <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+          </svg>
+          <span>Back to Dashboard</span>
+        </Link>
+        <div className="flex items-center gap-2.5 pt-1">
           <div className="h-8 w-8 rounded-lg bg-brand-600 flex items-center justify-center">
             <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
               <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
@@ -118,7 +136,7 @@ export function StorageSidebar({ className }: { className?: string }) {
           </div>
         </div>
         <Link href="/storage/upload"
-          className="mt-4 flex items-center justify-center gap-2 w-full rounded-xl bg-brand-600 hover:bg-brand-500 py-2.5 text-sm font-semibold text-white transition-colors shadow-lg shadow-brand-600/25">
+          className="flex items-center justify-center gap-2 w-full rounded-xl bg-brand-600 hover:bg-brand-500 py-2.5 text-sm font-semibold text-white transition-colors shadow-lg shadow-brand-600/25">
           <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="m8 12 4-4 4 4"/>
           </svg>

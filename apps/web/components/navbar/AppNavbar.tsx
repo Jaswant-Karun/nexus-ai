@@ -12,6 +12,9 @@ interface AppNavbarProps {
   userAvatar?: string;
   notificationCount?: number;
   onSearch?: (query: string) => void;
+  showBackButton?: boolean;
+  backHref?: string;
+  backLabel?: string;
   className?: string;
 }
 
@@ -28,6 +31,9 @@ export function AppNavbar({
   userName = "Admin User",
   userEmail = "admin@nexus.ai",
   notificationCount = 0,
+  showBackButton = false,
+  backHref = "/dashboard",
+  backLabel = "Back to Dashboard",
   className,
 }: AppNavbarProps) {
   const [searchValue, setSearchValue] = useState("");
@@ -41,16 +47,30 @@ export function AppNavbar({
         className
       )}
     >
-      {/* Brand */}
-      <Link href="/dashboard" className="flex items-center gap-2 group">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 shadow-lg shadow-brand-600/40 transition-shadow group-hover:shadow-brand-500/60">
-          <ZapIcon size={15} className="text-white" />
-        </div>
-        <span className="text-base font-bold tracking-tight">
-          <span className="text-white">NEXUS</span>
-          <span className="text-brand-400"> AI</span>
-        </span>
-      </Link>
+      {/* Brand & Back Button */}
+      <div className="flex items-center gap-3">
+        <Link href="/dashboard" className="flex items-center gap-2 group">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 shadow-lg shadow-brand-600/40 transition-shadow group-hover:shadow-brand-500/60">
+            <ZapIcon size={15} className="text-white" />
+          </div>
+          <span className="text-base font-bold tracking-tight">
+            <span className="text-white">NEXUS</span>
+            <span className="text-brand-400"> AI</span>
+          </span>
+        </Link>
+
+        {showBackButton && (
+          <Link
+            href={backHref}
+            className="flex items-center gap-1.5 rounded-xl border border-brand-500/30 bg-brand-500/10 hover:bg-brand-500/20 px-3 py-1.5 text-xs font-semibold text-brand-300 hover:text-white transition-colors"
+          >
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+            </svg>
+            <span>{backLabel}</span>
+          </Link>
+        )}
+      </div>
 
       {/* Search */}
       <div className="relative hidden max-w-sm flex-1 mx-8 md:flex items-center">

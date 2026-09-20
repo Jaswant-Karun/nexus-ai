@@ -1,65 +1,99 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
-interface UploadDropzoneProps {
+export type UploadDropzoneProps = {
   onFiles: (files: File[]) => void;
   accept?: string;
   maxSizeMB?: number;
   multiple?: boolean;
   disabled?: boolean;
   className?: string;
-}
+};
 
-export function UploadDropzone({
-  onFiles,
-  accept,
-  maxSizeMB = 500,
-  multiple = true,
-  disabled = false,
-  className,
-}: UploadDropzoneProps) {
+export function UploadDropzone(props: UploadDropzoneProps): React.JSX.Element {
+  const {
+    onFiles,
+    accept,
+    maxSizeMB = 500,
+    multiple = true,
+    disabled = false,
+    className,
+  } = props;
+
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
 
-  const validate = useCallback((files: File[]): File[] => {
-    setError("");
-    const maxBytes = maxSizeMB * 1024 * 1024;
-    const valid: File[] = [];
-    for (const f of files) {
-      if (f.size > maxBytes) {
-        setError(`"${f.name}" exceeds the ${maxSizeMB} MB limit`);
-        continue;
+  const validate = useCallback(
+    (files: File[]): File[] => {
+      setError("");
+      const maxBytes = maxSizeMB * 1024 * 1024;
+      const validFiles: File[] = [];
+      for (const f of files) {
+        if (f.size > maxBytes) {
+          setError(`"${f.name}" exceeds the ${maxSizeMB} MB limit`);
+          continue;
+        }
+        validFiles.push(f);
       }
-      valid.push(f);
-    }
-    return valid;
-  }, [maxSizeMB]);
+      return validFiles;
+    },
+    [maxSizeMB]
+  );
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>): void => {
+      e.preventDefault();
+      setDragging(false);
+      if (disabled) return;
+      const files = validate(Array.from(e.dataTransfer.files));
+      if (files.length > 0) {
+        onFiles(files);
+      }
+    },
+    [disabled, validate, onFiles]
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const files = validate(Array.from(e.target.files ?? []));
+    if (files.length > 0) {
+      onFiles(files);
+    }
+    e.target.value = "";
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>): void => {
+    e.preventDefault();
+    if (!disabled) {
+      setDragging(true);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
+    e.preventDefault();
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
     setDragging(false);
-    if (disabled) return;
-    const files = validate(Array.from(e.dataTransfer.files));
-    if (files.length) onFiles(files);
-  }, [disabled, validate, onFiles]);
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = validate(Array.from(e.target.files ?? []));
-    if (files.length) onFiles(files);
-    e.target.value = "";
+  const handleClick = (): void => {
+    if (!disabled && inputRef.current) {
+      inputRef.current.click();
+    }
   };
 
   return (
     <div className={cn("space-y-2", className)}>
       <div
-        onDragEnter={(e) => { e.preventDefault(); if (!disabled) setDragging(true); }}
-        onDragOver={(e) => { e.preventDefault(); }}
-        onDragLeave={(e) => { e.preventDefault(); setDragging(false); }}
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={() => !disabled && inputRef.current?.click()}
+        onClick={handleClick}
         className={cn(
           "group relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed px-8 py-14 cursor-pointer transition-all",
           dragging
@@ -69,11 +103,13 @@ export function UploadDropzone({
         )}
       >
         {/* Glow */}
-        <div className={cn(
-          "pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity",
-          "bg-gradient-to-b from-brand-500/5 to-transparent",
-          dragging && "opacity-100"
-        )} />
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity",
+            "bg-gradient-to-b from-brand-500/5 to-transparent",
+            dragging && "opacity-100"
+          )}
+        />
 
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-600/15 text-4xl mb-5 group-hover:bg-brand-600/25 transition-colors">
           ☁️
@@ -99,7 +135,7 @@ export function UploadDropzone({
           aria-label="Upload files"
         />
       </div>
-      {error && (
+      {error !== "" && (
         <p className="text-xs text-red-400 flex items-center gap-1.5 px-1">
           <span>⚠</span> {error}
         </p>

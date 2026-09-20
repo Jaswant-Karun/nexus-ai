@@ -15,9 +15,17 @@ function getInitials(name: string) {
 
 interface AppNavbarProps {
   brandName?: string;
+  showBackButton?: boolean;
+  backHref?: string;
+  backLabel?: string;
 }
 
-export function AppNavbar({ brandName = "NEXUS AI" }: AppNavbarProps) {
+export function AppNavbar({
+  brandName = "NEXUS AI",
+  showBackButton = false,
+  backHref = "/dashboard",
+  backLabel = "Back to Dashboard",
+}: AppNavbarProps) {
   const { user, loading, logout } = useAuth();
   const [menuOpen, setMenuOpen]   = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -26,18 +34,32 @@ export function AppNavbar({ brandName = "NEXUS AI" }: AppNavbarProps) {
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-white/[0.06] bg-dark-950/90 backdrop-blur-xl px-5">
-      {/* Brand */}
-      <Link href="/dashboard" className="flex items-center gap-2 group">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600 shadow-lg shadow-brand-600/40 transition-shadow group-hover:shadow-brand-500/60">
-          <ZapIcon size={13} className="text-white" />
-        </div>
-        <span className="text-sm font-extrabold tracking-tight">
-          <span className="text-white">{brandName.split(" ")[0]}</span>
-          {brandName.split(" ")[1] && (
-            <span className="text-brand-400"> {brandName.split(" ")[1]}</span>
-          )}
-        </span>
-      </Link>
+      {/* Brand & Back Button */}
+      <div className="flex items-center gap-3">
+        <Link href="/dashboard" className="flex items-center gap-2 group">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-600 shadow-lg shadow-brand-600/40 transition-shadow group-hover:shadow-brand-500/60">
+            <ZapIcon size={13} className="text-white" />
+          </div>
+          <span className="text-sm font-extrabold tracking-tight">
+            <span className="text-white">{brandName.split(" ")[0]}</span>
+            {brandName.split(" ")[1] && (
+              <span className="text-brand-400"> {brandName.split(" ")[1]}</span>
+            )}
+          </span>
+        </Link>
+
+        {showBackButton && (
+          <Link
+            href={backHref}
+            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3 py-1 text-xs font-semibold text-brand-300 hover:text-white transition-colors"
+          >
+            <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+            </svg>
+            <span>{backLabel}</span>
+          </Link>
+        )}
+      </div>
 
       {/* Right side */}
       <div className="flex items-center gap-2">

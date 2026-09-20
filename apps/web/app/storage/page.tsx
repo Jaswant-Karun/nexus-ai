@@ -12,17 +12,28 @@ import { cn } from "@/lib/utils";
 function TopBar() {
   const [query, setQuery] = useState("");
   return (
-    <div className="sticky top-0 z-20 flex items-center gap-4 border-b border-white/[0.06] bg-dark-950/95 backdrop-blur-sm px-6 py-3">
+    <div className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-white/[0.06] bg-dark-950/95 backdrop-blur-sm px-6 py-3">
+      <Link
+        href="/dashboard"
+        className="flex items-center gap-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 px-3.5 py-2 text-xs font-semibold text-brand-300 hover:text-white transition-all shadow-sm group shrink-0"
+      >
+        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:-translate-x-0.5">
+          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        </svg>
+        <span>Back to Dashboard</span>
+      </Link>
+
       <div className="relative flex-1 max-w-xl">
         <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-dark-400" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
         </svg>
         <input value={query} onChange={(e) => setQuery(e.target.value)}
           placeholder="Search your files…"
-          className="w-full rounded-2xl border border-white/[0.08] bg-dark-800/60 py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-dark-400 focus:border-brand-500/60 focus:outline-none focus:ring-1 focus:ring-brand-500/20 transition" />
+          className="w-full rounded-2xl border border-white/[0.08] bg-dark-800/60 py-2 pl-10 pr-4 text-sm text-white placeholder:text-dark-400 focus:border-brand-500/60 focus:outline-none focus:ring-1 focus:ring-brand-500/20 transition" />
       </div>
+
       <Link href="/storage/upload"
-        className="flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition-all">
+        className="flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-600/25 transition-all shrink-0">
         <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
