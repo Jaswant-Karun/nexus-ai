@@ -3,16 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ModuleLayout from '@/components/layout/ModuleLayout';
-import { 
-  FolderKanban, 
-  Plus, 
-  Search, 
-  Users, 
-  CheckCircle2, 
-  Clock, 
-  ArrowUpRight, 
-  Sparkles, 
-  FileText 
+import {
+  FolderKanban,
+  Plus,
+  Search,
+  Users,
+  CheckCircle2,
+  Clock,
+  ArrowUpRight,
+  Sparkles,
+  FileText
 } from 'lucide-react';
 
 const projectsSubnav = [
@@ -38,56 +38,25 @@ interface ProjectSummary {
   updated: string;
 }
 
-const mockProjects: ProjectSummary[] = [
-  {
-    id: 'proj-food-delivery',
-    name: 'Food Delivery Platform Architecture',
-    desc: 'Autonomous multi-agent system specification, real-time dispatch, and PostgreSQL pgvector schema.',
-    status: 'In Progress',
-    progress: 75,
-    tasksCount: 24,
-    members: ['Jaswant Karun', 'Agent 3 Critic', 'Orchestrator'],
-    updated: '20 minutes ago'
-  },
-  {
-    id: 'proj-enterprise-rag',
-    name: 'Enterprise Hybrid RAG Knowledge Engine',
-    desc: 'Integration between pgvector, Neo4j knowledge graphs, and semantic embeddings for corporate document search.',
-    status: 'Active',
-    progress: 90,
-    tasksCount: 18,
-    members: ['Jaswant Karun', 'Research Agent'],
-    updated: '2 hours ago'
-  },
-  {
-    id: 'proj-agent-marketplace',
-    name: 'Autonomous Agent Marketplace & Sandbox',
-    desc: 'Public and private agent persona directory with gVisor container isolation and micro-billing.',
-    status: 'Planning',
-    progress: 35,
-    tasksCount: 42,
-    members: ['Jaswant Karun', 'Full-Stack Synthesizer'],
-    updated: 'Yesterday'
-  }
-];
+// Projects loaded from /api/projects (live DB / seeded data)
 
 export default function ProjectsHubPage() {
-  const [projects, setProjects] = useState(mockProjects);
+  const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedProjects = window.localStorage.getItem('nexus_projects');
-    if (!storedProjects) return;
-
-    try {
-      const createdProjects = JSON.parse(storedProjects) as ProjectSummary[];
-      setProjects((current) => [
-        ...createdProjects.filter((created) => !current.some((project) => project.id === created.id)),
-        ...current,
-      ]);
-    } catch {
-      window.localStorage.removeItem('nexus_projects');
-    }
+    fetch('/api/projects')
+      .then(r => r.json())
+      .then(json => {
+        if (json.success && Array.isArray(json.data)) {
+          setProjects(json.data as ProjectSummary[]);
+        }
+      })
+      .catch(() => {
+        // Fallback to empty list — no crash
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const filtered = projects.filter(p =>
@@ -129,7 +98,17 @@ export default function ProjectsHubPage() {
 
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map(proj => (
+          {loading && (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 animate-pulse h-56" />
+            ))
+          )}
+          {!loading && filtered.length === 0 && (
+            <div className="col-span-3 py-16 text-center text-slate-500 text-sm">
+              No projects found. <Link href="/projects/create" className="text-indigo-400 hover:underline">Create your first project</Link>
+            </div>
+          )}
+          {!loading && filtered.map(proj => (
             <div
               key={proj.id}
               className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-all flex flex-col justify-between group"
