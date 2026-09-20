@@ -25,6 +25,7 @@ export default function CreateProjectPage() {
   const [desc, setDesc] = useState('');
   const [visibility, setVisibility] = useState('team');
   const [assignedAgent, setAssignedAgent] = useState('orchestrator');
+  const [implementationSteps, setImplementationSteps] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export default function CreateProjectPage() {
         implementation_steps?: string[];
       };
       setName(report.title ?? 'Nexus AI solution project');
+      setImplementationSteps(report.implementation_steps ?? []);
       setDesc(
         [report.summary, report.recommendation, ...(report.implementation_steps ?? [])]
           .filter(Boolean)
@@ -53,6 +55,28 @@ export default function CreateProjectPage() {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    const project = {
+      id: `proj-${Date.now()}`,
+      name,
+      desc,
+      status: 'Planning',
+      progress: 5,
+      tasksCount: 0,
+      tasks: implementationSteps.map((title, index) => ({ id: `${Date.now()}-${index}`, title, completed: false })),
+      members: ['Jaswant Karun', assignedAgent],
+      updated: 'Just now',
+    };
+    const storedProjects = window.localStorage.getItem('nexus_projects');
+    let existingProjects: typeof project[] = [];
+    if (storedProjects) {
+      try {
+        existingProjects = JSON.parse(storedProjects) as typeof project[];
+      } catch {
+        existingProjects = [];
+      }
+    }
+    window.localStorage.setItem('nexus_projects', JSON.stringify([project, ...existingProjects]));
+    window.localStorage.removeItem('nexus_solution_report');
     setTimeout(() => {
       setSaving(false);
       router.push('/projects');

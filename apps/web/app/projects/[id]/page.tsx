@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ModuleLayout from '@/components/layout/ModuleLayout';
@@ -32,6 +32,23 @@ const projectsSubnav = [
 export default function ProjectDetailPage() {
   const params = useParams();
   const projectId = params?.id as string || 'proj-food-delivery';
+  const [project, setProject] = useState<{ name: string; desc: string; status: string; progress: number; tasks?: Array<{ id: string; title: string; completed: boolean }> } | null>(null);
+
+  useEffect(() => {
+    const storedProjects = window.localStorage.getItem('nexus_projects');
+    if (!storedProjects) return;
+    try {
+      const projects = JSON.parse(storedProjects) as Array<{ id: string; name: string; desc: string; status: string; progress: number; tasks?: Array<{ id: string; title: string; completed: boolean }> }>;
+      setProject(projects.find((candidate) => candidate.id === projectId) ?? null);
+    } catch {
+      window.localStorage.removeItem('nexus_projects');
+    }
+  }, [projectId]);
+
+  const projectName = project?.name ?? 'Food Delivery Platform Architecture';
+  const projectDescription = project?.desc ?? 'Autonomous multi-agent system specification, real-time dispatch, and PostgreSQL pgvector schema.';
+  const projectStatus = project ? `${project.status} (${project.progress}%)` : 'In Progress (75%)';
+  const projectTasks = project?.tasks ?? [];
 
   return (
     <ModuleLayout
@@ -61,13 +78,13 @@ export default function ProjectDetailPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                In Progress (75%)
+                {projectStatus}
               </span>
               <span className="text-xs text-slate-500 font-mono">ID: {projectId}</span>
             </div>
-            <h2 className="text-xl font-bold text-white mb-1">Food Delivery Platform Architecture</h2>
+            <h2 className="text-xl font-bold text-white mb-1">{projectName}</h2>
             <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
-              Autonomous multi-agent system specification, real-time dispatch, and PostgreSQL pgvector schema.
+              {projectDescription}
             </p>
           </div>
 
@@ -82,6 +99,23 @@ export default function ProjectDetailPage() {
             </div>
           </div>
         </div>
+
+        {projectTasks.length > 0 && (
+          <section className="rounded-2xl bg-slate-900/60 border border-slate-800 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white">Generated implementation tasks</h3>
+              <span className="text-xs text-slate-400">{projectTasks.length} tasks</span>
+            </div>
+            <div className="space-y-2">
+              {projectTasks.map((task, index) => (
+                <div key={task.id} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 text-sm text-slate-200">
+                  <span className="text-xs font-mono text-indigo-400">0{index + 1}</span>
+                  <span>{task.title}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Quick Tabs Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">

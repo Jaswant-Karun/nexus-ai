@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ModuleLayout from '@/components/layout/ModuleLayout';
 import { 
@@ -27,7 +27,18 @@ const projectsSubnav = [
   { label: 'Settings', href: '/projects/settings' },
 ];
 
-const mockProjects = [
+interface ProjectSummary {
+  id: string;
+  name: string;
+  desc: string;
+  status: string;
+  progress: number;
+  tasksCount: number;
+  members: string[];
+  updated: string;
+}
+
+const mockProjects: ProjectSummary[] = [
   {
     id: 'proj-food-delivery',
     name: 'Food Delivery Platform Architecture',
@@ -63,6 +74,21 @@ const mockProjects = [
 export default function ProjectsHubPage() {
   const [projects, setProjects] = useState(mockProjects);
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const storedProjects = window.localStorage.getItem('nexus_projects');
+    if (!storedProjects) return;
+
+    try {
+      const createdProjects = JSON.parse(storedProjects) as ProjectSummary[];
+      setProjects((current) => [
+        ...createdProjects.filter((created) => !current.some((project) => project.id === created.id)),
+        ...current,
+      ]);
+    } catch {
+      window.localStorage.removeItem('nexus_projects');
+    }
+  }, []);
 
   const filtered = projects.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
