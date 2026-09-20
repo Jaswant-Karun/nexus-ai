@@ -23,18 +23,6 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
   },
 
-  // ── Bundle analysis & size reduction ──────────────────────────────────────
-  experimental: {
-    // Optimise package imports — prevents importing entire icon library
-    optimizePackageImports: [
-      "lucide-react",
-      "framer-motion",
-      "@nexus/ui",
-    ],
-    // Faster server startup by pre-bundling
-    serverComponentsExternalPackages: ["pg", "@prisma/adapter-pg"],
-  },
-
   // ── HTTP headers — aggressive caching for static assets ───────────────────
   async headers() {
     return [
@@ -72,15 +60,6 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // ── Rewrites ──────────────────────────────────────────────────────────────
-  async rewrites() {
-    return [
-      {
-        source: "/api/chat",
-        destination: "/api/nexus-chat",
-      },
-    ];
-  },
 };
 
 export default nextConfig;
