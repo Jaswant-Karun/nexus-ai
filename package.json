@@ -8,5 +8,9 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "typescript": "5.7.2"
   }
 }

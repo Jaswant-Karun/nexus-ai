@@ -6,7 +6,14 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      '@types/node':
+        specifier: 22.10.2
+        version: 22.10.2
+      typescript:
+        specifier: 5.7.2
+        version: 5.7.2
 
   apps/admin: {}
 
@@ -113,7 +120,11 @@ importers:
 
   packages/cache: {}
 
-  packages/config: {}
+  packages/config:
+    devDependencies:
+      '@types/node':
+        specifier: 22.10.2
+        version: 22.10.2
 
   packages/constants: {}
 

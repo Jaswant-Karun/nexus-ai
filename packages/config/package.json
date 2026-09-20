@@ -6,5 +6,8 @@
   "types": "./index.ts",
   "exports": {
     ".": "./index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2"
   }
 }
