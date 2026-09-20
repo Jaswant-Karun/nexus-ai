@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import ModuleLayout from '@/components/layout/ModuleLayout';
-import { Sliders, Save, ShieldCheck, Lock, AlertTriangle } from 'lucide-react';
+import { Sliders, Save } from 'lucide-react';
 
 const adminSubnav = [
   { label: 'Admin Overview', href: '/admin' },
