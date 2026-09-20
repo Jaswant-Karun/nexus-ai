@@ -18,11 +18,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { chat, streamChat, anyProvidersConfigured } from "@/lib/ai/nexus";
 import type { ChatRequest as NexusChatRequest } from "@/lib/ai/types";
 import { ProviderError } from "@/lib/ai/errors";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
 export async function POST(req: NextRequest) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let body: NexusChatRequest;
   try {
     body = (await req.json()) as NexusChatRequest;
@@ -48,6 +55,35 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  if (!body.conversationId) {
+    return NextResponse.json({ error: "conversationId is required" }, { status: 400 });
+  }
+
+  const conversation = await prisma.conversation.findFirst({
+    where: { id: body.conversationId, userId: user.sub },
+    select: { id: true },
+  });
+  if (!conversation) {
+    return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+  }
+
+  const latestUserMessage = [...body.messages].reverse().find((message) => message.role === "user");
+  if (!latestUserMessage?.content.trim()) {
+    return NextResponse.json({ error: "A user message is required" }, { status: 400 });
+  }
+
+  await prisma.message.create({
+    data: {
+      conversationId: conversation.id,
+      role: "user",
+      content: latestUserMessage.content.trim(),
+    },
+  });
+  await prisma.conversation.update({
+    where: { id: conversation.id },
+    data: { lastMessageAt: new Date() },
+  });
+
   // Quick "no providers" check — gives a clean message instead of a stream error.
   if (!anyProvidersConfigured()) {
     return NextResponse.json(
@@ -71,12 +107,29 @@ export async function POST(req: NextRequest) {
             encoder.encode(`data: ${JSON.stringify(obj)}\n\n`),
           );
 
+        let assistantContent = "";
         try {
           for await (const chunk of streamChat(body)) {
             send(chunk);
 
+            if (chunk.type === "delta") assistantContent += chunk.content;
+
             // Stop early on terminal error.
             if (chunk.type === "error") break;
+          }
+
+          if (assistantContent.trim()) {
+            await prisma.message.create({
+              data: {
+                conversationId: conversation.id,
+                role: "assistant",
+                content: assistantContent,
+              },
+            });
+            await prisma.conversation.update({
+              where: { id: conversation.id },
+              data: { lastMessageAt: new Date() },
+            });
           }
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
@@ -100,6 +153,17 @@ export async function POST(req: NextRequest) {
   // ── Non-streaming response (JSON) ──
   try {
     const response = await chat(body);
+    await prisma.message.create({
+      data: {
+        conversationId: conversation.id,
+        role: "assistant",
+        content: response.content,
+      },
+    });
+    await prisma.conversation.update({
+      where: { id: conversation.id },
+      data: { lastMessageAt: new Date() },
+    });
     return NextResponse.json(response);
   } catch (err) {
     if (err instanceof ProviderError) {

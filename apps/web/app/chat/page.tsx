@@ -241,6 +241,7 @@ export default function ChatPage() {
   const [agentList,     setAgentList]     = useState<AgentInfo[]>([]);
   const [selectedAgent, setSelectedAgent] = useState("analytics");
   const [showAgents,    setShowAgents]    = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   /* ── Auto-scroll ───────────────────────────────────────────────────────── */
   useEffect(() => {
@@ -280,6 +281,48 @@ export default function ChatPage() {
   }, []);
 
   const currentAgent = agentList.find(a => a.type === selectedAgent);
+
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("conversation");
+    if (!id) return;
+
+    setMode("api");
+    setConversationId(id);
+    fetch(`/api/conversations/${id}/messages`)
+      .then((response) => response.ok ? response.json() : Promise.reject(response.status))
+      .then((payload: { data?: Array<{ id: string; role: string; content: string; createdAt: string }> }) => {
+        const loaded = (payload.data ?? [])
+          .filter((message) => message.role === "user" || message.role === "assistant")
+          .map((message) => ({
+            id: message.id,
+            role: message.role as "user" | "assistant",
+            content: message.content,
+            time: new Date(message.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            }),
+          }));
+        setApiMessages(loaded.length ? [makeWelcome("api"), ...loaded] : [makeWelcome("api")]);
+      })
+      .catch(() => setConversationId(null));
+  }, [makeWelcome]);
+
+  const ensureConversation = async (): Promise<string> => {
+    if (conversationId) return conversationId;
+
+    const response = await fetch("/api/conversations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "API Chat" }),
+    });
+    const data = await response.json() as { data?: { id: string }; error?: string };
+    if (!response.ok || !data.data?.id) {
+      throw new Error(data.error ?? "Unable to create conversation");
+    }
+    setConversationId(data.data.id);
+    return data.data.id;
+  };
 
   /* ── Clear conversation ─────────────────────────────────────────────────── */
   const clearChat = useCallback(() => {
@@ -419,8 +462,10 @@ export default function ChatPage() {
       .map(m => ({ role: m.role as "user" | "assistant", content: m.content }));
 
     try {
+      const activeConversationId = await ensureConversation();
       for await (const chunk of streamChat({
         model:       selectedModel,
+        conversationId: activeConversationId,
         messages:    [...history, { role: "user", content: text }],
         temperature: 0.7,
       })) {

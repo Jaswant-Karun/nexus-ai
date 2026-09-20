@@ -47,6 +47,8 @@ export interface TokenUsage {
 export interface ChatRequest {
   /** Model id from the catalog, or "auto" for Nexus Auto routing. */
   model: string;
+  /** Persist this request in an authenticated conversation. */
+  conversationId?: string;
   messages: ChatMessage[];
   temperature?: number;
   maxTokens?: number;

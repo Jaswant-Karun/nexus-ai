@@ -32,6 +32,9 @@ jobs:
       - name: Install JavaScript dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install Python API dependencies
+        run: python -m pip install --disable-pip-version-check ./backend/api
+
       - name: Run Python tests
         run: pnpm test:python
 
