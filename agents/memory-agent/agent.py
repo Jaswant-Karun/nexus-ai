@@ -2,19 +2,19 @@
 from __future__ import annotations
 import hashlib, os, sys, time
 from collections import deque
-from dataclasses import dataclass
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from shared.llm_client import simple as _simple
 
-@dataclass
 class MemoryItem:
-    id: str; content: str; memory_type: str = "episodic"; importance: float = 0.5
-    metadata: dict = None; created_at: float = 0.0; access_count: int = 0
-    def __post_init__(self):
-        self.metadata = self.metadata or {}; self.created_at = self.created_at or time.time()
+    def __init__(self, id: str, content: str, memory_type: str = "episodic",
+                 importance: float = 0.5, metadata: dict | None = None):
+        self.id = id; self.content = content; self.memory_type = memory_type
+        self.importance = importance; self.metadata = metadata or {}
+        self.created_at = time.time(); self.access_count = 0
     def to_dict(self) -> dict:
-        return {"id":self.id,"content":self.content,"type":self.memory_type,"importance":self.importance,
-                "created_at":self.created_at,"access_count":self.access_count,"metadata":self.metadata}
+        return {"id":self.id,"content":self.content,"type":self.memory_type,
+                "importance":self.importance,"created_at":self.created_at,
+                "access_count":self.access_count,"metadata":self.metadata}
 
 class MemoryAgent:
     def __init__(self, max_working: int = 20, max_long_term: int = 500):

@@ -1,15 +1,13 @@
-"""NEXUS AI — Search Agent. Uses shared LLM client + keyword/cosine search."""
+"""NEXUS AI — Search Agent. Uses shared LLM client + keyword search."""
 from __future__ import annotations
 import os, sys
-from dataclasses import dataclass, field
 from typing import Any
-import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from shared.llm_client import chat as _llm
 
-@dataclass
 class SearchResult:
-    id: str; text: str; score: float; metadata: dict[str, Any] = field(default_factory=dict)
+    def __init__(self, id: str, text: str, score: float, metadata: dict | None = None):
+        self.id = id; self.text = text; self.score = score; self.metadata = metadata or {}
 
 def _bm25_score(query: str, doc: str) -> float:
     q_terms = set(query.lower().split())

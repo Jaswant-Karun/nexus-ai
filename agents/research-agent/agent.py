@@ -40,5 +40,5 @@ class ResearchAgent:
         ans, tok = _simple(f"Compare '{item_a}' vs '{item_b}' on: {topic}. Use: similarities, differences, verdict.")
         return {"agent": "research-agent", "comparison": ans, "tokens_used": tok}
 
-def run(topic: str, sources: list[dict] | None = None) -> dict:
-    return ResearchAgent().research(topic, sources)
+def run(topic: str, sources: list[dict] | None = None, depth: str = "standard") -> dict:
+    return ResearchAgent().research(topic, sources, depth)

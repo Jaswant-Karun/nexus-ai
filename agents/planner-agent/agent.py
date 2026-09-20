@@ -43,5 +43,5 @@ class PlannerAgent:
         data["agent"] = "planner-agent"; data["replanned"] = True; data["tokens_used"] = tok
         return data
 
-def run(goal: str, context: str = "") -> dict:
-    return PlannerAgent().plan(goal, context)
+def run(goal: str, context: str = "", constraints: list[str] | None = None, max_steps: int = 10) -> dict:
+    return PlannerAgent().plan(goal, context, constraints, max_steps)
