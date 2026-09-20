@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_theme.dart';
 import '../analytics/analytics_dashboard.dart';
 import '../chatbot/chat_screen_page.dart';
 import '../guide/how_to_use_screen.dart';
@@ -18,39 +19,43 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
-  bool _darkMode = true;
 
   static const _blue = Color(0xff4f52ea);
   static const _muted = Color(0xff6c7890);
 
+  bool get _darkMode => Theme.of(context).brightness == Brightness.dark;
+
   void _toggleTheme() {
-    setState(() => _darkMode = !_darkMode);
+    setState(() {
+      if (themeNotifier.value == ThemeMode.dark) {
+        themeNotifier.value = ThemeMode.light;
+      } else {
+        themeNotifier.value = ThemeMode.dark;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final pages = [
       _homePage(context),
       const ChatScreenPage(),
       const WorkflowListScreen(),
       const KnowledgeScreen(),
-      ProfileScreen(onThemeToggle: _toggleTheme, isDark: _darkMode),
+      ProfileScreen(onThemeToggle: _toggleTheme, isDark: isDark),
     ];
 
-    return Theme(
-      data: ThemeData(
-        useMaterial3: true,
-        brightness: _darkMode ? Brightness.dark : Brightness.light,
-        scaffoldBackgroundColor:
-            _darkMode ? const Color(0xff090a10) : const Color(0xfff8fafc),
-        cardColor: _darkMode ? const Color(0xff121420) : Colors.white,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: _blue,
-          brightness: _darkMode ? Brightness.dark : Brightness.light,
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: pages[_selectedIndex],
+          ),
         ),
       ),
-      child: Scaffold(
-        body: SafeArea(child: pages[_selectedIndex]),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _selectedIndex,
           onDestinationSelected: (index) => setState(() => _selectedIndex = index),

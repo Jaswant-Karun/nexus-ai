@@ -13,4 +13,6 @@ class AppRoutes {
   static const String workflows = '/workflows';
   static const String knowledge = '/knowledge';
   static const String howToUse = '/how-to-use';
+  static const String tokens = '/tokens';
+  static const String register = '/register';
 }
