@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../chatbot/chat_screen_page.dart';
+import '../projects/project_list_screen.dart';
+
 class DashboardScreen extends StatefulWidget {
 	const DashboardScreen({super.key});
 
@@ -12,7 +15,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 	bool _darkMode = false;
 
 	static const _blue = Color(0xff2d6cdf);
-	static const _ink = Color(0xff172033);
 	static const _muted = Color(0xff6c7890);
 
 	@override
@@ -130,7 +132,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 					Container(
 						width: 66,
 						height: 66,
-						decoration: BoxDecoration(color: Colors.white.withOpacity(.16), shape: BoxShape.circle),
+						decoration: BoxDecoration(color: Colors.white.withValues(alpha: .16), shape: BoxShape.circle),
 						child: const Icon(Icons.insights_rounded, color: Colors.white, size: 32),
 					),
 				],
@@ -186,7 +188,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 		return Expanded(
 			child: InkWell(
 				borderRadius: BorderRadius.circular(16),
-				onTap: () => _showMessage(context, '$label is ready to use.'),
+				onTap: () {
+					if (label == 'Ask Nexus') {
+						Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ChatScreenPage()));
+					} else if (label == 'New project') {
+						Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProjectListScreen()));
+					} else {
+						_showMessage(context, '$label is ready to use.');
+					}
+				},
 				child: Container(
 					padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 5),
 					decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16)),
@@ -207,7 +217,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 	}
 
 	Widget _activityTile(IconData icon, Color color, String title, String subtitle) {
-		return ListTile(contentPadding: EdgeInsets.zero, leading: CircleAvatar(backgroundColor: color.withOpacity(.12), child: Icon(icon, color: color, size: 19)), title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)), subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: _muted)), trailing: const Icon(Icons.chevron_right, color: _muted));
+		return ListTile(contentPadding: EdgeInsets.zero, leading: CircleAvatar(backgroundColor: color.withValues(alpha: .12), child: Icon(icon, color: color, size: 19)), title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)), subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: _muted)), trailing: const Icon(Icons.chevron_right, color: _muted));
 	}
 
 	Widget _projectsPage() => _simplePage('Projects', Icons.folder_copy_outlined, 'Keep your work organized', ['Website redesign', 'Q3 marketing strategy', 'Customer research'], const [0.72, 0.48, 0.91]);
@@ -224,7 +234,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 			_settingTile(Icons.notifications_none, 'Notifications', 'Manage alerts', () {}),
 			SwitchListTile(contentPadding: EdgeInsets.zero, secondary: const Icon(Icons.dark_mode_outlined), title: const Text('Dark mode'), subtitle: const Text('Use a darker appearance'), value: _darkMode, onChanged: (value) => setState(() => _darkMode = value)),
 			_settingTile(Icons.help_outline, 'Help center', 'Get support', () {}),
-		];
+		]);
 	}
 
 	Widget _settingTile(IconData icon, String title, String subtitle, VoidCallback onTap) {
@@ -237,7 +247,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
 			const SizedBox(height: 6),
 			Text(subtitle, style: const TextStyle(color: _muted)),
 			const SizedBox(height: 25),
-			...List.generate(items.length, (index) => Card(margin: const EdgeInsets.only(bottom: 12), child: ListTile(leading: CircleAvatar(backgroundColor: const Color(0xffe9f0ff), child: Icon(icon, color: _blue, size: 19)), title: Text(items[index], style: const TextStyle(fontWeight: FontWeight.w600)), subtitle: Padding(padding: const EdgeInsets.only(top: 9), child: LinearProgressIndicator(value: progress[index], minHeight: 6, borderRadius: BorderRadius.circular(8))), trailing: Text('${(progress[index] * 100).round()}%', style: const TextStyle(fontWeight: FontWeight.w700, color: _blue))))),
+			...List.generate(
+				items.length,
+				(index) => Card(
+					margin: const EdgeInsets.only(bottom: 12),
+					child: ListTile(
+						leading: CircleAvatar(
+							backgroundColor: const Color(0xffe9f0ff),
+							child: Icon(icon, color: _blue, size: 19),
+						),
+						title: Text(items[index], style: const TextStyle(fontWeight: FontWeight.w600)),
+						subtitle: Padding(
+							padding: const EdgeInsets.only(top: 9),
+							child: LinearProgressIndicator(
+								value: progress[index],
+								minHeight: 6,
+								borderRadius: BorderRadius.circular(8),
+							),
+						),
+						trailing: Text(
+							'${(progress[index] * 100).round()}%',
+							style: const TextStyle(fontWeight: FontWeight.w700, color: _blue),
+						),
+					),
+				),
+			),
 		]);
 	}
 
