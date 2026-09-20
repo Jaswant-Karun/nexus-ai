@@ -4,6 +4,8 @@ import 'config/routes.dart';
 import 'screens/analytics/analytics_dashboard.dart';
 import 'screens/authentication/login_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
+import 'screens/guide/how_to_use_screen.dart';
+import 'screens/knowledge/knowledge_screen.dart';
 import 'screens/notifications/notification_list.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/profile/profile_screen.dart';
@@ -40,6 +42,8 @@ class NexusApp extends StatelessWidget {
         AppRoutes.projectDetails: (_) => const ProjectDetailsScreen(),
         AppRoutes.analytics: (_) => const AnalyticsDashboardScreen(),
         AppRoutes.workflows: (_) => const WorkflowListScreen(),
+        AppRoutes.knowledge: (_) => const KnowledgeScreen(),
+        AppRoutes.howToUse: (_) => const HowToUseScreen(),
       },
     );
   }

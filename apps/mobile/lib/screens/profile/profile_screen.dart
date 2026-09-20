@@ -378,7 +378,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: _copilotTone,
+                  initialValue: _copilotTone,
                   decoration: InputDecoration(
                     labelText: 'Communication Tone',
                     filled: true,
@@ -394,7 +394,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: _copilotModel,
+                  initialValue: _copilotModel,
                   decoration: InputDecoration(
                     labelText: 'Default Reasoning Engine',
                     filled: true,

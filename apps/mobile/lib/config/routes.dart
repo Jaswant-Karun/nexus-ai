@@ -11,4 +11,6 @@ class AppRoutes {
   static const String projectDetails = '/project-details';
   static const String analytics = '/analytics';
   static const String workflows = '/workflows';
+  static const String knowledge = '/knowledge';
+  static const String howToUse = '/how-to-use';
 }
