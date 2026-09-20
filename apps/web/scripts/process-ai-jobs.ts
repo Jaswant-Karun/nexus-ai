@@ -1,6 +1,8 @@
 import "dotenv/config";
 import path from "node:path";
 import { readFile } from "node:fs/promises";
+import { PDFParse } from "pdf-parse";
+import mammoth from "mammoth";
 import { PrismaClient } from "../lib/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
@@ -10,6 +12,8 @@ const uploadRoot = process.env.UPLOAD_DIR ?? path.resolve(process.cwd(), "upload
 const chunkSize = 900;
 const chunkOverlap = 120;
 const textExtensions = new Set([".txt", ".md", ".markdown", ".csv", ".json", ".html", ".htm", ".xml", ".ts", ".tsx", ".js", ".jsx", ".py"]);
+const pdfMimeType = "application/pdf";
+const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
 const pool = new Pool({ connectionString });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
@@ -17,6 +21,26 @@ const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 function chunkCount(text: string): number {
   if (!text.trim()) return 0;
   return Math.ceil(text.length / (chunkSize - chunkOverlap));
+}
+
+async function extractText(filePath: string, name: string, mimeType: string): Promise<string> {
+  const buffer = await readFile(filePath);
+  const extension = path.extname(name).toLowerCase();
+
+  if (mimeType === pdfMimeType || extension === ".pdf") {
+    const parser = new PDFParse({ data: buffer });
+    try {
+      return (await parser.getText()).text;
+    } finally {
+      await parser.destroy();
+    }
+  }
+
+  if (mimeType === docxMimeType || extension === ".docx") {
+    return (await mammoth.extractRawText({ buffer })).value;
+  }
+
+  return buffer.toString("utf8");
 }
 
 async function processExtractJob(job: {
@@ -31,12 +55,13 @@ async function processExtractJob(job: {
 
   try {
     const extension = path.extname(job.file.name).toLowerCase();
-    if (!textExtensions.has(extension) && !job.file.mimeType.startsWith("text/")) {
+    const supportedBinary = job.file.mimeType === pdfMimeType || job.file.mimeType === docxMimeType || extension === ".pdf" || extension === ".docx";
+    if (!textExtensions.has(extension) && !job.file.mimeType.startsWith("text/") && !supportedBinary) {
       throw new Error(`Text extraction is not implemented for ${job.file.mimeType}`);
     }
 
     const filePath = path.join(uploadRoot, job.file.organizationId, path.basename(job.file.storageUrl));
-    const text = (await readFile(filePath, "utf8")).replace(/\s+/g, " ").trim();
+    const text = (await extractText(filePath, job.file.name, job.file.mimeType)).replace(/\s+/g, " ").trim();
     const chunks = chunkCount(text);
 
     await prisma.storageFile.update({
