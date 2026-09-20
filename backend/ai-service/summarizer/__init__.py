@@ -1,0 +1,1 @@
+"""NEXUS AI — Summarizer module."""
