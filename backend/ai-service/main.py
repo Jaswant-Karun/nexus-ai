@@ -41,6 +41,7 @@ from routers.simulation       import router as simulation_router
 from routers.summarizer       import router as summarizer_router
 from routers.vector_search    import router as vector_search_router
 from routers.workflow_generator import router as workflow_generator_router
+from routers.nexus_agent        import router as nexus_agent_router
 
 log = structlog.get_logger()
 
@@ -127,6 +128,7 @@ app.include_router(simulation_router,         prefix=API)
 app.include_router(summarizer_router,         prefix=API)
 app.include_router(vector_search_router,      prefix=API)
 app.include_router(workflow_generator_router, prefix=API)
+app.include_router(nexus_agent_router,       prefix=API)
 
 # ── Core endpoints ────────────────────────────────────────────────────────────
 @app.get("/", include_in_schema=False)
@@ -159,6 +161,7 @@ async def health() -> dict:
             "reasoning", "summarizer", "explainability",
             "report_generator", "reranking", "recommendation",
             "workflow_generator", "simulation", "prompt_builder",
+            "nexus_agent",
         ],
     }
 
@@ -180,6 +183,7 @@ async def list_modules() -> dict:
             {"name": "Reranking",          "prefix": f"{API}/reranking",          "endpoints": 2},
             {"name": "Recommendation",     "prefix": f"{API}/recommendation",     "endpoints": 1},
             {"name": "Workflow Generator", "prefix": f"{API}/workflow-generator", "endpoints": 2},
+            {"name": "NEXUS Agent",        "prefix": f"{API}/nexus-agent",        "endpoints": 5},
             {"name": "Simulation",         "prefix": f"{API}/simulation",         "endpoints": 2},
             {"name": "Prompt Builder",     "prefix": f"{API}/prompt-builder",     "endpoints": 3},
         ]
