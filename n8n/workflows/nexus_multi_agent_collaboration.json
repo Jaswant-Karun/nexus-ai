@@ -39,7 +39,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Role: Security & Architecture Auditor\nGoal: {{ $('init-goal').item.json.goal }}\nTask: Review security policies, encryption levels (AES-256, TLS 1.3), and compliance considerations. Return a 3-bullet security audit.",
+        "text": "=Role: Security & Architecture Auditor\nGoal: {{ $json.goal }}\nTask: Review security policies, encryption levels (AES-256, TLS 1.3), and compliance considerations. Return a 3-bullet security audit.",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -62,7 +62,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Synthesize the findings from our specialist agents into a final executive deliverable.\n\nData Analyst Findings:\n{{ $json.output || JSON.stringify($json) }}\n\nSecurity Audit Findings:\n{{ $('agent-security').item.json.output || JSON.stringify($('agent-security').item.json) }}",
+        "text": "=Synthesize the findings from our specialist agents into a final executive deliverable.\n\nAgent Findings:\n{{ JSON.stringify($json) }}",
         "options": {
           "systemMessage": "You are the Lead Synthesizer for NEXUS AI. Consolidate agent reports into an executive-ready action plan with high clarity."
         }
@@ -76,7 +76,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"success\": true,\n  \"workflow\": \"Multi-Agent Collaboration\",\n  \"goal\": \"{{ $('init-goal').item.json.goal }}\",\n  \"finalReport\": {{ JSON.stringify($json.output || $json.text || $json) }},\n  \"completedAt\": \"{{ new Date().toISOString() }}\"\n}",
+        "responseBody": "={\n  \"success\": true,\n  \"workflow\": \"Multi-Agent Collaboration\",\n  \"finalReport\": {{ JSON.stringify($json.output || $json.text || $json) }},\n  \"completedAt\": \"{{ new Date().toISOString() }}\"\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.respondToWebhook",
