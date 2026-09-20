@@ -1,1 +1,125 @@
-// Root Prisma schema placeholder
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+  GUEST
+  SYSTEM
+}
+
+enum AgentStatus {
+  ACTIVE
+  PAUSED
+  DRAFT
+}
+
+enum WorkflowStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  plan      String   @default("FREE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  agents    Agent[]
+  workflows Workflow[]
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  name           String
+  passwordHash   String?
+  avatarUrl      String?
+  role           Role         @default(MEMBER)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  conversations Conversation[]
+  workflows     Workflow[]
+  agents        Agent[]
+}
+
+model Agent {
+  id             String       @id @default(cuid())
+  name           String
+  description    String
+  avatar         String?
+  status         AgentStatus  @default(ACTIVE)
+  config         Json
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User         @relation(fields: [createdById], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  conversations Conversation[]
+}
+
+model Conversation {
+  id            String    @id @default(cuid())
+  title         String
+  agentId       String?
+  agent         Agent?    @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pinned        Boolean   @default(false)
+  lastMessageAt DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+
+  messages Message[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String
+  content        String       @db.Text
+  toolCalls      Json?
+  attachments    Json?
+  createdAt      DateTime     @default(now())
+}
+
+model Workflow {
+  id             String         @id @default(cuid())
+  name           String
+  description    String
+  status         WorkflowStatus @default(DRAFT)
+  nodes          Json
+  edges          Json
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User           @relation(fields: [createdById], references: [id])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model KnowledgeDocument {
+  id         String   @id @default(cuid())
+  title      String
+  sourceUrl  String?
+  mimeType   String
+  status     String   @default("INDEXED")
+  chunkCount Int      @default(0)
+  sizeBytes  Int      @default(0)
+  createdAt  DateTime @default(now())
+}

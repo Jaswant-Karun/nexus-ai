@@ -1,6 +1,6 @@
 # Roadmap
 
-- Finalize monorepo scaffolding
-- Add app and service starters
-- Wire shared packages and config
-- Add deployment and CI templates
+- [x] Finalize monorepo scaffolding
+- [x] Add app and service starters
+- [x] Wire shared packages and config
+- [ ] Add deployment and CI templates

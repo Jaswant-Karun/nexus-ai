@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
+"use client";
 
 type StatusPillProps = {
-  children: ReactNode;
+  children: any;
   tone?: "success" | "warning" | "neutral";
 };
 

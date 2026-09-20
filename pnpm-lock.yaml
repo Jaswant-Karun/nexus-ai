@@ -12,6 +12,21 @@ importers:
 
   apps/web:
     dependencies:
+      '@nexus/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@nexus/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@nexus/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@nexus/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@nexus/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       clsx:
         specifier: 2.1.1
         version: 2.1.1

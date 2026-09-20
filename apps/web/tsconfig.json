@@ -1,4 +1,5 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
@@ -14,8 +15,15 @@
     "jsx": "preserve",
     "incremental": true,
     "plugins": [{ "name": "next" }],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@nexus/ui": ["../../packages/ui"],
+      "@nexus/types": ["../../packages/types"],
+      "@nexus/shared": ["../../packages/shared"],
+      "@nexus/auth": ["../../packages/auth"],
+      "@nexus/config": ["../../packages/config"],
+      "@nexus/*": ["../../packages/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

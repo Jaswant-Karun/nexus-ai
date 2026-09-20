@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
+"use client";
 
 type PrimaryButtonProps = {
-  children: ReactNode;
+  children: any;
   variant?: "solid" | "ghost";
 };
 
