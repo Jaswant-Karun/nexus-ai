@@ -88,9 +88,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
+      );
+    }
 
   Widget _homePage(BuildContext context) {
     return CustomScrollView(

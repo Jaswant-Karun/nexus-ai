@@ -192,9 +192,12 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-        children: [
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+            children: [
           // Hero Banner
           Container(
             padding: const EdgeInsets.all(20),
@@ -331,7 +334,9 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
           ..._filteredGuides().map((item) => _guideCard(context, item, isDark)),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   List<Map<String, dynamic>> _filteredGuides() {

@@ -83,9 +83,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 36),
-        children: [
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 36),
+            children: [
           // ── 1. Cyber Identity Hero Card ──
           Container(
             padding: const EdgeInsets.all(20),
@@ -485,7 +488,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _gaugeItem(String title, String status, double progress, Color color, bool isDark) {

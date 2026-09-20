@@ -44,8 +44,6 @@ class _TokenScreenState extends State<TokenScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-
             return AlertDialog(
               title: const Row(
                 children: [
