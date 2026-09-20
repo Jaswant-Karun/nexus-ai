@@ -1,0 +1,110 @@
+"use client";
+
+import { useRef, useState, useCallback } from "react";
+import { cn } from "@/lib/utils";
+import { formatBytes } from "@/lib/storage";
+
+interface UploadDropzoneProps {
+  onFiles: (files: File[]) => void;
+  accept?: string;
+  maxSizeMB?: number;
+  multiple?: boolean;
+  disabled?: boolean;
+  className?: string;
+}
+
+export function UploadDropzone({
+  onFiles,
+  accept,
+  maxSizeMB = 500,
+  multiple = true,
+  disabled = false,
+  className,
+}: UploadDropzoneProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const [error, setError] = useState("");
+
+  const validate = useCallback((files: File[]): File[] => {
+    setError("");
+    const maxBytes = maxSizeMB * 1024 * 1024;
+    const valid: File[] = [];
+    for (const f of files) {
+      if (f.size > maxBytes) {
+        setError(`"${f.name}" exceeds the ${maxSizeMB} MB limit`);
+        continue;
+      }
+      valid.push(f);
+    }
+    return valid;
+  }, [maxSizeMB]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    if (disabled) return;
+    const files = validate(Array.from(e.dataTransfer.files));
+    if (files.length) onFiles(files);
+  }, [disabled, validate, onFiles]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = validate(Array.from(e.target.files ?? []));
+    if (files.length) onFiles(files);
+    e.target.value = "";
+  };
+
+  return (
+    <div className={cn("space-y-2", className)}>
+      <div
+        onDragEnter={(e) => { e.preventDefault(); if (!disabled) setDragging(true); }}
+        onDragOver={(e) => { e.preventDefault(); }}
+        onDragLeave={(e) => { e.preventDefault(); setDragging(false); }}
+        onDrop={handleDrop}
+        onClick={() => !disabled && inputRef.current?.click()}
+        className={cn(
+          "group relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed px-8 py-14 cursor-pointer transition-all",
+          dragging
+            ? "border-brand-500 bg-brand-500/10 scale-[1.01]"
+            : "border-white/15 bg-dark-900/40 hover:border-brand-500/50 hover:bg-dark-800/40",
+          disabled && "opacity-50 cursor-not-allowed"
+        )}
+      >
+        {/* Glow */}
+        <div className={cn(
+          "pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity",
+          "bg-gradient-to-b from-brand-500/5 to-transparent",
+          dragging && "opacity-100"
+        )} />
+
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-600/15 text-4xl mb-5 group-hover:bg-brand-600/25 transition-colors">
+          ☁️
+        </div>
+        <p className="text-base font-semibold text-white">
+          {dragging ? "Drop files here" : "Drag & drop files here"}
+        </p>
+        <p className="mt-1.5 text-sm text-dark-300">
+          or <span className="text-brand-400 font-medium">browse to choose files</span>
+        </p>
+        <p className="mt-3 text-xs text-dark-500">
+          Max {maxSizeMB} MB per file · {accept ?? "All file types supported"}
+        </p>
+
+        <input
+          ref={inputRef}
+          type="file"
+          multiple={multiple}
+          accept={accept}
+          onChange={handleChange}
+          className="hidden"
+          disabled={disabled}
+          aria-label="Upload files"
+        />
+      </div>
+      {error && (
+        <p className="text-xs text-red-400 flex items-center gap-1.5 px-1">
+          <span>⚠</span> {error}
+        </p>
+      )}
+    </div>
+  );
+}

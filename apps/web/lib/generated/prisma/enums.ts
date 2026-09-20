@@ -35,3 +35,46 @@ export const WorkflowStatus = {
 } as const
 
 export type WorkflowStatus = (typeof WorkflowStatus)[keyof typeof WorkflowStatus]
+
+
+export const VirusScanStatus = {
+  PENDING: 'PENDING',
+  CLEAN: 'CLEAN',
+  INFECTED: 'INFECTED',
+  SKIPPED: 'SKIPPED'
+} as const
+
+export type VirusScanStatus = (typeof VirusScanStatus)[keyof typeof VirusScanStatus]
+
+
+export const AiJobStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+} as const
+
+export type AiJobStatus = (typeof AiJobStatus)[keyof typeof AiJobStatus]
+
+
+export const AiJobType = {
+  OCR: 'OCR',
+  SUMMARIZE: 'SUMMARIZE',
+  EMBED: 'EMBED',
+  TRANSCRIBE: 'TRANSCRIBE',
+  EXTRACT: 'EXTRACT',
+  THUMBNAIL: 'THUMBNAIL',
+  VIRUS_SCAN: 'VIRUS_SCAN',
+  COMPRESS: 'COMPRESS'
+} as const
+
+export type AiJobType = (typeof AiJobType)[keyof typeof AiJobType]
+
+
+export const SharePermission = {
+  VIEW: 'VIEW',
+  DOWNLOAD: 'DOWNLOAD',
+  EDIT: 'EDIT'
+} as const
+
+export type SharePermission = (typeof SharePermission)[keyof typeof SharePermission]

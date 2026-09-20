@@ -403,7 +403,13 @@ export const ModelName = {
   Conversation: 'Conversation',
   Message: 'Message',
   Workflow: 'Workflow',
-  KnowledgeDocument: 'KnowledgeDocument'
+  KnowledgeDocument: 'KnowledgeDocument',
+  StorageFolder: 'StorageFolder',
+  StorageFile: 'StorageFile',
+  FileVersion: 'FileVersion',
+  FileShare: 'FileShare',
+  AiProcessingJob: 'AiProcessingJob',
+  AccessLog: 'AccessLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -419,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "user" | "agent" | "conversation" | "message" | "workflow" | "knowledgeDocument"
+    modelProps: "organization" | "user" | "agent" | "conversation" | "message" | "workflow" | "knowledgeDocument" | "storageFolder" | "storageFile" | "fileVersion" | "fileShare" | "aiProcessingJob" | "accessLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -941,6 +947,450 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    StorageFolder: {
+      payload: Prisma.$StorageFolderPayload<ExtArgs>
+      fields: Prisma.StorageFolderFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StorageFolderFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFolderPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StorageFolderFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFolderPayload>
+        }
+        findFirst: {
+          args: Prisma.StorageFolderFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFolderPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StorageFolderFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFolderPayload>
+        }
+        findMany: {
+          args: Prisma.StorageFolderFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFolderPayload>[]
+        }
+        create: {
+          args: Prisma.StorageFolderCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFolderPayload>
+        }
+        createMany: {
+          args: Prisma.StorageFolderCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StorageFolderCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFolderPayload>[]
+        }
+        delete: {
+          args: Prisma.StorageFolderDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFolderPayload>
+        }
+        update: {
+          args: Prisma.StorageFolderUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFolderPayload>
+        }
+        deleteMany: {
+          args: Prisma.StorageFolderDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StorageFolderUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StorageFolderUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFolderPayload>[]
+        }
+        upsert: {
+          args: Prisma.StorageFolderUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFolderPayload>
+        }
+        aggregate: {
+          args: Prisma.StorageFolderAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStorageFolder>
+        }
+        groupBy: {
+          args: Prisma.StorageFolderGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StorageFolderGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StorageFolderCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StorageFolderCountAggregateOutputType> | number
+        }
+      }
+    }
+    StorageFile: {
+      payload: Prisma.$StorageFilePayload<ExtArgs>
+      fields: Prisma.StorageFileFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StorageFileFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFilePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StorageFileFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFilePayload>
+        }
+        findFirst: {
+          args: Prisma.StorageFileFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFilePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StorageFileFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFilePayload>
+        }
+        findMany: {
+          args: Prisma.StorageFileFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFilePayload>[]
+        }
+        create: {
+          args: Prisma.StorageFileCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFilePayload>
+        }
+        createMany: {
+          args: Prisma.StorageFileCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StorageFileCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFilePayload>[]
+        }
+        delete: {
+          args: Prisma.StorageFileDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFilePayload>
+        }
+        update: {
+          args: Prisma.StorageFileUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFilePayload>
+        }
+        deleteMany: {
+          args: Prisma.StorageFileDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StorageFileUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StorageFileUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFilePayload>[]
+        }
+        upsert: {
+          args: Prisma.StorageFileUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorageFilePayload>
+        }
+        aggregate: {
+          args: Prisma.StorageFileAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStorageFile>
+        }
+        groupBy: {
+          args: Prisma.StorageFileGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StorageFileGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StorageFileCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StorageFileCountAggregateOutputType> | number
+        }
+      }
+    }
+    FileVersion: {
+      payload: Prisma.$FileVersionPayload<ExtArgs>
+      fields: Prisma.FileVersionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FileVersionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FileVersionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>
+        }
+        findFirst: {
+          args: Prisma.FileVersionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FileVersionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>
+        }
+        findMany: {
+          args: Prisma.FileVersionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>[]
+        }
+        create: {
+          args: Prisma.FileVersionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>
+        }
+        createMany: {
+          args: Prisma.FileVersionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FileVersionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>[]
+        }
+        delete: {
+          args: Prisma.FileVersionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>
+        }
+        update: {
+          args: Prisma.FileVersionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>
+        }
+        deleteMany: {
+          args: Prisma.FileVersionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FileVersionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FileVersionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>[]
+        }
+        upsert: {
+          args: Prisma.FileVersionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileVersionPayload>
+        }
+        aggregate: {
+          args: Prisma.FileVersionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileVersion>
+        }
+        groupBy: {
+          args: Prisma.FileVersionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileVersionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FileVersionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileVersionCountAggregateOutputType> | number
+        }
+      }
+    }
+    FileShare: {
+      payload: Prisma.$FileSharePayload<ExtArgs>
+      fields: Prisma.FileShareFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FileShareFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileSharePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FileShareFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileSharePayload>
+        }
+        findFirst: {
+          args: Prisma.FileShareFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileSharePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FileShareFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileSharePayload>
+        }
+        findMany: {
+          args: Prisma.FileShareFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileSharePayload>[]
+        }
+        create: {
+          args: Prisma.FileShareCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileSharePayload>
+        }
+        createMany: {
+          args: Prisma.FileShareCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FileShareCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileSharePayload>[]
+        }
+        delete: {
+          args: Prisma.FileShareDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileSharePayload>
+        }
+        update: {
+          args: Prisma.FileShareUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileSharePayload>
+        }
+        deleteMany: {
+          args: Prisma.FileShareDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FileShareUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FileShareUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileSharePayload>[]
+        }
+        upsert: {
+          args: Prisma.FileShareUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileSharePayload>
+        }
+        aggregate: {
+          args: Prisma.FileShareAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileShare>
+        }
+        groupBy: {
+          args: Prisma.FileShareGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileShareGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FileShareCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileShareCountAggregateOutputType> | number
+        }
+      }
+    }
+    AiProcessingJob: {
+      payload: Prisma.$AiProcessingJobPayload<ExtArgs>
+      fields: Prisma.AiProcessingJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AiProcessingJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProcessingJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AiProcessingJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProcessingJobPayload>
+        }
+        findFirst: {
+          args: Prisma.AiProcessingJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProcessingJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AiProcessingJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProcessingJobPayload>
+        }
+        findMany: {
+          args: Prisma.AiProcessingJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProcessingJobPayload>[]
+        }
+        create: {
+          args: Prisma.AiProcessingJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProcessingJobPayload>
+        }
+        createMany: {
+          args: Prisma.AiProcessingJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AiProcessingJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProcessingJobPayload>[]
+        }
+        delete: {
+          args: Prisma.AiProcessingJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProcessingJobPayload>
+        }
+        update: {
+          args: Prisma.AiProcessingJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProcessingJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.AiProcessingJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AiProcessingJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AiProcessingJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProcessingJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.AiProcessingJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiProcessingJobPayload>
+        }
+        aggregate: {
+          args: Prisma.AiProcessingJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAiProcessingJob>
+        }
+        groupBy: {
+          args: Prisma.AiProcessingJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiProcessingJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AiProcessingJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiProcessingJobCountAggregateOutputType> | number
+        }
+      }
+    }
+    AccessLog: {
+      payload: Prisma.$AccessLogPayload<ExtArgs>
+      fields: Prisma.AccessLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AccessLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AccessLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessLogPayload>
+        }
+        findFirst: {
+          args: Prisma.AccessLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AccessLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessLogPayload>
+        }
+        findMany: {
+          args: Prisma.AccessLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessLogPayload>[]
+        }
+        create: {
+          args: Prisma.AccessLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessLogPayload>
+        }
+        createMany: {
+          args: Prisma.AccessLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AccessLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessLogPayload>[]
+        }
+        delete: {
+          args: Prisma.AccessLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessLogPayload>
+        }
+        update: {
+          args: Prisma.AccessLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.AccessLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AccessLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AccessLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.AccessLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccessLogPayload>
+        }
+        aggregate: {
+          args: Prisma.AccessLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAccessLog>
+        }
+        groupBy: {
+          args: Prisma.AccessLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccessLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AccessLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccessLogCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1077,6 +1527,114 @@ export const KnowledgeDocumentScalarFieldEnum = {
 } as const
 
 export type KnowledgeDocumentScalarFieldEnum = (typeof KnowledgeDocumentScalarFieldEnum)[keyof typeof KnowledgeDocumentScalarFieldEnum]
+
+
+export const StorageFolderScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  parentId: 'parentId',
+  path: 'path',
+  color: 'color',
+  organizationId: 'organizationId',
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StorageFolderScalarFieldEnum = (typeof StorageFolderScalarFieldEnum)[keyof typeof StorageFolderScalarFieldEnum]
+
+
+export const StorageFileScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  category: 'category',
+  sizeBytes: 'sizeBytes',
+  storageUrl: 'storageUrl',
+  thumbnailUrl: 'thumbnailUrl',
+  folderId: 'folderId',
+  folderPath: 'folderPath',
+  isStarred: 'isStarred',
+  isTrashed: 'isTrashed',
+  trashedAt: 'trashedAt',
+  checksum: 'checksum',
+  virusScanStatus: 'virusScanStatus',
+  downloadCount: 'downloadCount',
+  tags: 'tags',
+  aiSummary: 'aiSummary',
+  aiKeywords: 'aiKeywords',
+  aiExtractedText: 'aiExtractedText',
+  encryptionKey: 'encryptionKey',
+  organizationId: 'organizationId',
+  uploadedById: 'uploadedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StorageFileScalarFieldEnum = (typeof StorageFileScalarFieldEnum)[keyof typeof StorageFileScalarFieldEnum]
+
+
+export const FileVersionScalarFieldEnum = {
+  id: 'id',
+  fileId: 'fileId',
+  versionNumber: 'versionNumber',
+  sizeBytes: 'sizeBytes',
+  storageUrl: 'storageUrl',
+  checksum: 'checksum',
+  changeNote: 'changeNote',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+} as const
+
+export type FileVersionScalarFieldEnum = (typeof FileVersionScalarFieldEnum)[keyof typeof FileVersionScalarFieldEnum]
+
+
+export const FileShareScalarFieldEnum = {
+  id: 'id',
+  fileId: 'fileId',
+  token: 'token',
+  permission: 'permission',
+  isPublic: 'isPublic',
+  passwordHash: 'passwordHash',
+  expiresAt: 'expiresAt',
+  downloadLimit: 'downloadLimit',
+  downloadCount: 'downloadCount',
+  createdById: 'createdById',
+  isRevoked: 'isRevoked',
+  createdAt: 'createdAt'
+} as const
+
+export type FileShareScalarFieldEnum = (typeof FileShareScalarFieldEnum)[keyof typeof FileShareScalarFieldEnum]
+
+
+export const AiProcessingJobScalarFieldEnum = {
+  id: 'id',
+  fileId: 'fileId',
+  jobType: 'jobType',
+  status: 'status',
+  progress: 'progress',
+  result: 'result',
+  errorMessage: 'errorMessage',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AiProcessingJobScalarFieldEnum = (typeof AiProcessingJobScalarFieldEnum)[keyof typeof AiProcessingJobScalarFieldEnum]
+
+
+export const AccessLogScalarFieldEnum = {
+  id: 'id',
+  fileId: 'fileId',
+  action: 'action',
+  userId: 'userId',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt'
+} as const
+
+export type AccessLogScalarFieldEnum = (typeof AccessLogScalarFieldEnum)[keyof typeof AccessLogScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1235,6 +1793,76 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BigInt'
+ */
+export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+    
+
+
+/**
+ * Reference to a field of type 'BigInt[]'
+ */
+export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
+
+
+/**
+ * Reference to a field of type 'VirusScanStatus'
+ */
+export type EnumVirusScanStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VirusScanStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'VirusScanStatus[]'
+ */
+export type ListEnumVirusScanStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VirusScanStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SharePermission'
+ */
+export type EnumSharePermissionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SharePermission'>
+    
+
+
+/**
+ * Reference to a field of type 'SharePermission[]'
+ */
+export type ListEnumSharePermissionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SharePermission[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AiJobType'
+ */
+export type EnumAiJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiJobType'>
+    
+
+
+/**
+ * Reference to a field of type 'AiJobType[]'
+ */
+export type ListEnumAiJobTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiJobType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AiJobStatus'
+ */
+export type EnumAiJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiJobStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'AiJobStatus[]'
+ */
+export type ListEnumAiJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiJobStatus[]'>
     
 
 
@@ -1409,6 +2037,12 @@ export type GlobalOmitConfig = {
   message?: Prisma.MessageOmit
   workflow?: Prisma.WorkflowOmit
   knowledgeDocument?: Prisma.KnowledgeDocumentOmit
+  storageFolder?: Prisma.StorageFolderOmit
+  storageFile?: Prisma.StorageFileOmit
+  fileVersion?: Prisma.FileVersionOmit
+  fileShare?: Prisma.FileShareOmit
+  aiProcessingJob?: Prisma.AiProcessingJobOmit
+  accessLog?: Prisma.AccessLogOmit
 }
 
 /* Types for Logging */

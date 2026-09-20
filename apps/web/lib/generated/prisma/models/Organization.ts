@@ -193,6 +193,8 @@ export type OrganizationWhereInput = {
   users?: Prisma.UserListRelationFilter
   agents?: Prisma.AgentListRelationFilter
   workflows?: Prisma.WorkflowListRelationFilter
+  storageFolders?: Prisma.StorageFolderListRelationFilter
+  storageFiles?: Prisma.StorageFileListRelationFilter
 }
 
 export type OrganizationOrderByWithRelationInput = {
@@ -205,6 +207,8 @@ export type OrganizationOrderByWithRelationInput = {
   users?: Prisma.UserOrderByRelationAggregateInput
   agents?: Prisma.AgentOrderByRelationAggregateInput
   workflows?: Prisma.WorkflowOrderByRelationAggregateInput
+  storageFolders?: Prisma.StorageFolderOrderByRelationAggregateInput
+  storageFiles?: Prisma.StorageFileOrderByRelationAggregateInput
 }
 
 export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -220,6 +224,8 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   users?: Prisma.UserListRelationFilter
   agents?: Prisma.AgentListRelationFilter
   workflows?: Prisma.WorkflowListRelationFilter
+  storageFolders?: Prisma.StorageFolderListRelationFilter
+  storageFiles?: Prisma.StorageFileListRelationFilter
 }, "id" | "slug">
 
 export type OrganizationOrderByWithAggregationInput = {
@@ -256,6 +262,8 @@ export type OrganizationCreateInput = {
   users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateInput = {
@@ -268,6 +276,8 @@ export type OrganizationUncheckedCreateInput = {
   users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentUncheckedCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUpdateInput = {
@@ -280,6 +290,8 @@ export type OrganizationUpdateInput = {
   users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateInput = {
@@ -292,6 +304,8 @@ export type OrganizationUncheckedUpdateInput = {
   users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUncheckedUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateManyInput = {
@@ -403,6 +417,34 @@ export type OrganizationUpdateOneRequiredWithoutWorkflowsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutWorkflowsInput, Prisma.OrganizationUpdateWithoutWorkflowsInput>, Prisma.OrganizationUncheckedUpdateWithoutWorkflowsInput>
 }
 
+export type OrganizationCreateNestedOneWithoutStorageFoldersInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutStorageFoldersInput, Prisma.OrganizationUncheckedCreateWithoutStorageFoldersInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutStorageFoldersInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutStorageFoldersNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutStorageFoldersInput, Prisma.OrganizationUncheckedCreateWithoutStorageFoldersInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutStorageFoldersInput
+  upsert?: Prisma.OrganizationUpsertWithoutStorageFoldersInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutStorageFoldersInput, Prisma.OrganizationUpdateWithoutStorageFoldersInput>, Prisma.OrganizationUncheckedUpdateWithoutStorageFoldersInput>
+}
+
+export type OrganizationCreateNestedOneWithoutStorageFilesInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutStorageFilesInput, Prisma.OrganizationUncheckedCreateWithoutStorageFilesInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutStorageFilesInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutStorageFilesNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutStorageFilesInput, Prisma.OrganizationUncheckedCreateWithoutStorageFilesInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutStorageFilesInput
+  upsert?: Prisma.OrganizationUpsertWithoutStorageFilesInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutStorageFilesInput, Prisma.OrganizationUpdateWithoutStorageFilesInput>, Prisma.OrganizationUncheckedUpdateWithoutStorageFilesInput>
+}
+
 export type OrganizationCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -412,6 +454,8 @@ export type OrganizationCreateWithoutUsersInput = {
   updatedAt?: Date | string
   agents?: Prisma.AgentCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutUsersInput = {
@@ -423,6 +467,8 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
   updatedAt?: Date | string
   agents?: Prisma.AgentUncheckedCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutUsersInput = {
@@ -450,6 +496,8 @@ export type OrganizationUpdateWithoutUsersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   agents?: Prisma.AgentUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutUsersInput = {
@@ -461,6 +509,8 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   agents?: Prisma.AgentUncheckedUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutAgentsInput = {
@@ -472,6 +522,8 @@ export type OrganizationCreateWithoutAgentsInput = {
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutAgentsInput = {
@@ -483,6 +535,8 @@ export type OrganizationUncheckedCreateWithoutAgentsInput = {
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutAgentsInput = {
@@ -510,6 +564,8 @@ export type OrganizationUpdateWithoutAgentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutAgentsInput = {
@@ -521,6 +577,8 @@ export type OrganizationUncheckedUpdateWithoutAgentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutWorkflowsInput = {
@@ -532,6 +590,8 @@ export type OrganizationCreateWithoutWorkflowsInput = {
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutWorkflowsInput = {
@@ -543,6 +603,8 @@ export type OrganizationUncheckedCreateWithoutWorkflowsInput = {
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutWorkflowsInput = {
@@ -570,6 +632,8 @@ export type OrganizationUpdateWithoutWorkflowsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutWorkflowsInput = {
@@ -581,6 +645,144 @@ export type OrganizationUncheckedUpdateWithoutWorkflowsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutStorageFoldersInput = {
+  id?: string
+  name: string
+  slug: string
+  plan?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  agents?: Prisma.AgentCreateNestedManyWithoutOrganizationInput
+  workflows?: Prisma.WorkflowCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutStorageFoldersInput = {
+  id?: string
+  name: string
+  slug: string
+  plan?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  agents?: Prisma.AgentUncheckedCreateNestedManyWithoutOrganizationInput
+  workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutStorageFoldersInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutStorageFoldersInput, Prisma.OrganizationUncheckedCreateWithoutStorageFoldersInput>
+}
+
+export type OrganizationUpsertWithoutStorageFoldersInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutStorageFoldersInput, Prisma.OrganizationUncheckedUpdateWithoutStorageFoldersInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutStorageFoldersInput, Prisma.OrganizationUncheckedCreateWithoutStorageFoldersInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutStorageFoldersInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutStorageFoldersInput, Prisma.OrganizationUncheckedUpdateWithoutStorageFoldersInput>
+}
+
+export type OrganizationUpdateWithoutStorageFoldersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  plan?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  agents?: Prisma.AgentUpdateManyWithoutOrganizationNestedInput
+  workflows?: Prisma.WorkflowUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutStorageFoldersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  plan?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  agents?: Prisma.AgentUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutStorageFilesInput = {
+  id?: string
+  name: string
+  slug: string
+  plan?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  agents?: Prisma.AgentCreateNestedManyWithoutOrganizationInput
+  workflows?: Prisma.WorkflowCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutStorageFilesInput = {
+  id?: string
+  name: string
+  slug: string
+  plan?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  agents?: Prisma.AgentUncheckedCreateNestedManyWithoutOrganizationInput
+  workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutStorageFilesInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutStorageFilesInput, Prisma.OrganizationUncheckedCreateWithoutStorageFilesInput>
+}
+
+export type OrganizationUpsertWithoutStorageFilesInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutStorageFilesInput, Prisma.OrganizationUncheckedUpdateWithoutStorageFilesInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutStorageFilesInput, Prisma.OrganizationUncheckedCreateWithoutStorageFilesInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutStorageFilesInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutStorageFilesInput, Prisma.OrganizationUncheckedUpdateWithoutStorageFilesInput>
+}
+
+export type OrganizationUpdateWithoutStorageFilesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  plan?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  agents?: Prisma.AgentUpdateManyWithoutOrganizationNestedInput
+  workflows?: Prisma.WorkflowUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutStorageFilesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  plan?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  agents?: Prisma.AgentUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 
@@ -592,12 +794,16 @@ export type OrganizationCountOutputType = {
   users: number
   agents: number
   workflows: number
+  storageFolders: number
+  storageFiles: number
 }
 
 export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | OrganizationCountOutputTypeCountUsersArgs
   agents?: boolean | OrganizationCountOutputTypeCountAgentsArgs
   workflows?: boolean | OrganizationCountOutputTypeCountWorkflowsArgs
+  storageFolders?: boolean | OrganizationCountOutputTypeCountStorageFoldersArgs
+  storageFiles?: boolean | OrganizationCountOutputTypeCountStorageFilesArgs
 }
 
 /**
@@ -631,6 +837,20 @@ export type OrganizationCountOutputTypeCountWorkflowsArgs<ExtArgs extends runtim
   where?: Prisma.WorkflowWhereInput
 }
 
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountStorageFoldersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.StorageFolderWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountStorageFilesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.StorageFileWhereInput
+}
+
 
 export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -642,6 +862,8 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   users?: boolean | Prisma.Organization$usersArgs<ExtArgs>
   agents?: boolean | Prisma.Organization$agentsArgs<ExtArgs>
   workflows?: boolean | Prisma.Organization$workflowsArgs<ExtArgs>
+  storageFolders?: boolean | Prisma.Organization$storageFoldersArgs<ExtArgs>
+  storageFiles?: boolean | Prisma.Organization$storageFilesArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organization"]>
 
@@ -677,6 +899,8 @@ export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   users?: boolean | Prisma.Organization$usersArgs<ExtArgs>
   agents?: boolean | Prisma.Organization$agentsArgs<ExtArgs>
   workflows?: boolean | Prisma.Organization$workflowsArgs<ExtArgs>
+  storageFolders?: boolean | Prisma.Organization$storageFoldersArgs<ExtArgs>
+  storageFiles?: boolean | Prisma.Organization$storageFilesArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -688,6 +912,8 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     users: Prisma.$UserPayload<ExtArgs>[]
     agents: Prisma.$AgentPayload<ExtArgs>[]
     workflows: Prisma.$WorkflowPayload<ExtArgs>[]
+    storageFolders: Prisma.$StorageFolderPayload<ExtArgs>[]
+    storageFiles: Prisma.$StorageFilePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1093,6 +1319,8 @@ export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends run
   users<T extends Prisma.Organization$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   agents<T extends Prisma.Organization$agentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$agentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AgentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   workflows<T extends Prisma.Organization$workflowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$workflowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  storageFolders<T extends Prisma.Organization$storageFoldersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$storageFoldersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StorageFolderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  storageFiles<T extends Prisma.Organization$storageFilesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$storageFilesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StorageFilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1590,6 +1818,54 @@ export type Organization$workflowsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.WorkflowScalarFieldEnum | Prisma.WorkflowScalarFieldEnum[]
+}
+
+/**
+ * Organization.storageFolders
+ */
+export type Organization$storageFoldersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the StorageFolder
+   */
+  select?: Prisma.StorageFolderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the StorageFolder
+   */
+  omit?: Prisma.StorageFolderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StorageFolderInclude<ExtArgs> | null
+  where?: Prisma.StorageFolderWhereInput
+  orderBy?: Prisma.StorageFolderOrderByWithRelationInput | Prisma.StorageFolderOrderByWithRelationInput[]
+  cursor?: Prisma.StorageFolderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.StorageFolderScalarFieldEnum | Prisma.StorageFolderScalarFieldEnum[]
+}
+
+/**
+ * Organization.storageFiles
+ */
+export type Organization$storageFilesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the StorageFile
+   */
+  select?: Prisma.StorageFileSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the StorageFile
+   */
+  omit?: Prisma.StorageFileOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StorageFileInclude<ExtArgs> | null
+  where?: Prisma.StorageFileWhereInput
+  orderBy?: Prisma.StorageFileOrderByWithRelationInput | Prisma.StorageFileOrderByWithRelationInput[]
+  cursor?: Prisma.StorageFileWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.StorageFileScalarFieldEnum | Prisma.StorageFileScalarFieldEnum[]
 }
 
 /**

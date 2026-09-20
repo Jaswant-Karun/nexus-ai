@@ -16,6 +16,7 @@ const PROTECTED_PREFIXES = [
   "/profile",
   "/analytics",
   "/reports",
+  "/storage",
 ];
 
 // Routes that are only for unauthenticated users (redirect to dashboard if logged in)

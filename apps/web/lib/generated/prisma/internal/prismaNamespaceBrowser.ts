@@ -57,7 +57,13 @@ export const ModelName = {
   Conversation: 'Conversation',
   Message: 'Message',
   Workflow: 'Workflow',
-  KnowledgeDocument: 'KnowledgeDocument'
+  KnowledgeDocument: 'KnowledgeDocument',
+  StorageFolder: 'StorageFolder',
+  StorageFile: 'StorageFile',
+  FileVersion: 'FileVersion',
+  FileShare: 'FileShare',
+  AiProcessingJob: 'AiProcessingJob',
+  AccessLog: 'AccessLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -173,6 +179,114 @@ export const KnowledgeDocumentScalarFieldEnum = {
 } as const
 
 export type KnowledgeDocumentScalarFieldEnum = (typeof KnowledgeDocumentScalarFieldEnum)[keyof typeof KnowledgeDocumentScalarFieldEnum]
+
+
+export const StorageFolderScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  parentId: 'parentId',
+  path: 'path',
+  color: 'color',
+  organizationId: 'organizationId',
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StorageFolderScalarFieldEnum = (typeof StorageFolderScalarFieldEnum)[keyof typeof StorageFolderScalarFieldEnum]
+
+
+export const StorageFileScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  originalName: 'originalName',
+  mimeType: 'mimeType',
+  category: 'category',
+  sizeBytes: 'sizeBytes',
+  storageUrl: 'storageUrl',
+  thumbnailUrl: 'thumbnailUrl',
+  folderId: 'folderId',
+  folderPath: 'folderPath',
+  isStarred: 'isStarred',
+  isTrashed: 'isTrashed',
+  trashedAt: 'trashedAt',
+  checksum: 'checksum',
+  virusScanStatus: 'virusScanStatus',
+  downloadCount: 'downloadCount',
+  tags: 'tags',
+  aiSummary: 'aiSummary',
+  aiKeywords: 'aiKeywords',
+  aiExtractedText: 'aiExtractedText',
+  encryptionKey: 'encryptionKey',
+  organizationId: 'organizationId',
+  uploadedById: 'uploadedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StorageFileScalarFieldEnum = (typeof StorageFileScalarFieldEnum)[keyof typeof StorageFileScalarFieldEnum]
+
+
+export const FileVersionScalarFieldEnum = {
+  id: 'id',
+  fileId: 'fileId',
+  versionNumber: 'versionNumber',
+  sizeBytes: 'sizeBytes',
+  storageUrl: 'storageUrl',
+  checksum: 'checksum',
+  changeNote: 'changeNote',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+} as const
+
+export type FileVersionScalarFieldEnum = (typeof FileVersionScalarFieldEnum)[keyof typeof FileVersionScalarFieldEnum]
+
+
+export const FileShareScalarFieldEnum = {
+  id: 'id',
+  fileId: 'fileId',
+  token: 'token',
+  permission: 'permission',
+  isPublic: 'isPublic',
+  passwordHash: 'passwordHash',
+  expiresAt: 'expiresAt',
+  downloadLimit: 'downloadLimit',
+  downloadCount: 'downloadCount',
+  createdById: 'createdById',
+  isRevoked: 'isRevoked',
+  createdAt: 'createdAt'
+} as const
+
+export type FileShareScalarFieldEnum = (typeof FileShareScalarFieldEnum)[keyof typeof FileShareScalarFieldEnum]
+
+
+export const AiProcessingJobScalarFieldEnum = {
+  id: 'id',
+  fileId: 'fileId',
+  jobType: 'jobType',
+  status: 'status',
+  progress: 'progress',
+  result: 'result',
+  errorMessage: 'errorMessage',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AiProcessingJobScalarFieldEnum = (typeof AiProcessingJobScalarFieldEnum)[keyof typeof AiProcessingJobScalarFieldEnum]
+
+
+export const AccessLogScalarFieldEnum = {
+  id: 'id',
+  fileId: 'fileId',
+  action: 'action',
+  userId: 'userId',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt'
+} as const
+
+export type AccessLogScalarFieldEnum = (typeof AccessLogScalarFieldEnum)[keyof typeof AccessLogScalarFieldEnum]
 
 
 export const SortOrder = {

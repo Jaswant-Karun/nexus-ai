@@ -76,3 +76,33 @@ export type Workflow = Prisma.WorkflowModel
  * 
  */
 export type KnowledgeDocument = Prisma.KnowledgeDocumentModel
+/**
+ * Model StorageFolder
+ * 
+ */
+export type StorageFolder = Prisma.StorageFolderModel
+/**
+ * Model StorageFile
+ * 
+ */
+export type StorageFile = Prisma.StorageFileModel
+/**
+ * Model FileVersion
+ * 
+ */
+export type FileVersion = Prisma.FileVersionModel
+/**
+ * Model FileShare
+ * 
+ */
+export type FileShare = Prisma.FileShareModel
+/**
+ * Model AiProcessingJob
+ * 
+ */
+export type AiProcessingJob = Prisma.AiProcessingJobModel
+/**
+ * Model AccessLog
+ * 
+ */
+export type AccessLog = Prisma.AccessLogModel

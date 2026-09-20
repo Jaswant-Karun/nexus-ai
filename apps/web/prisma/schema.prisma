@@ -7,6 +7,8 @@ generator client {
   output   = "../lib/generated/prisma"
 }
 
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
 enum Role {
   ADMIN
   MEMBER
@@ -26,6 +28,39 @@ enum WorkflowStatus {
   DRAFT
 }
 
+enum VirusScanStatus {
+  PENDING
+  CLEAN
+  INFECTED
+  SKIPPED
+}
+
+enum AiJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum AiJobType {
+  OCR
+  SUMMARIZE
+  EMBED
+  TRANSCRIBE
+  EXTRACT
+  THUMBNAIL
+  VIRUS_SCAN
+  COMPRESS
+}
+
+enum SharePermission {
+  VIEW
+  DOWNLOAD
+  EDIT
+}
+
+// ─── Core platform models ─────────────────────────────────────────────────────
+
 model Organization {
   id        String   @id @default(cuid())
   name      String
@@ -34,9 +69,11 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users     User[]
-  agents    Agent[]
-  workflows Workflow[]
+  users          User[]
+  agents         Agent[]
+  workflows      Workflow[]
+  storageFolders StorageFolder[]
+  storageFiles   StorageFile[]
 }
 
 model User {
@@ -51,9 +88,13 @@ model User {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  conversations Conversation[]
-  workflows     Workflow[]
-  agents        Agent[]
+  conversations  Conversation[]
+  workflows      Workflow[]
+  agents         Agent[]
+  uploadedFiles  StorageFile[]    @relation("UploadedBy")
+  fileVersions   FileVersion[]
+  fileShares     FileShare[]
+  accessLogs     AccessLog[]
 }
 
 model Agent {
@@ -122,4 +163,116 @@ model KnowledgeDocument {
   chunkCount Int      @default(0)
   sizeBytes  Int      @default(0)
   createdAt  DateTime @default(now())
+}
+
+// ─── Storage Service models ───────────────────────────────────────────────────
+
+model StorageFolder {
+  id             String   @id @default(cuid())
+  name           String
+  parentId       String?
+  parent         StorageFolder?  @relation("FolderChildren", fields: [parentId], references: [id], onDelete: SetNull)
+  children       StorageFolder[] @relation("FolderChildren")
+  path           String
+  color          String?
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  isDeleted      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  files StorageFile[]
+}
+
+model StorageFile {
+  id               String          @id @default(cuid())
+  name             String
+  originalName     String
+  mimeType         String
+  category         String
+  sizeBytes        BigInt
+  storageUrl       String
+  thumbnailUrl     String?
+  folderId         String?
+  folder           StorageFolder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  folderPath       String          @default("/")
+  isStarred        Boolean         @default(false)
+  isTrashed        Boolean         @default(false)
+  trashedAt        DateTime?
+  checksum         String
+  virusScanStatus  VirusScanStatus @default(PENDING)
+  downloadCount    Int             @default(0)
+  tags             String[]
+  aiSummary        String?         @db.Text
+  aiKeywords       String[]
+  aiExtractedText  String?         @db.Text
+  encryptionKey    String?
+  organizationId   String
+  organization     Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  uploadedById     String
+  uploadedBy       User            @relation("UploadedBy", fields: [uploadedById], references: [id])
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  versions     FileVersion[]
+  shares       FileShare[]
+  aiJobs       AiProcessingJob[]
+  accessLogs   AccessLog[]
+}
+
+model FileVersion {
+  id            String      @id @default(cuid())
+  fileId        String
+  file          StorageFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  sizeBytes     BigInt
+  storageUrl    String
+  checksum      String
+  changeNote    String?
+  createdById   String
+  createdBy     User        @relation(fields: [createdById], references: [id])
+  createdAt     DateTime    @default(now())
+}
+
+model FileShare {
+  id             String          @id @default(cuid())
+  fileId         String
+  file           StorageFile     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  token          String          @unique
+  permission     SharePermission @default(VIEW)
+  isPublic       Boolean         @default(false)
+  passwordHash   String?
+  expiresAt      DateTime?
+  downloadLimit  Int?
+  downloadCount  Int             @default(0)
+  createdById    String
+  createdBy      User            @relation(fields: [createdById], references: [id])
+  isRevoked      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+}
+
+model AiProcessingJob {
+  id            String      @id @default(cuid())
+  fileId        String
+  file          StorageFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  jobType       AiJobType
+  status        AiJobStatus @default(PENDING)
+  progress      Int         @default(0)
+  result        Json?
+  errorMessage  String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime    @default(now())
+}
+
+model AccessLog {
+  id         String      @id @default(cuid())
+  fileId     String
+  file       StorageFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  action     String
+  userId     String?
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now())
 }
