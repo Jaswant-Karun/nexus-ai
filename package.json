@@ -7,7 +7,9 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "test": "turbo run test"
+    "test": "pnpm test:python",
+    "test:python": "python -m unittest discover -s tests -p \"test_*.py\"",
+    "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
     "@types/node": "22.10.2",
