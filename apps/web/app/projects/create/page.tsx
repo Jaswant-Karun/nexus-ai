@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ModuleLayout from '@/components/layout/ModuleLayout';
 import { FolderKanban, ArrowLeft, Users, Bot, Save, Sparkles } from 'lucide-react';
@@ -20,11 +20,35 @@ const projectsSubnav = [
 
 export default function CreateProjectPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [name, setName] = useState('');
   const [desc, setDesc] = useState('');
   const [visibility, setVisibility] = useState('team');
   const [assignedAgent, setAssignedAgent] = useState('orchestrator');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('source') !== 'orchestration') return;
+    const storedReport = window.localStorage.getItem('nexus_solution_report');
+    if (!storedReport) return;
+
+    try {
+      const report = JSON.parse(storedReport) as {
+        title?: string;
+        summary?: string;
+        recommendation?: string;
+        implementation_steps?: string[];
+      };
+      setName(report.title ?? 'Nexus AI solution project');
+      setDesc(
+        [report.summary, report.recommendation, ...(report.implementation_steps ?? [])]
+          .filter(Boolean)
+          .join('\n\n'),
+      );
+    } catch {
+      window.localStorage.removeItem('nexus_solution_report');
+    }
+  }, [searchParams]);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();

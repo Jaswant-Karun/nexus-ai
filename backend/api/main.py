@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from routers.health import router as health_router
+from routers.orchestration import router as orchestration_router
 
 app = FastAPI(
 	title="NEXUS AI API",
@@ -11,6 +12,7 @@ app = FastAPI(
 )
 
 app.include_router(health_router, prefix="/v1")
+app.include_router(orchestration_router, prefix="/v1")
 
 
 @app.get("/")

@@ -2,6 +2,7 @@ export const APP_NAV = [
   { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: "📊" },
   { id: "agents", label: "AI Agents", href: "/agents", icon: "🤖" },
   { id: "chat", label: "AI Chat", href: "/chat", icon: "💬" },
+  { id: "problem-understanding", label: "Problem Understanding", href: "/problem-understanding", icon: "🧭" },
   { id: "workflows", label: "Workflows", href: "/workflows", icon: "⚡" },
   { id: "projects", label: "Projects", href: "/projects", icon: "📁" },
   { id: "workspace", label: "Knowledge Engine", href: "/workspace", icon: "🧠" },
