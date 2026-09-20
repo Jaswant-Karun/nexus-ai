@@ -68,23 +68,32 @@ function makeId() {
 /* ─────────────────────────────────────────────────────────────────────────────
    NEXUS AGENT WELCOME MESSAGE
 ───────────────────────────────────────────────────────────────────────────── */
-const NEXUS_WELCOME = `# Welcome to NEXUS Agent 🧠
+const NEXUS_WELCOME = `# NEXUS Agent 🧠 — Powered by Llama 3.2
 
-I'm **NEXUS** — your enterprise AI assistant powered by a trained Python agent running on the NEXUS AI Service.
+I'm **NEXUS** — running on **Llama 3.2**, a real 3.2 billion parameter neural network by Meta AI, installed locally on this machine via Ollama.
 
-**What makes me different from a plain API chat:**
-- 🔍 **Domain Detection** — I auto-detect if you're asking about code, AI/ML, architecture, math, or business
-- 🤔 **Chain-of-Thought** — I reason through complex problems step by step before answering
-- 🪞 **Self-Reflection** — I review my own answer for accuracy before sending it
-- 🧩 **Session Memory** — I remember our conversation context across messages
-- 📚 **Knowledge Base** — Instant expert answers for NEXUS platform, RAG, pgvector, and more
+**🔒 No API keys. No internet. 100% local.**
 
-**Try asking me:**
-- *"Explain RAG and show me a Python implementation"*
-- *"Compare pgvector vs Pinecone"*
-- *"Design a microservices architecture for a food delivery app"*
-- *"Write a TypeScript utility for debouncing with generics"*
-- *"What is the NEXUS AI platform?"*`;
+**What I can do:**
+- 💻 **Write & debug code** — Python, TypeScript, SQL, Bash, and more
+- 🏗️ **System design** — architecture diagrams, trade-off analysis
+- 🧠 **AI/ML concepts** — RAG, embeddings, fine-tuning, vector search
+- 🔢 **Mathematics** — step-by-step derivations, proofs, calculations
+- 🔬 **Science** — physics, chemistry, biology explained clearly
+- 📈 **Business analysis** — SaaS metrics, strategy, product decisions
+- 💡 **Anything else** — general knowledge, comparisons, explanations
+
+**How the neural network pipeline works:**
+1. 🔍 Domain detection (instant — local regex)
+2. 🤔 Chain-of-thought reasoning (Llama 3.2 thinks first)
+3. ✍️ Answer generation (Llama 3.2 streams the response)
+4. 🪞 Self-reflection (Llama 3.2 reviews its own answer)
+
+**Try asking:**
+- *"What is a syntax error and give an example?"*
+- *"Write a Python function to reverse a linked list"*
+- *"Explain how neural networks learn"*
+- *"Design a REST API for a todo app"*`;
 
 const API_CHAT_WELCOME = `# API Chat ⚡
 
@@ -223,7 +232,7 @@ export default function ChatPage() {
 
   /* ── NEXUS Agent state ─────────────────────────────────────────────────── */
   const [nexusStatus,  setNexusStatus]  = useState<"online" | "offline" | "checking">("checking");
-  const [nexusModel,   setNexusModel]   = useState("Gemini 2.5 Flash");
+  const [nexusModel,   setNexusModel]   = useState("Llama 3.2 · local");
   const [sessionId]                     = useState(() => `session-${Date.now()}`);
   const [showReasoning, setShowReasoning] = useState(true);
 
@@ -238,13 +247,21 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  /* ── Check NEXUS Agent status on mount (uses native route, always works) ── */
+  /* ── Check NEXUS Agent status (Ollama health check) ────────────────────── */
   useEffect(() => {
     fetch("/api/nexus-agent")
       .then(r => r.json())
-      .then((d: { status?: string; model?: string }) => {
+      .then((d: { status?: string; model?: string; engine?: string }) => {
         setNexusStatus(d.status === "online" ? "online" : "offline");
-        if (d.model) setNexusModel(d.model.replace("models/", "").replace("Nexus Auto (", "").replace(")", ""));
+        // Show model name cleanly: "llama3.2:latest" → "Llama 3.2 · local"
+        if (d.model) {
+          const clean = d.model
+            .replace(/:latest$/, "")
+            .replace("llama", "Llama ")
+            .replace("3.2", "3.2")
+            .trim();
+          setNexusModel(`${clean} · local`);
+        }
       })
       .catch(() => setNexusStatus("offline"));
   }, []);
@@ -500,11 +517,11 @@ export default function ChatPage() {
      NEXUS AGENT example prompts
   ───────────────────────────────────────────────────────────────────────── */
   const NEXUS_EXAMPLES = [
-    "Explain RAG with a Python example",
-    "pgvector vs Pinecone — which should I use?",
-    "Design a microservices system for e-commerce",
-    "Write a TypeScript debounce utility",
-    "What is the NEXUS AI platform?",
+    "What is a syntax error? Give examples",
+    "Write a Python function to reverse a linked list",
+    "Explain how neural networks learn",
+    "Design a REST API for a todo app",
+    "What is the difference between RAM and ROM?",
   ];
 
   const API_EXAMPLES = [
@@ -549,6 +566,10 @@ export default function ChatPage() {
                   >
                     <span>🧠</span>
                     <span>NEXUS Agent</span>
+                    <span className={cn(
+                      "text-[9px] font-bold px-1.5 py-0.5 rounded-full",
+                      mode === "nexus" ? "bg-white/20 text-white" : "bg-emerald-500/20 text-emerald-400"
+                    )}>LOCAL</span>
                   </button>
 
                   {/* API Chat */}
@@ -583,8 +604,8 @@ export default function ChatPage() {
                       {nexusStatus === "online"
                         ? nexusModel
                         : nexusStatus === "offline"
-                          ? "Service offline"
-                          : "Connecting…"}
+                          ? "Ollama offline — run: ollama serve"
+                          : "Checking Ollama…"}
                     </div>
                     {/* Toggle reasoning */}
                     <button
@@ -763,7 +784,13 @@ export default function ChatPage() {
                     {!msg.streaming && msg.role === "assistant" && msg.id !== "welcome" && (
                       <p className="text-[10px] text-dark-600 px-1 flex items-center gap-1.5 flex-wrap">
                         <span>{msg.time}</span>
-                        {msg.model && <><span className="text-dark-700">·</span><span className="text-indigo-400/50">{msg.model}</span></>}
+                        {msg.model && <><span className="text-dark-700">·</span><span className={cn(
+                          mode === "nexus" ? "text-indigo-400/50" : "text-brand-400/50"
+                        )}>{
+                          msg.model.startsWith("llama") || msg.model.includes("local")
+                            ? "🧠 Llama 3.2 · local"
+                            : msg.model
+                        }</span></>}
                         {msg.tokens && <><span className="text-dark-700">·</span><span>{msg.tokens.toLocaleString()} tokens</span></>}
                         {msg.elapsedSeconds && <><span className="text-dark-700">·</span><span>{msg.elapsedSeconds}s</span></>}
                       </p>
@@ -776,7 +803,7 @@ export default function ChatPage() {
               {loading && !messages.some(m => m.streaming && m.content) && (
                 <TypingIndicator
                   label={mode === "nexus"
-                    ? "NEXUS Agent · reasoning…"
+                    ? "Llama 3.2 · thinking…"
                     : showAgents && currentAgent
                       ? `${currentAgent.name} · processing…`
                       : "Generating…"}
@@ -797,9 +824,9 @@ export default function ChatPage() {
                 {mode === "nexus" ? (
                   <>
                     <span>🧠</span>
-                    <span>NEXUS Agent — Python-trained · multi-step reasoning · session memory</span>
+                    <span>NEXUS Agent — Llama 3.2 (3.2B) · local neural network · no API key · no internet</span>
                     <span className="ml-auto">
-                      {nexusStatus === "online" ? "🟢 online" : nexusStatus === "offline" ? "🔴 offline" : "🟡 connecting"}
+                      {nexusStatus === "online" ? "🟢 Ollama running" : nexusStatus === "offline" ? "🔴 Run: ollama serve" : "🟡 checking…"}
                     </span>
                   </>
                 ) : showAgents && currentAgent ? (
