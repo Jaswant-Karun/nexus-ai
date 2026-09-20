@@ -1,24 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 
 /* ── Animated circuit dots ─────────────────────────────────── */
 function CircuitDots() {
+  // All random values are computed client-side only inside useMemo
+  // with a stable seed array so SSR never runs Math.random()
+  const [mounted, setMounted] = useState(false);
+  const dots = useMemo(() => {
+    if (typeof window === "undefined") return [];
+    return Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      left:     `${(((i * 17 + 3) * 137.508) % 100).toFixed(4)}%`,
+      delay:    `${((i * 13 + 7) % 12).toFixed(4)}s`,
+      duration: `${(10 + (i * 11) % 8).toFixed(4)}s`,
+    }));
+  }, []);
+
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-      {Array.from({ length: 20 }).map((_, i) => (
+      {dots.map((d) => (
         <div
-          key={i}
+          key={d.id}
           className="absolute h-1 w-1 rounded-full bg-neon-pink/40 animate-particle"
           style={{
-            left:           `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 12}s`,
-            animationDuration: `${10 + Math.random() * 8}s`,
+            left:              d.left,
+            animationDelay:    d.delay,
+            animationDuration: d.duration,
           }}
         />
       ))}
-      {/* Pink dot nodes on circuit lines */}
+      {/* Static pink dot nodes on circuit lines */}
       {[
         { top: "18%", left: "12%" }, { top: "35%", left: "88%" },
         { top: "72%", left: "6%"  }, { top: "55%", left: "94%" },
