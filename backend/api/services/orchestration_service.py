@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from schemas.orchestration import AgentStep, OrchestrationRequest, OrchestrationResponse, SolutionReport
+from schemas.orchestration import (
+	AgentStep,
+	EvidenceItem,
+	OrchestrationRequest,
+	OrchestrationResponse,
+	SolutionReport,
+	WorkflowNode,
+)
 
 
 AGENT_ROLES = (
@@ -18,6 +25,12 @@ AGENT_ROLES = (
 def build_orchestration(request: OrchestrationRequest) -> OrchestrationResponse:
 	problem = request.problem.strip()
 	domain = _infer_domain(problem)
+	complexity = _infer_complexity(problem)
+	selected_tools = _select_tools(problem, domain)
+	rag_required = any(term in problem.lower() for term in ("compare", "research", "evidence", "sources"))
+	memory_required = any(term in problem.lower() for term in ("my project", "previous", "continue", "history"))
+	external_search_required = domain in {"software", "healthcare"} or rag_required
+	workflow = _build_workflow()
 	plan = [
 		"Understand the user's objective and constraints",
 		f"Research the {domain} domain and available approaches",
@@ -47,6 +60,18 @@ def build_orchestration(request: OrchestrationRequest) -> OrchestrationResponse:
 			"Generate a costed implementation plan",
 			"Review the result with the critic and validator agents",
 		],
+		complexity=complexity,
+		selected_tools=selected_tools,
+		rag_required=rag_required,
+		memory_required=memory_required,
+		external_search_required=external_search_required,
+		validation_required=True,
+		workflow=workflow,
+		evidence=[EvidenceItem(title="Task interpretation", source="Nexus AWSE", relevance="Problem statement and detected constraints")],
+		decision_factors=["Cost", "Feasibility", "Impact", "Reliability"],
+		assumptions=["The stated problem is an initial scope and may need clarification", "Final estimates require domain-specific evidence"],
+		confidence=72 if complexity == "high" else 82,
+		validation_status="pending",
 	)
 
 
@@ -70,6 +95,9 @@ def execute_orchestration(request: OrchestrationRequest) -> OrchestrationRespons
 				"Generate a costed implementation plan",
 				"Publish the validated result as a project report",
 			],
+			"workflow": [node.model_copy(update={"status": "completed"}) for node in plan.workflow],
+			"validation_status": "passed",
+			"confidence": min(plan.confidence + 10, 100),
 		}
 	)
 
@@ -114,3 +142,36 @@ def _infer_domain(problem: str) -> str:
 		if any(term in lowered for term in terms):
 			return domain
 	return "general innovation"
+
+
+def _infer_complexity(problem: str) -> str:
+	word_count = len(problem.split())
+	if word_count > 35 or any(term in problem.lower() for term in ("complete", "architecture", "compare", "multiple")):
+		return "high"
+	if word_count > 15:
+		return "medium"
+	return "low"
+
+
+def _select_tools(problem: str, domain: str) -> list[str]:
+	tools = ["structured-planner", "result-validator"]
+	lowered = problem.lower()
+	if domain in {"software", "healthcare"} or "research" in lowered:
+		tools.append("external-search-adapter")
+	if any(term in lowered for term in ("cost", "budget", "estimate")):
+		tools.append("cost-calculator")
+	return tools
+
+
+def _build_workflow() -> list[WorkflowNode]:
+	steps = ("Planner", "Research", "Knowledge Retrieval", "Reasoning", "Critic", "Validator", "Report")
+	return [
+		WorkflowNode(
+			id=f"node-{index + 1}",
+			name=name,
+			kind="agent" if name not in {"Knowledge Retrieval"} else "retrieval",
+			status="planned",
+			depends_on=[f"node-{index}"] if index else [],
+		)
+		for index, name in enumerate(steps)
+	]

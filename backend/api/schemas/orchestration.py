@@ -16,6 +16,20 @@ class AgentStep(BaseModel):
 	output: str
 
 
+class WorkflowNode(BaseModel):
+	id: str
+	name: str
+	kind: str
+	status: str
+	depends_on: list[str] = Field(default_factory=list)
+
+
+class EvidenceItem(BaseModel):
+	title: str
+	source: str
+	relevance: str
+
+
 class OrchestrationResponse(BaseModel):
 	request_id: str
 	problem: str
@@ -24,6 +38,18 @@ class OrchestrationResponse(BaseModel):
 	plan: list[str]
 	agents: list[AgentStep]
 	next_actions: list[str]
+	complexity: str
+	selected_tools: list[str]
+	rag_required: bool
+	memory_required: bool
+	external_search_required: bool
+	validation_required: bool
+	workflow: list[WorkflowNode]
+	evidence: list[EvidenceItem]
+	decision_factors: list[str]
+	assumptions: list[str]
+	confidence: int = Field(ge=0, le=100)
+	validation_status: str
 
 
 class SolutionReport(BaseModel):

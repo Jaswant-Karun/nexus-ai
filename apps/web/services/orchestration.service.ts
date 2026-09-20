@@ -10,6 +10,20 @@ export interface AgentStep {
   output: string;
 }
 
+export interface WorkflowNode {
+  id: string;
+  name: string;
+  kind: string;
+  status: string;
+  depends_on: string[];
+}
+
+export interface EvidenceItem {
+  title: string;
+  source: string;
+  relevance: string;
+}
+
 export interface OrchestrationResponse {
   request_id: string;
   problem: string;
@@ -18,6 +32,18 @@ export interface OrchestrationResponse {
   plan: string[];
   agents: AgentStep[];
   next_actions: string[];
+  complexity: string;
+  selected_tools: string[];
+  rag_required: boolean;
+  memory_required: boolean;
+  external_search_required: boolean;
+  validation_required: boolean;
+  workflow: WorkflowNode[];
+  evidence: EvidenceItem[];
+  decision_factors: string[];
+  assumptions: string[];
+  confidence: number;
+  validation_status: string;
 }
 
 export interface SolutionReport {

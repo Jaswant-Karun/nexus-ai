@@ -134,6 +134,23 @@ export default function ProblemUnderstandingPage() {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-brand-400">{result.domain}</p>
                 <h2 className="mt-1 text-lg font-bold text-white">{result.intent}</h2>
+                <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+                  <span className="rounded-full border border-brand-500/30 bg-brand-500/10 px-2.5 py-1 text-brand-300">Complexity: {result.complexity}</span>
+                  <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-dark-300">Confidence: {result.confidence}%</span>
+                  <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-dark-300">Validation: {result.validation_status}</span>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">AWSE decisions</h3>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {[
+                    ["RAG", result.rag_required ? "Required" : "Not required"],
+                    ["Memory", result.memory_required ? "Required" : "Not required"],
+                    ["External search", result.external_search_required ? "Selected" : "Skipped"],
+                    ["Validation", result.validation_required ? "Required" : "Skipped"],
+                  ].map(([label, value]) => <div key={label} className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2"><p className="text-[10px] uppercase tracking-wider text-dark-500">{label}</p><p className="mt-1 text-xs font-semibold text-white">{value}</p></div>)}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">{result.selected_tools.map((tool) => <span key={tool} className="rounded-md bg-cyan-500/10 px-2 py-1 text-[11px] text-cyan-300">{tool}</span>)}</div>
               </div>
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">Adaptive plan</h3>
@@ -146,6 +163,16 @@ export default function ProblemUnderstandingPage() {
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {result.agents.map((agent) => <div key={agent.name} className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3"><div className="flex items-center justify-between gap-2"><p className="text-sm font-semibold text-white">{agent.name}</p><span className="text-[10px] uppercase text-emerald-400">{agent.status}</span></div><p className="mt-1 text-xs text-dark-400">{agent.role}</p><p className="mt-2 text-xs leading-5 text-dark-300">{agent.output}</p></div>)}
                 </div>
+              </div>
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">Generated workflow</h3>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {result.workflow.map((node, index) => <div key={node.id} className="flex items-center gap-2"><div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2"><p className="text-xs font-semibold text-white">{node.name}</p><p className="mt-1 text-[10px] uppercase text-dark-500">{node.status}</p></div>{index < result.workflow.length - 1 && <span className="text-dark-500">→</span>}</div>)}
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div><h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">Decision factors</h3><ul className="mt-2 space-y-1 text-xs text-dark-300">{result.decision_factors.map((factor) => <li key={factor}>• {factor}</li>)}</ul></div>
+                <div><h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">Assumptions</h3><ul className="mt-2 space-y-1 text-xs text-dark-300">{result.assumptions.map((assumption) => <li key={assumption}>• {assumption}</li>)}</ul></div>
               </div>
               <button type="button" onClick={handleExecution} disabled={executing || result.agents.every((agent) => agent.status === "completed")} className="w-full rounded-xl border border-brand-500/30 bg-brand-500/10 px-4 py-3 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/20 disabled:cursor-not-allowed disabled:opacity-50">
                 {executing ? "Running agent council..." : result.agents.every((agent) => agent.status === "completed") ? "Agent council completed" : "Run agent council"}
