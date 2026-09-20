@@ -65,16 +65,16 @@ export default function ThemeSettingsPage() {
                   }}
                   className={`p-4 rounded-xl border text-left transition-all ${
                     isSelected
-                      ? 'border-indigo-500 bg-indigo-500/10 ring-1 ring-indigo-500/30'
-                      : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+                      ? 'border-indigo-600 bg-indigo-50/70 ring-1 ring-indigo-500/30 dark:border-indigo-500 dark:bg-indigo-500/10'
+                      : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/60 dark:hover:border-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <Icon className={`w-5 h-5 ${isSelected ? 'text-indigo-400' : 'text-slate-400'}`} />
-                    {isSelected && <Check className="w-4 h-4 text-indigo-400" />}
+                    <Icon className={`w-5 h-5 ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'}`} />
+                    {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
                   </div>
-                        <div className="text-sm font-semibold text-slate-900 dark:text-white">{mode.label}</div>
-                  <div className="text-[11px] text-slate-400 mt-0.5">{mode.desc}</div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">{mode.label}</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{mode.desc}</div>
                 </button>
               );
             })}
@@ -96,7 +96,7 @@ export default function ThemeSettingsPage() {
                 key={c.id}
                 onClick={() => setAccentColor(c.id)}
                 className={`w-10 h-10 rounded-xl ${c.color} flex items-center justify-center transition-all ${
-                  accentColor === c.id ? 'ring-2 ring-white scale-110 shadow-lg' : 'opacity-70 hover:opacity-100'
+                  accentColor === c.id ? 'ring-2 ring-indigo-500 dark:ring-white scale-110 shadow-lg' : 'opacity-70 hover:opacity-100'
                 }`}
                 title={c.name}
               >
@@ -113,26 +113,26 @@ export default function ThemeSettingsPage() {
             <label className="flex items-center justify-between cursor-pointer">
               <div>
                 <span className="font-semibold text-slate-900 dark:text-white block">Compact Canvas Density</span>
-                <span className="text-slate-400">Reduce padding and spacing in tables and workflow graphs.</span>
+                <span className="text-slate-500 dark:text-slate-400">Reduce padding and spacing in tables and workflow graphs.</span>
               </div>
               <input
                 type="checkbox"
                 checked={compactDensity}
                 onChange={(e) => setCompactDensity(e.target.checked)}
-                className="w-4 h-4 rounded text-indigo-600 bg-slate-950 border-slate-800"
+                className="w-4 h-4 rounded text-indigo-600 bg-white border-slate-300 dark:bg-slate-950 dark:border-slate-800"
               />
             </label>
 
             <label className="flex items-center justify-between cursor-pointer">
               <div>
                 <span className="font-semibold text-slate-900 dark:text-white block">Reduced Motion Mode</span>
-                <span className="text-slate-400">Disable heavy GPU transitions and floating glow effects.</span>
+                <span className="text-slate-500 dark:text-slate-400">Disable heavy GPU transitions and floating glow effects.</span>
               </div>
               <input
                 type="checkbox"
                 checked={reducedMotion}
                 onChange={(e) => setReducedMotion(e.target.checked)}
-                className="w-4 h-4 rounded text-indigo-600 bg-slate-950 border-slate-800"
+                className="w-4 h-4 rounded text-indigo-600 bg-white border-slate-300 dark:bg-slate-950 dark:border-slate-800"
               />
             </label>
           </div>

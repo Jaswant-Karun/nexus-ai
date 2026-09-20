@@ -1,31 +1,32 @@
 "use client";
 
-import { Sidebar, StatCard } from "@nexus/ui";
+import { StatCard } from "@nexus/ui";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function SettingsPage() {
-    const tabs = ["General", "AI Models", "Integrations", "Security", "Billing"];
+  const tabs = ["General", "AI Models", "Integrations", "Security", "Billing"];
   const [activeTab, setActiveTab] = useState("General");
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-dark-950 dark:text-gray-100 flex flex-col">
       <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1">
         <AppSidebar />
 
-        <main className="flex-1 p-8 space-y-8 overflow-y-auto">
+        <main className="flex-1 p-6 md:p-8 space-y-8 overflow-y-auto max-w-7xl mx-auto w-full">
           {/* Header */}
           <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Platform Settings</h1>
-            <p className="text-gray-400 mt-1">
-              Configure your Nexus AI environment, model routing, integrations, and security policies.
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Platform Settings</h1>
+            <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
+              Configure your Nexus AI environment, model routing, integrations, appearance, and security policies.
             </p>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard title="Active Integrations" value="8" trend="+2 connected" />
             <StatCard title="API Keys Issued" value="24" trend="3 expiring soon" />
             <StatCard title="Model Endpoints" value="6" trend="GPT-4o, Claude, Gemini+" />
@@ -33,17 +34,17 @@ export default function SettingsPage() {
           </div>
 
           {/* Tabs */}
-          <div className="border-b border-gray-800">
-            <nav className="flex space-x-1">
+          <div className="border-b border-slate-200 dark:border-gray-800">
+            <nav className="flex space-x-1 overflow-x-auto pb-px">
               {tabs.map((tab) => (
                 <button
                   key={tab}
                   type="button"
                   onClick={() => setActiveTab(tab)}
-                  className={`px-5 py-2.5 text-sm font-medium rounded-t-lg transition-colors ${
+                  className={`px-5 py-2.5 text-sm font-semibold rounded-t-xl transition-all whitespace-nowrap ${
                     activeTab === tab
-                      ? "bg-gray-800 text-white border border-b-gray-800 border-gray-700"
-                      : "text-gray-400 hover:text-gray-200 hover:bg-gray-800/50"
+                      ? "bg-white text-brand-600 border border-b-white border-slate-200 shadow-sm dark:bg-gray-800/90 dark:text-white dark:border-b-gray-800 dark:border-gray-700"
+                      : "text-slate-500 hover:text-slate-900 hover:bg-slate-100/80 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800/50"
                   }`}
                 >
                   {tab}
@@ -68,6 +69,8 @@ export default function SettingsPage() {
 
 /* ─────────────────────────── General ─────────────────────────── */
 function GeneralSettings() {
+  const { theme, setTheme, resolvedTheme } = useTheme();
+
   return (
     <div className="space-y-6">
       <SettingsCard title="Organization Profile">
@@ -79,11 +82,77 @@ function GeneralSettings() {
         </div>
       </SettingsCard>
 
-      <SettingsCard title="Appearance & Locale">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <SelectField label="Theme" options={["Dark", "Light", "System"]} defaultValue="Dark" />
-          <SelectField label="Language" options={["English (US)", "English (UK)", "Spanish", "French"]} defaultValue="English (US)" />
-          <SelectField label="Date Format" options={["MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD"]} defaultValue="YYYY-MM-DD" />
+      <SettingsCard title="Appearance & Theme Controls">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-gray-400 mb-2">
+              Color Theme Mode
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                {
+                  id: "light",
+                  label: "Light Mode",
+                  desc: "Crisp white interface with optimal daytime contrast",
+                  icon: "☀️",
+                },
+                {
+                  id: "dark",
+                  label: "Dark Mode",
+                  desc: "Obsidian dark palette tailored for night sessions",
+                  icon: "🌙",
+                },
+                {
+                  id: "system",
+                  label: "System Sync",
+                  desc: "Automatically follows your operating system preference",
+                  icon: "💻",
+                },
+              ].map((opt) => {
+                const isSelected = theme === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setTheme(opt.id as "dark" | "light" | "system")}
+                    className={`p-4 rounded-2xl border text-left transition-all relative ${
+                      isSelected
+                        ? "border-brand-600 bg-brand-50/60 ring-2 ring-brand-500/30 dark:border-brand-500 dark:bg-brand-500/10"
+                        : "border-slate-200 bg-white hover:border-slate-300 dark:border-gray-800 dark:bg-gray-950/60 dark:hover:border-gray-700"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xl">{opt.icon}</span>
+                      {isSelected && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">
+                          ✓
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{opt.label}</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{opt.desc}</p>
+                    <div className="mt-3 pt-2 border-t border-slate-100 dark:border-gray-800/60 text-[11px] font-medium text-slate-400 dark:text-gray-500 flex items-center justify-between">
+                      <span>Status:</span>
+                      <span className="font-semibold text-brand-600 dark:text-brand-400">
+                        {isSelected ? "Active" : opt.id === resolvedTheme ? "Resolved" : "Inactive"}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+            <SelectField
+              label="Quick Theme Select"
+              options={["dark", "light", "system"]}
+              value={theme}
+              onChange={(val) => setTheme(val as "dark" | "light" | "system")}
+            />
+            <SelectField label="Language" options={["English (US)", "English (UK)", "Spanish", "French"]} defaultValue="English (US)" />
+            <SelectField label="Date Format" options={["MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD"]} defaultValue="YYYY-MM-DD" />
+          </div>
         </div>
       </SettingsCard>
 
@@ -127,27 +196,27 @@ function AIModelSettings() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-400 border-b border-gray-800">
-                <th className="pb-3 pr-6 font-medium">Model</th>
-                <th className="pb-3 pr-6 font-medium">Provider</th>
-                <th className="pb-3 pr-6 font-medium">Latency</th>
-                <th className="pb-3 pr-6 font-medium">Cost</th>
-                <th className="pb-3 font-medium">Status</th>
+              <tr className="text-left text-slate-500 dark:text-gray-400 border-b border-slate-200 dark:border-gray-800">
+                <th className="pb-3 pr-6 font-semibold">Model</th>
+                <th className="pb-3 pr-6 font-semibold">Provider</th>
+                <th className="pb-3 pr-6 font-semibold">Latency</th>
+                <th className="pb-3 pr-6 font-semibold">Cost</th>
+                <th className="pb-3 font-semibold">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800/60">
+            <tbody className="divide-y divide-slate-100 dark:divide-gray-800/60">
               {models.map((m) => (
                 <tr key={m.name} className="py-3">
-                  <td className="py-3 pr-6 text-white font-medium">{m.name}</td>
-                  <td className="py-3 pr-6 text-gray-300">{m.provider}</td>
-                  <td className="py-3 pr-6 text-gray-300">{m.latency}</td>
-                  <td className="py-3 pr-6 text-gray-300">{m.cost}</td>
+                  <td className="py-3 pr-6 text-slate-900 dark:text-white font-semibold">{m.name}</td>
+                  <td className="py-3 pr-6 text-slate-600 dark:text-gray-300">{m.provider}</td>
+                  <td className="py-3 pr-6 text-slate-600 dark:text-gray-300">{m.latency}</td>
+                  <td className="py-3 pr-6 text-slate-600 dark:text-gray-300">{m.cost}</td>
                   <td className="py-3">
                     <span
                       className={`px-2.5 py-1 text-xs font-semibold rounded-full ${
                         m.status === "ACTIVE"
-                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                          : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                          : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
                       }`}
                     >
                       {m.status}
@@ -185,18 +254,18 @@ function IntegrationSettings() {
           {integrations.map((integration) => (
             <div
               key={integration.name}
-              className="flex items-center justify-between p-4 rounded-lg bg-gray-900 border border-gray-800"
+              className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-200 transition-all hover:border-slate-300 dark:bg-gray-950/60 dark:border-gray-800 dark:hover:border-gray-700"
             >
               <div>
-                <p className="text-white font-semibold text-sm">{integration.name}</p>
-                <p className="text-gray-400 text-xs mt-0.5">{integration.description}</p>
+                <p className="text-slate-900 dark:text-white font-semibold text-sm">{integration.name}</p>
+                <p className="text-slate-500 dark:text-gray-400 text-xs mt-0.5">{integration.description}</p>
               </div>
               <button
                 type="button"
-                className={`ml-4 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                className={`ml-4 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                   integration.connected
-                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
-                    : "bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700"
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20"
+                    : "bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700"
                 }`}
               >
                 {integration.connected ? "Connected" : "Connect"}
@@ -209,16 +278,16 @@ function IntegrationSettings() {
       <SettingsCard title="API Keys">
         <div className="space-y-3">
           {["OpenAI API Key", "Anthropic API Key", "Google AI API Key"].map((keyName) => (
-            <div key={keyName} className="flex items-center gap-3">
-              <label className="w-44 text-sm text-gray-400 shrink-0">{keyName}</label>
+            <div key={keyName} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <label className="sm:w-44 text-sm font-medium text-slate-600 dark:text-gray-400 shrink-0">{keyName}</label>
               <input
                 type="password"
                 defaultValue="sk-••••••••••••••••••••••••••••"
-                className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30"
+                className="flex-1 bg-white border border-slate-300 rounded-lg px-4 py-2 text-sm text-slate-900 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-200"
               />
               <button
                 type="button"
-                className="px-3 py-2 text-xs text-gray-300 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition-colors"
+                className="px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 border border-slate-300 rounded-lg hover:bg-slate-200 transition-colors dark:text-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 self-start sm:self-auto"
               >
                 Reveal
               </button>
@@ -281,16 +350,16 @@ function BillingSettings() {
   return (
     <div className="space-y-6">
       <SettingsCard title="Current Plan">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-white text-lg font-bold">Enterprise Plan</p>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="text-slate-900 dark:text-white text-lg font-bold">Enterprise Plan</p>
+            <p className="text-slate-500 dark:text-gray-400 text-sm mt-1">
               Unlimited agents · 10M vector embeddings · Priority support · SLA 99.99%
             </p>
           </div>
           <button
             type="button"
-            className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-medium text-sm rounded-lg transition-all shadow-md shadow-cyan-500/20"
+            className="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-medium text-sm rounded-xl transition-all shadow-md shadow-brand-600/20"
           >
             Upgrade Plan
           </button>
@@ -298,16 +367,16 @@ function BillingSettings() {
       </SettingsCard>
 
       <SettingsCard title="Usage This Month">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { label: "API Tokens Used", value: "18.4M", max: "50M" },
             { label: "Agent Executions", value: "42,310", max: "Unlimited" },
             { label: "Storage Used", value: "284 GB", max: "1 TB" },
           ].map((item) => (
-            <div key={item.label} className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-              <p className="text-xs text-gray-400">{item.label}</p>
-              <p className="text-2xl font-bold text-white mt-1">{item.value}</p>
-              <p className="text-xs text-gray-500 mt-0.5">of {item.max}</p>
+            <div key={item.label} className="bg-slate-50 rounded-xl p-4 border border-slate-200 dark:bg-gray-950/60 dark:border-gray-800">
+              <p className="text-xs text-slate-500 dark:text-gray-400 font-medium">{item.label}</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{item.value}</p>
+              <p className="text-xs text-slate-400 dark:text-gray-500 mt-0.5">of {item.max}</p>
             </div>
           ))}
         </div>
@@ -317,21 +386,21 @@ function BillingSettings() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-400 border-b border-gray-800">
-                <th className="pb-3 pr-6 font-medium">Invoice ID</th>
-                <th className="pb-3 pr-6 font-medium">Period</th>
-                <th className="pb-3 pr-6 font-medium">Amount</th>
-                <th className="pb-3 font-medium">Status</th>
+              <tr className="text-left text-slate-500 dark:text-gray-400 border-b border-slate-200 dark:border-gray-800">
+                <th className="pb-3 pr-6 font-semibold">Invoice ID</th>
+                <th className="pb-3 pr-6 font-semibold">Period</th>
+                <th className="pb-3 pr-6 font-semibold">Amount</th>
+                <th className="pb-3 font-semibold">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800/60">
+            <tbody className="divide-y divide-slate-100 dark:divide-gray-800/60">
               {invoices.map((inv) => (
                 <tr key={inv.id}>
-                  <td className="py-3 pr-6 text-cyan-400 font-mono text-xs">{inv.id}</td>
-                  <td className="py-3 pr-6 text-gray-300">{inv.period}</td>
-                  <td className="py-3 pr-6 text-white font-medium">{inv.amount}</td>
+                  <td className="py-3 pr-6 text-brand-600 dark:text-cyan-400 font-mono text-xs font-semibold">{inv.id}</td>
+                  <td className="py-3 pr-6 text-slate-600 dark:text-gray-300">{inv.period}</td>
+                  <td className="py-3 pr-6 text-slate-900 dark:text-white font-medium">{inv.amount}</td>
                   <td className="py-3">
-                    <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                       {inv.status}
                     </span>
                   </td>
@@ -348,8 +417,8 @@ function BillingSettings() {
 /* ─────────────────────────── Shared UI helpers ─────────────────────────── */
 function SettingsCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-5">
-      <h3 className="text-base font-semibold text-white">{title}</h3>
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-5 shadow-sm transition-colors dark:bg-gray-900/90 dark:border-gray-800 dark:shadow-none">
+      <h3 className="text-base font-bold text-slate-900 dark:text-white">{title}</h3>
       {children}
     </div>
   );
@@ -366,11 +435,11 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-gray-400">{label}</label>
+      <label className="block text-xs font-semibold text-slate-600 dark:text-gray-300">{label}</label>
       <input
         type={type}
         defaultValue={defaultValue}
-        className="w-full bg-gray-950 border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition"
+        className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition dark:bg-gray-950 dark:border-gray-700 dark:text-gray-200"
       />
     </div>
   );
@@ -380,20 +449,26 @@ function SelectField({
   label,
   options,
   defaultValue,
+  value,
+  onChange,
 }: {
   label: string;
   options: string[];
-  defaultValue: string;
+  defaultValue?: string;
+  value?: string;
+  onChange?: (val: string) => void;
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-xs font-medium text-gray-400">{label}</label>
+      <label className="block text-xs font-semibold text-slate-600 dark:text-gray-300">{label}</label>
       <select
         defaultValue={defaultValue}
-        className="w-full bg-gray-950 border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition"
+        value={value}
+        onChange={(e) => onChange && onChange(e.target.value)}
+        className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 capitalize focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/30 transition dark:bg-gray-950 dark:border-gray-700 dark:text-gray-200"
       >
         {options.map((opt) => (
-          <option key={opt} value={opt}>
+          <option key={opt} value={opt} className="capitalize">
             {opt}
           </option>
         ))}
@@ -414,20 +489,20 @@ function ToggleRow({
   const [on, setOn] = useState(defaultOn);
 
   return (
-    <div className="flex items-center justify-between py-2 border-b border-gray-800/60 last:border-0">
-      <div>
-        <p className="text-sm font-medium text-white">{label}</p>
-        <p className="text-xs text-gray-400 mt-0.5">{description}</p>
+    <div className="flex items-center justify-between py-2.5 border-b border-slate-100 dark:border-gray-800/60 last:border-0">
+      <div className="pr-4">
+        <p className="text-sm font-semibold text-slate-900 dark:text-white">{label}</p>
+        <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">{description}</p>
       </div>
       <button
         type="button"
         onClick={() => setOn(!on)}
         className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none ${
-          on ? "bg-cyan-500" : "bg-gray-700"
+          on ? "bg-brand-600" : "bg-slate-300 dark:bg-gray-700"
         }`}
       >
         <span
-          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
             on ? "translate-x-5" : "translate-x-0"
           }`}
         />
@@ -437,12 +512,20 @@ function ToggleRow({
 }
 
 function SaveButton() {
+  const [saved, setSaved] = useState(false);
+
+  const handleClick = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
   return (
     <button
       type="button"
-      className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-medium text-sm rounded-lg transition-all shadow-md shadow-cyan-500/20"
+      onClick={handleClick}
+      className="px-6 py-2.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold text-sm rounded-xl transition-all shadow-md shadow-brand-600/25 active:scale-95"
     >
-      Save Changes
+      {saved ? "✓ Changes Saved!" : "Save Changes"}
     </button>
   );
 }

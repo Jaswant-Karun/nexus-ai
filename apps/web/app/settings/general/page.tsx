@@ -51,41 +51,41 @@ export default function GeneralSettingsPage() {
           </div>
         )}
 
-        <form onSubmit={handleSave} className="p-6 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-5">
+        <form onSubmit={handleSave} className="p-6 rounded-2xl border border-slate-200 bg-white/90 shadow-sm dark:border-slate-800 dark:bg-slate-900/60 space-y-5">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 text-indigo-400" /> Workspace Name
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-indigo-500" /> Workspace Name
             </label>
             <input
               type="text"
               value={appName}
               onChange={(e) => setAppName(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-white border border-slate-300 text-xs text-slate-900 dark:bg-slate-950 dark:border-slate-800 dark:text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-300">Workspace URL Identifier</label>
+            <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Workspace URL Identifier</label>
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-500 font-mono">https://nexus.ai/org/</span>
               <input
                 type="text"
                 value={workspaceSlug}
                 onChange={(e) => setWorkspaceSlug(e.target.value)}
-                className="flex-1 bg-slate-950 border border-slate-800 text-xs text-white font-mono rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-indigo-500"
+                className="flex-1 bg-white border border-slate-300 text-xs text-slate-900 dark:bg-slate-950 dark:border-slate-800 dark:text-white font-mono rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-indigo-400" /> Timezone
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-indigo-500" /> Timezone
               </label>
               <select
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-white border border-slate-300 text-xs text-slate-900 dark:bg-slate-950 dark:border-slate-800 dark:text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-indigo-500"
               >
                 <option value="UTC">UTC (Coordinated Universal Time)</option>
                 <option value="America/New_York">America/New_York (EST/EDT)</option>
@@ -97,13 +97,13 @@ export default function GeneralSettingsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-indigo-400" /> System Language
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-indigo-500" /> System Language
               </label>
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-white border border-slate-300 text-xs text-slate-900 dark:bg-slate-950 dark:border-slate-800 dark:text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-indigo-500"
               >
                 <option value="en-US">English (United States)</option>
                 <option value="en-GB">English (United Kingdom)</option>

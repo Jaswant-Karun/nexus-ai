@@ -36,7 +36,7 @@ export function AppSidebar({ className, activeNav }: AppSidebarProps) {
   return (
     <aside
       className={cn(
-        "flex flex-col border-r border-white/[0.06] bg-dark-900/80 backdrop-blur-md transition-all duration-300",
+        "flex flex-col border-r border-slate-200 bg-white/95 backdrop-blur-md transition-all duration-300 dark:border-white/[0.06] dark:bg-dark-900/80",
         collapsed ? "w-16" : "w-60",
         className
       )}
@@ -45,7 +45,7 @@ export function AppSidebar({ className, activeNav }: AppSidebarProps) {
       <button
         type="button"
         onClick={() => setCollapsed((c) => !c)}
-        className="ml-auto mr-2 mt-3 flex h-7 w-7 items-center justify-center rounded-lg text-dark-400 hover:bg-white/5 hover:text-white transition-colors"
+        className="ml-auto mr-2 mt-3 flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition-colors dark:text-dark-400 dark:hover:bg-white/5 dark:hover:text-white"
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -68,11 +68,11 @@ export function AppSidebar({ className, activeNav }: AppSidebarProps) {
               className={cn(
                 "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 active
-                  ? "bg-brand-600/15 text-brand-400"
-                  : "text-dark-300 hover:bg-white/5 hover:text-white"
+                  ? "bg-brand-50 text-brand-600 font-semibold dark:bg-brand-600/15 dark:text-brand-400"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-dark-300 dark:hover:bg-white/5 dark:hover:text-white"
               )}
             >
-              <span className={cn("shrink-0", active && "text-brand-400")}>{item.icon}</span>
+              <span className={cn("shrink-0", active ? "text-brand-600 dark:text-brand-400" : "text-slate-500 dark:text-dark-400")}>{item.icon}</span>
               {!collapsed && (
                 <>
                   <span className="truncate flex-1">{item.label}</span>
@@ -89,7 +89,7 @@ export function AppSidebar({ className, activeNav }: AppSidebarProps) {
       </nav>
 
       {/* Bottom nav */}
-      <div className="px-2 pb-4 pt-2 border-t border-white/[0.06]">
+      <div className="px-2 pb-4 pt-2 border-t border-slate-200 dark:border-white/[0.06]">
         {bottomItems.map((item) => {
           const active = pathname === item.href;
           return (
@@ -100,11 +100,11 @@ export function AppSidebar({ className, activeNav }: AppSidebarProps) {
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 active
-                  ? "bg-brand-600/15 text-brand-400"
-                  : "text-dark-300 hover:bg-white/5 hover:text-white"
+                  ? "bg-brand-50 text-brand-600 font-semibold dark:bg-brand-600/15 dark:text-brand-400"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-dark-300 dark:hover:bg-white/5 dark:hover:text-white"
               )}
             >
-              <span className="shrink-0">{item.icon}</span>
+              <span className={cn("shrink-0", active ? "text-brand-600 dark:text-brand-400" : "text-slate-500 dark:text-dark-400")}>{item.icon}</span>
               {!collapsed && <span className="truncate">{item.label}</span>}
             </Link>
           );

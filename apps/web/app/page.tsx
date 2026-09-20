@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ZapIcon, BotIcon, BrainIcon, ZapIcon as WorkflowIcon, ShieldIcon, BarChart3Icon } from "@/components/ui/Icons";
+import { HowToUseGuide } from "@/components/landing/HowToUseGuide";
+
 
 /* ── Animated counter ─────────────────────────────────────────── */
 function Counter({ end, suffix = "" }: { end: number; suffix?: string }) {
@@ -52,10 +54,15 @@ function LandingNav() {
 
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-8">
-          {["Features", "Platform", "Pricing", "Docs"].map((item) => (
-            <a key={item} href={`#${item.toLowerCase()}`}
+          {[
+            { label: "Features", href: "#features" },
+            { label: "How to Use 📖", href: "#how-to-use" },
+            { label: "Platform", href: "#platform" },
+            { label: "Pricing", href: "#pricing" },
+          ].map((item) => (
+            <a key={item.label} href={item.href}
               className="text-sm font-medium text-dark-300 hover:text-white transition-colors">
-              {item}
+              {item.label}
             </a>
           ))}
         </nav>
@@ -135,8 +142,13 @@ function Hero() {
               <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
             </svg>
           </Link>
+          <a href="#how-to-use"
+            className="flex items-center gap-2 rounded-2xl border border-brand-500/30 bg-brand-500/10 backdrop-blur-sm px-7 py-4 text-base font-semibold text-brand-300 hover:bg-brand-500/20 hover:border-brand-500/50 transition-all hover:-translate-y-1 active:translate-y-0">
+            <span>📖</span>
+            How to Use (வழிகாட்டி)
+          </a>
           <Link href="/login"
-            className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm px-8 py-4 text-base font-semibold text-white hover:bg-white/10 hover:border-white/20 transition-all hover:-translate-y-1 active:translate-y-0">
+            className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm px-7 py-4 text-base font-semibold text-white hover:bg-white/10 hover:border-white/20 transition-all hover:-translate-y-1 active:translate-y-0">
             <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <polygon points="6 3 20 12 6 21 6 3"/>
             </svg>
@@ -438,6 +450,7 @@ export default function LandingPage() {
       <Hero />
       <Stats />
       <Features />
+      <HowToUseGuide />
       <PlatformPreview />
       <CTABanner />
       <Footer />

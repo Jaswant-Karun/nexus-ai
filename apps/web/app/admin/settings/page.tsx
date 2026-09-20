@@ -45,15 +45,15 @@ export default function AdminSettingsPage() {
       }
     >
       <form onSubmit={handleSave} className="max-w-3xl space-y-6">
-        <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
-          <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-indigo-400" /> Operational Controls
+        <div className="p-6 rounded-2xl bg-white/90 border border-slate-200 shadow-sm dark:bg-slate-900/60 dark:border-slate-800 space-y-4">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Sliders className="w-4 h-4 text-indigo-500" /> Operational Controls
           </h3>
 
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950 border border-slate-800">
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-950 dark:border-slate-800">
             <div>
-              <div className="text-xs font-semibold text-white">Cluster Maintenance Mode</div>
-              <div className="text-[11px] text-slate-400">Temporarily pause non-admin user requests while preserving background worker state.</div>
+              <div className="text-xs font-semibold text-slate-900 dark:text-white">Cluster Maintenance Mode</div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400">Temporarily pause non-admin user requests while preserving background worker state.</div>
             </div>
             <input
               type="checkbox"
@@ -65,8 +65,8 @@ export default function AdminSettingsPage() {
 
           <div>
             <div className="flex justify-between text-xs mb-1.5">
-              <span className="text-slate-300 font-medium">Global Cluster Request Rate Limit</span>
-              <span className="text-indigo-400 font-mono font-bold">{globalRateLimit} req / min</span>
+              <span className="text-slate-700 dark:text-slate-300 font-medium">Global Cluster Request Rate Limit</span>
+              <span className="text-indigo-600 dark:text-indigo-400 font-mono font-bold">{globalRateLimit} req / min</span>
             </div>
             <input
               type="range"
