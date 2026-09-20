@@ -64,6 +64,7 @@ export function AppSidebar({ className, activeNav }: AppSidebarProps) {
             <Link
               key={item.id}
               href={item.href}
+              prefetch={true}
               className={cn(
                 "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 active
@@ -95,6 +96,7 @@ export function AppSidebar({ className, activeNav }: AppSidebarProps) {
             <Link
               key={item.id}
               href={item.href}
+              prefetch={true}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
                 active
