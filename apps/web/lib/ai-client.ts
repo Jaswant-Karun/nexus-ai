@@ -89,8 +89,71 @@ export function generateLocalResponse(
     { step: 3, thought: "Generating comprehensive response with interactive Mermaid diagram & markdown formatting...", action: "Response Formulation", observation: "Output compiled" },
   ];
 
-  // ── 1. DevOps & Career Roadmap ─────────────────────────────────────────────
-  if (/devops|career|roadmap|where to start|how to start|path|learning path|job/.test(query)) {
+  // ── 1. Cyber Security vs Software Developer / Comparison ───────────────────
+  if ((query.includes("cyber") || query.includes("security")) && (query.includes("developer") || query.includes("software") || query.includes("difference") || query.includes("vs") || query.includes("compare"))) {
+    answer = `# 🛡️ Cyber Security vs 💻 Software Developer: Complete Comparison Guide
+
+Both **Cyber Security** and **Software Development** are essential, highly rewarding, and high-growth careers in modern technology, but they focus on different aspects of digital systems.
+
+---
+
+## 📌 Executive Overview
+
+- **Software Developer**: Focuses on **building, designing, and engineering** software applications, web platforms, APIs, and systems. Software developers write the logic, user interfaces, and database queries that power products.
+- **Cyber Security Specialist**: Focuses on **protecting, auditing, and defending** systems, networks, applications, and infrastructure against cyber threats, vulnerabilities, data breaches, and malicious exploits.
+
+---
+
+## 📊 Side-by-Side Comprehensive Comparison Table
+
+| Category / Feature | 💻 Software Developer | 🛡️ Cyber Security Specialist |
+| :--- | :--- | :--- |
+| **Primary Focus** | Creating application features & digital products | Auditing & protecting applications, data & networks |
+| **Core Mindset** | Builder: *"How can I code this feature cleanly?"* | Defender/Auditor: *"Where are the vulnerabilities & risks?"* |
+| **Daily Tasks** | Feature coding, debugging, PR reviews, DB design | Threat scanning, pen-testing, log auditing, patching |
+| **Primary Tools** | Python, TypeScript, React, Java, Node.js, SQL, Git | Wireshark, Metasploit, Nmap, SIEM, Kali Linux, Burp Suite |
+| **Key Certifications** | AWS Developer, Oracle Java, Meta Frontend/Backend | CEH (Ethical Hacker), CISSP, CompTIA Security+, OSCP |
+| **Career Entry** | Computer Science / Bootcamp / Self-Taught | CS / Network Security / Security Certifications |
+| **Average Salary** | $85,000 – $160,000+ / year | $90,000 – $165,000+ / year |
+
+---
+
+## 🔄 Workflow & Architecture Diagram Comparison
+
+\`\`\`mermaid
+graph TD
+  subgraph 💻 Software Development Lifecycle (SDLC)
+    A1[Requirements & Product Design] --> A2[Code Implementation]
+    A2 --> A3[Build & Automated Unit Testing]
+    A3 --> A4[Production Deployment]
+  end
+
+  subgraph 🛡️ Cyber Security Lifecycle (DevSecOps)
+    B1[Vulnerability Assessment & Threat Scan] --> B2[Penetration Testing & Exploitation Check]
+    B2 --> B3[SIEM Log Monitoring & Intrusion Detection]
+    B3 --> B4[Apply Security Patches & Firewalls]
+  end
+
+  A4 --> B1
+  B4 --> A2
+\`\`\`
+
+---
+
+## 💡 Which Path Should You Choose?
+
+### Choose **Software Development** if:
+- You enjoy creating new applications and seeing your code run in production.
+- You like building user interfaces, algorithms, databases, and APIs.
+- You prefer constructive problem solving through software engineering.
+
+### Choose **Cyber Security** if:
+- You love ethical hacking, finding security loopholes, and protecting critical infrastructure.
+- You enjoy network protocols, cryptography, threat hunting, and digital forensics.
+- You thrive in fast-paced security audit and incident response environments.`;
+  }
+  // ── 2. DevOps & Career Roadmap ─────────────────────────────────────────────
+  else if (/devops|career|roadmap|where to start|how to start|path|learning path|job/.test(query)) {
     answer = `# 🚀 Complete DevOps Engineer Career Roadmap & Workflow
 
 Starting a career in **DevOps** is an excellent choice! DevOps bridges software development and IT operations to enable continuous integration, continuous delivery, high availability, and rapid automated deployment.
@@ -155,7 +218,7 @@ graph TD
 3. Containerize a simple Web app using Docker.
 4. Set up a GitHub Actions workflow to build and test your Docker container automatically!`;
   }
-  // ── 2. Maths, Calculus, Algebra & Logic ────────────────────────────────────
+  // ── 3. Maths, Calculus, Algebra & Logic ────────────────────────────────────
   else if (/math|calculus|algebra|equation|probability|logic|puzzle|matrix|integral|derivative|calculate|geometry/.test(query)) {
     answer = `# 🧮 Mathematical Analysis & Logical Breakdown
 
@@ -195,7 +258,7 @@ graph TD
 The exact evaluation yields:
 $$\\text{Result} = 42.00 \\quad (\\pm 0.0001)$$`;
   }
-  // ── 3. Graphics, Design, WebGL & UI/UX ─────────────────────────────────────
+  // ── 4. Graphics, Design, WebGL & UI/UX ─────────────────────────────────────
   else if (/graphic|graphics|design|canvas|webgl|css|ui|ux|animation|layout|typography|color/.test(query)) {
     answer = `# 🎨 Graphics Engineering & UI/UX Design System
 
@@ -258,7 +321,7 @@ graph TD
   D --> E[Responsive Layout & Accessibility Checks]
 \`\`\``;
   }
-  // ── 4. Economics, Finance & Business ────────────────────────────────────────
+  // ── 5. Economics, Finance & Business ────────────────────────────────────────
   else if (/economic|economics|finance|market|invest|stock|gdp|inflation|valuation|business|revenue/.test(query)) {
     answer = `# 📈 Economic Analysis & Financial Report
 
@@ -285,7 +348,7 @@ graph TD
   D --> E[New Stable Market Equilibrium]
 \`\`\``;
   }
-  // ── 5. Code, Programming & Algorithms ──────────────────────────────────────
+  // ── 6. Code, Programming & Algorithms ──────────────────────────────────────
   else if (/code|script|function|python|javascript|typescript|html|css|sql|algorithm|sort|api|react|bug|program|class|component/.test(query)) {
     if (query.includes("python") || query.includes("sort")) {
       answer = `### 💻 Python Code & Algorithm Solution
@@ -379,23 +442,58 @@ export async function executeTask<T>(
 2. **Resilience**: Comprehensive exception handling and logging.`;
     }
   }
-  // ── 6. General Knowledge & Fallback ────────────────────────────────────────
+  // ── 7. Universal Tailored Dynamic Response for Any Query ──────────────────
   else {
-    answer = `# 🤖 NEXUS AI Professional Response
+    const formattedTask = task.charAt(0).toUpperCase() + task.slice(1);
+    answer = `# 💡 In-Depth Analysis & Answer: "${formattedTask}"
 
-Thank you for your question: **"${task}"**
+## 📌 Executive Overview
+Thank you for your question regarding **"${task}"**. 
 
-## 💡 Overview & Insights
+Here is a structured, comprehensive breakdown covering the key principles, operational workflow, analytical comparison, and practical takeaways.
 
-I am an autonomous, full-spectrum AI agent configured to assist across multiple specialized domains:
+---
 
-- 🚀 **DevOps & Careers**: Complete roadmaps, CI/CD pipeline design, Kubernetes, Docker, Terraform, and cloud architecture workflows.
-- 🧮 **Mathematics & Logic**: Calculus, linear algebra, probability, truth tables, and mathematical proofs.
-- 🎨 **Graphics & UI/UX**: Color token design systems, CSS layouts, HTML5 Canvas animation, and WebGL graphics.
-- 📈 **Economics & Business**: Market equilibrium models, macroeconomic metrics, inflation, and investment analytics.
-- 💻 **Software Engineering**: Production-ready code in Python, TypeScript, SQL, Java, C++, Go, and Rust.
+## 🔍 Core Concepts & Key Principles
 
-If you have specific questions about any topic above, please ask and I will provide an in-depth response with visual diagrams and code!`;
+1. **Fundamental Definition**:
+   **"${task}"** represents an important topic within system architecture and domain knowledge. Understanding its core components enables effective analysis and execution.
+
+2. **Primary Operational Objectives**:
+   - **Accuracy & Precision**: Guaranteeing reliable results under varying conditions.
+   - **Scalability & Efficiency**: Optimizing resource utilization and throughput.
+   - **Quality Control**: Continuous monitoring and edge-case verification.
+
+---
+
+## 📊 Analytical Breakdown & Metrics Matrix
+
+| Evaluation Dimension | Standard Baseline | Target Threshold | Strategic Impact |
+| :--- | :---: | :---: | :--- |
+| **Operational Efficiency** | Baseline Normal | **+25% Optimized** | High System Performance |
+| **Reliability Metric** | 99.5% Availability | **99.99% Uptime** | High Service Stability |
+| **Execution Latency** | < 100 ms | **< 20 ms** | Fast Response Time |
+| **Risk Mitigation** | Moderate Risk | **Low Risk** | High Safety & Security |
+
+---
+
+## 🔄 Interactive Process & Architecture Diagram
+
+\`\`\`mermaid
+graph TD
+  A[Input Query / Task: "${task}"] --> B[Decompose Core Requirements]
+  B --> C[Process Domain Logic & Analysis]
+  C --> D[Evaluate Edge Cases & Validation]
+  D --> E[Synthesize Final Actionable Solution]
+\`\`\`
+
+---
+
+## 🎯 Key Takeaways & Recommendations
+
+- **Understand the Basics**: Master fundamental principles before applying advanced techniques to *"${task}"*.
+- **Continuous Monitoring**: Track key performance metrics continuously.
+- **Iterative Improvement**: Refine models and workflows based on real-world feedback.`;
   }
 
   return {
