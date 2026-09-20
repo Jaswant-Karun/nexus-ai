@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ModuleLayout from '@/components/layout/ModuleLayout';
 import { 
@@ -13,6 +13,7 @@ import {
   Layers, 
   ArrowUpRight 
 } from 'lucide-react';
+import { listMemories, MemoryItem, saveMemory } from '@/services/memory.service';
 
 const memorySubnav = [
   { label: 'Memory Hub', href: '/memory' },
@@ -23,6 +24,31 @@ const memorySubnav = [
 ];
 
 export default function MemoryHubPage() {
+  const [memories, setMemories] = useState<MemoryItem[]>([]);
+  const [memoryInput, setMemoryInput] = useState('');
+  const [memoryError, setMemoryError] = useState('');
+  const [savingMemory, setSavingMemory] = useState(false);
+
+  useEffect(() => {
+    listMemories().then(setMemories).catch(() => setMemoryError('Live memory service is not connected yet.'));
+  }, []);
+
+  async function handleSaveMemory(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!memoryInput.trim() || savingMemory) return;
+    setSavingMemory(true);
+    setMemoryError('');
+    try {
+      const saved = await saveMemory(memoryInput.trim(), 'long_term');
+      setMemories((current) => [saved, ...current]);
+      setMemoryInput('');
+    } catch (error) {
+      setMemoryError(error instanceof Error ? error.message : 'Memory could not be saved.');
+    } finally {
+      setSavingMemory(false);
+    }
+  }
+
   return (
     <ModuleLayout
       title="Cognitive Neural Memory Architecture"
@@ -38,6 +64,13 @@ export default function MemoryHubPage() {
       }
     >
       <div className="space-y-6">
+        <section className="rounded-2xl bg-slate-900/60 border border-slate-800 p-6 space-y-4">
+          <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-bold text-white">Live memory records</h2><p className="mt-1 text-xs text-slate-400">{memories.length} records in the local workspace namespace.</p></div><span className="text-xs font-mono text-emerald-400">{memoryError ? 'Offline' : 'Connected'}</span></div>
+          <form onSubmit={handleSaveMemory} className="flex flex-col gap-2 sm:flex-row"><input value={memoryInput} onChange={(event) => setMemoryInput(event.target.value)} placeholder="Save a useful preference or project context..." className="min-w-0 flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white outline-none focus:border-indigo-500" /><button type="submit" disabled={savingMemory || !memoryInput.trim()} className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">{savingMemory ? 'Saving...' : 'Save memory'}</button></form>
+          {memoryError && <p className="text-xs text-amber-300">{memoryError}</p>}
+          {memories.length > 0 && <div className="grid gap-2 md:grid-cols-2">{memories.slice(0, 4).map((memory) => <div key={memory.id} className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-3"><div className="flex items-center justify-between gap-2"><span className="text-[10px] uppercase tracking-wider text-indigo-300">{memory.scope}</span><span className="text-[10px] text-slate-500">{memory.importance}% importance</span></div><p className="mt-2 text-xs leading-5 text-slate-300">{memory.content}</p></div>)}</div>}
+        </section>
+
         {/* Tier Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">

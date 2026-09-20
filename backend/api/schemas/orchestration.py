@@ -30,6 +30,21 @@ class EvidenceItem(BaseModel):
 	relevance: str
 
 
+class WorkflowExecutionState(BaseModel):
+	workflow_id: str
+	execution_id: str
+	status: str
+	current_node: str | None = None
+	completed_nodes: list[str] = Field(default_factory=list)
+	failed_nodes: list[str] = Field(default_factory=list)
+	start_time: str
+	end_time: str | None = None
+	agent_outputs: dict[str, str] = Field(default_factory=dict)
+	errors: list[str] = Field(default_factory=list)
+	metrics: dict[str, float] = Field(default_factory=dict)
+	final_output: str | None = None
+
+
 class OrchestrationResponse(BaseModel):
 	request_id: str
 	problem: str
@@ -50,6 +65,7 @@ class OrchestrationResponse(BaseModel):
 	assumptions: list[str]
 	confidence: int = Field(ge=0, le=100)
 	validation_status: str
+	execution: WorkflowExecutionState
 
 
 class SolutionReport(BaseModel):

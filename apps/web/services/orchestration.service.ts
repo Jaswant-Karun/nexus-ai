@@ -24,6 +24,21 @@ export interface EvidenceItem {
   relevance: string;
 }
 
+export interface WorkflowExecutionState {
+  workflow_id: string;
+  execution_id: string;
+  status: string;
+  current_node: string | null;
+  completed_nodes: string[];
+  failed_nodes: string[];
+  start_time: string;
+  end_time: string | null;
+  agent_outputs: Record<string, string>;
+  errors: string[];
+  metrics: Record<string, number>;
+  final_output: string | null;
+}
+
 export interface OrchestrationResponse {
   request_id: string;
   problem: string;
@@ -44,6 +59,7 @@ export interface OrchestrationResponse {
   assumptions: string[];
   confidence: number;
   validation_status: string;
+  execution: WorkflowExecutionState;
 }
 
 export interface SolutionReport {

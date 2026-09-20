@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from schemas.orchestration import (
@@ -9,6 +10,7 @@ from schemas.orchestration import (
 	OrchestrationResponse,
 	SolutionReport,
 	WorkflowNode,
+	WorkflowExecutionState,
 )
 
 
@@ -31,6 +33,9 @@ def build_orchestration(request: OrchestrationRequest) -> OrchestrationResponse:
 	memory_required = any(term in problem.lower() for term in ("my project", "previous", "continue", "history"))
 	external_search_required = domain in {"software", "healthcare"} or rag_required
 	workflow = _build_workflow()
+	workflow_id = f"wf_{uuid4().hex[:10]}"
+	execution_id = f"exec_{uuid4().hex[:10]}"
+	started = datetime.now(UTC).isoformat()
 	plan = [
 		"Understand the user's objective and constraints",
 		f"Research the {domain} domain and available approaches",
@@ -72,12 +77,22 @@ def build_orchestration(request: OrchestrationRequest) -> OrchestrationResponse:
 		assumptions=["The stated problem is an initial scope and may need clarification", "Final estimates require domain-specific evidence"],
 		confidence=72 if complexity == "high" else 82,
 		validation_status="pending",
+		execution=WorkflowExecutionState(
+			workflow_id=workflow_id,
+			execution_id=execution_id,
+			status="planned",
+			current_node=workflow[0].id,
+			start_time=started,
+			metrics={"planned_nodes": float(len(workflow))},
+		),
 	)
 
 
 def execute_orchestration(request: OrchestrationRequest) -> OrchestrationResponse:
 	plan = build_orchestration(request)
 	domain = plan.domain
+	completed_nodes = [node.id for node in plan.workflow]
+	completed_at = datetime.now(UTC).isoformat()
 
 	return plan.model_copy(
 		update={
@@ -98,6 +113,17 @@ def execute_orchestration(request: OrchestrationRequest) -> OrchestrationRespons
 			"workflow": [node.model_copy(update={"status": "completed"}) for node in plan.workflow],
 			"validation_status": "passed",
 			"confidence": min(plan.confidence + 10, 100),
+			"execution": plan.execution.model_copy(
+				update={
+					"status": "completed",
+					"current_node": None,
+					"completed_nodes": completed_nodes,
+					"end_time": completed_at,
+					"agent_outputs": {agent.name: agent.output for agent in plan.agents},
+					"metrics": {"completed_nodes": float(len(completed_nodes)), "confidence": float(min(plan.confidence + 10, 100))},
+					"final_output": f"Completed explainable {domain} workflow with {len(plan.agents)} specialized agents.",
+				},
+			),
 		}
 	)
 

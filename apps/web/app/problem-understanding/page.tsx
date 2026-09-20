@@ -10,6 +10,7 @@ import {
   OrchestrationResponse,
   SolutionReport,
 } from "@/services/orchestration.service";
+import { RetrievalResult, searchIndexedKnowledge } from "@/services/rag.service";
 
 const exampleProblem =
   "I want to develop a low-cost smart irrigation system for small farmers.";
@@ -22,6 +23,8 @@ export default function ProblemUnderstandingPage() {
   const [executing, setExecuting] = useState(false);
   const [error, setError] = useState("");
   const [report, setReport] = useState<SolutionReport | null>(null);
+  const [retrieval, setRetrieval] = useState<RetrievalResult[]>([]);
+  const [searchingKnowledge, setSearchingKnowledge] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,6 +48,19 @@ export default function ProblemUnderstandingPage() {
       setReport(await generateSolutionReport({ problem: result.problem }));
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Report generation failed.");
+    }
+  }
+
+  async function handleKnowledgeSearch() {
+    if (!result || searchingKnowledge) return;
+    setSearchingKnowledge(true);
+    setError("");
+    try {
+      setRetrieval(await searchIndexedKnowledge(result.problem));
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Knowledge search failed.");
+    } finally {
+      setSearchingKnowledge(false);
     }
   }
 
@@ -169,6 +185,15 @@ export default function ProblemUnderstandingPage() {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {result.workflow.map((node, index) => <div key={node.id} className="flex items-center gap-2"><div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2"><p className="text-xs font-semibold text-white">{node.name}</p><p className="mt-1 text-[10px] uppercase text-dark-500">{node.status}</p></div>{index < result.workflow.length - 1 && <span className="text-dark-500">→</span>}</div>)}
                 </div>
+              </div>
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">Execution state</h3><span className="text-[10px] uppercase text-emerald-400">{result.execution.status}</span></div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3 text-xs"><div><p className="text-dark-500">Execution</p><p className="mt-1 font-mono text-dark-200">{result.execution.execution_id}</p></div><div><p className="text-dark-500">Completed nodes</p><p className="mt-1 text-white">{result.execution.completed_nodes.length} / {result.workflow.length}</p></div><div><p className="text-dark-500">Current node</p><p className="mt-1 text-white">{result.execution.current_node ?? "Finished"}</p></div></div>
+                {result.execution.final_output && <p className="mt-3 text-xs leading-5 text-dark-300">{result.execution.final_output}</p>}
+              </div>
+              <div>
+                <div className="flex items-center justify-between gap-3"><h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">Indexed evidence</h3><button type="button" onClick={handleKnowledgeSearch} disabled={searchingKnowledge} className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-[11px] font-semibold text-cyan-300 disabled:opacity-50">{searchingKnowledge ? "Searching..." : "Search knowledge"}</button></div>
+                {retrieval.length > 0 ? <div className="mt-3 space-y-2">{retrieval.map((item) => <div key={item.chunk_id} className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-3"><div className="flex items-center justify-between gap-3"><span className="text-xs font-semibold text-white">{item.source}</span><span className="text-[10px] text-cyan-300">{Math.round(item.relevance * 100)}% match</span></div><p className="mt-1 text-xs leading-5 text-dark-300">{item.text}</p></div>)}</div> : <p className="mt-2 text-xs text-dark-500">No indexed chunks returned yet. Upload and ingest a document to add evidence.</p>}
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div><h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">Decision factors</h3><ul className="mt-2 space-y-1 text-xs text-dark-300">{result.decision_factors.map((factor) => <li key={factor}>• {factor}</li>)}</ul></div>

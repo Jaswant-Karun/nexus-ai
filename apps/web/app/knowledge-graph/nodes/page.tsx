@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ModuleLayout from '@/components/layout/ModuleLayout';
 import { Layers, Search, Plus, Trash2, ArrowUpRight } from 'lucide-react';
+import { searchKnowledgeGraph } from '@/services/knowledge-graph.service';
 
 const kgSubnav = [
   { label: 'Graph Hub', href: '/knowledge-graph' },
@@ -23,8 +24,26 @@ const mockNodes = [
 
 export default function KnowledgeGraphNodesPage() {
   const [search, setSearch] = useState('');
+  const [liveNodes, setLiveNodes] = useState<typeof mockNodes>([]);
 
-  const filtered = mockNodes.filter(n =>
+  useEffect(() => {
+    if (search.trim().length < 2) {
+      setLiveNodes([]);
+      return;
+    }
+    let cancelled = false;
+    searchKnowledgeGraph(search.trim())
+      .then((results) => {
+        if (!cancelled) setLiveNodes(results.map(({ entity, degree }) => ({ id: entity.id, label: entity.label, category: entity.category, degree, source: entity.source })));
+      })
+      .catch(() => {
+        if (!cancelled) setLiveNodes([]);
+      });
+    return () => { cancelled = true; };
+  }, [search]);
+
+  const sourceNodes = search.trim().length >= 2 && liveNodes.length > 0 ? liveNodes : mockNodes;
+  const filtered = sourceNodes.filter(n =>
     n.label.toLowerCase().includes(search.toLowerCase()) ||
     n.category.toLowerCase().includes(search.toLowerCase())
   );
