@@ -110,8 +110,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
-    final borderColor = isDark ? const Color(0xff1f293d) : const Color(0xffe2e8f0);
+    final cardBg = isDark ? const Color(0xff0e1626) : Colors.white;
+    final borderColor = isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0);
 
     return Scaffold(
       body: SafeArea(

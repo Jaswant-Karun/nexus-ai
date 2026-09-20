@@ -126,10 +126,10 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
             hintText: 'Search semantic vector memory...',
             prefixIcon: const Icon(Icons.search_rounded, color: _blue),
             filled: true,
-            fillColor: isDark ? const Color(0xff111827) : Colors.white,
+            fillColor: isDark ? const Color(0xff0e1626) : Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0)),
+              borderSide: BorderSide(color: isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0)),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
@@ -162,9 +162,9 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xff111827) : Colors.white,
+                color: isDark ? const Color(0xff0e1626) : Colors.white,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0), width: 1.2),
+                border: Border.all(color: isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0), width: 1.2),
                 boxShadow: isDark
                     ? [
                         BoxShadow(
@@ -256,9 +256,9 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
               margin: const EdgeInsets.only(bottom: 14),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xff111827) : Colors.white,
+                color: isDark ? const Color(0xff0e1626) : Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0), width: 1.2),
+                border: Border.all(color: isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0), width: 1.2),
                 boxShadow: isDark
                     ? [
                         BoxShadow(
@@ -319,9 +319,9 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xff0b101b) : const Color(0xfff8fafc),
+                      color: isDark ? const Color(0xff070a12) : const Color(0xfff8fafc),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0)),
+                      border: Border.all(color: isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0)),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,

@@ -6,8 +6,8 @@ class AnalyticsDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
-    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final cardBg = isDark ? const Color(0xff0e1626) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0);
     final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
     final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff64748b);
 
@@ -169,7 +169,7 @@ class _MetricCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xff111827) : color.withValues(alpha: 0.08),
+        color: isDark ? const Color(0xff0e1626) : color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: isDark ? cardBorder : color.withValues(alpha: 0.2), width: 1.2),
       ),

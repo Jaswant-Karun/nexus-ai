@@ -6,8 +6,8 @@ class ProjectDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
-    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final cardBg = isDark ? const Color(0xff0e1626) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0);
     final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
     final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff64748b);
 
@@ -141,7 +141,7 @@ class ProjectDetailsScreen extends StatelessWidget {
             width: 30,
             height: 30,
             decoration: BoxDecoration(
-              color: done ? const Color(0xff10b981) : (isDark ? const Color(0xff1f2937) : const Color(0xffe9f0ff)),
+              color: done ? const Color(0xff10b981) : (isDark ? const Color(0xff1e293b) : const Color(0xffe9f0ff)),
               borderRadius: BorderRadius.circular(9),
             ),
             child: Icon(
