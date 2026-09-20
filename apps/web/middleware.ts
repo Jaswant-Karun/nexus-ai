@@ -66,10 +66,9 @@ export async function middleware(request: NextRequest) {
 
     const valid = await verifyToken(token);
     if (!valid) {
+      // Invalid/expired token — clear cookie and send to login cleanly (no loop)
       const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("from", pathname);
       const response = NextResponse.redirect(loginUrl);
-      // Clear invalid cookie
       response.cookies.delete(COOKIE_NAME);
       return response;
     }
