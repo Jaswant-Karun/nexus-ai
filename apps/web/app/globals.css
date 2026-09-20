@@ -1,100 +1,421 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Base ────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --font-inter: "Inter", sans-serif;
-    --font-jetbrains: "JetBrains Mono", monospace;
+    --neon-pink:    #e91e8c;
+    --neon-cyan:    #00ffff;
+    --neon-yellow:  #f5e642;
+    --neon-green:   #39ff14;
+    --cyber-black:  #080808;
   }
 
-  * {
-    @apply box-border;
-  }
+  * { @apply box-border; }
 
-  html {
-    @apply scroll-smooth;
-  }
+  html { @apply scroll-smooth; }
 
   body {
-    @apply bg-dark-950 text-white antialiased;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-color: var(--cyber-black);
+    color: #cccccc;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
-    @apply bg-brand-600/40 text-white;
+    background: rgba(233, 30, 140, 0.35);
+    color: #fff;
   }
 
-  ::-webkit-scrollbar {
-    @apply w-1.5;
-  }
-
-  ::-webkit-scrollbar-track {
-    @apply bg-dark-900;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-dark-600;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-brand-600;
-  }
+  ::-webkit-scrollbar        { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track  { background: #0d0d0d; }
+  ::-webkit-scrollbar-thumb  { background: #e91e8c; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #ff40a8; }
 }
 
+/* ─── Cyber components ────────────────────────────────────────────────────── */
 @layer components {
-  .glass {
-    @apply bg-white/5 backdrop-blur-md border border-white/10;
+
+  /* Circuit grid background — the defining visual of the INFINITUM style */
+  .cyber-bg {
+    background-color: #080808;
+    background-image:
+      linear-gradient(rgba(233,30,140,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(233,30,140,0.07) 1px, transparent 1px),
+      linear-gradient(rgba(233,30,140,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(233,30,140,0.03) 1px, transparent 1px);
+    background-size: 64px 64px, 64px 64px, 16px 16px, 16px 16px;
   }
 
-  .glass-dark {
-    @apply bg-dark-900/60 backdrop-blur-md border border-white/[0.06];
+  /* Neon glow on text */
+  .neon-text {
+    color: #e91e8c;
+    text-shadow:
+      0 0 7px rgba(233,30,140,0.9),
+      0 0 15px rgba(233,30,140,0.6),
+      0 0 30px rgba(233,30,140,0.4);
   }
 
-  .glow {
-    box-shadow: 0 0 40px rgba(98, 114, 245, 0.3);
+  .neon-text-cyan {
+    color: #00ffff;
+    text-shadow:
+      0 0 7px rgba(0,255,255,0.9),
+      0 0 15px rgba(0,255,255,0.6);
   }
 
-  .glow-sm {
-    box-shadow: 0 0 20px rgba(98, 114, 245, 0.2);
+  .neon-text-yellow {
+    color: #f5e642;
+    text-shadow:
+      0 0 7px rgba(245,230,66,0.9),
+      0 0 15px rgba(245,230,66,0.6);
   }
 
-  .text-gradient {
-    @apply bg-gradient-to-r from-brand-400 via-purple-400 to-pink-400 bg-clip-text text-transparent;
+  /* Cyber card — dark bg + pink border glow */
+  .cyber-card {
+    background-color: rgba(13,13,13,0.92);
+    border: 1px solid rgba(233,30,140,0.25);
+    box-shadow: 0 0 0 1px rgba(233,30,140,0.1), inset 0 0 30px rgba(233,30,140,0.03);
+    backdrop-filter: blur(8px);
   }
 
-  .btn-primary {
-    @apply inline-flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white
-           shadow-lg shadow-brand-600/30 transition-all duration-200
-           hover:bg-brand-500 hover:shadow-brand-500/40 hover:-translate-y-0.5
-           active:translate-y-0;
+  .cyber-card:hover {
+    border-color: rgba(233,30,140,0.55);
+    box-shadow:
+      0 0 20px rgba(233,30,140,0.15),
+      0 0 0 1px rgba(233,30,140,0.4),
+      inset 0 0 30px rgba(233,30,140,0.05);
   }
 
+  /* Pink border button */
+  .cyber-btn {
+    background: transparent;
+    border: 1px solid #e91e8c;
+    color: #e91e8c;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.5rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .cyber-btn:hover {
+    background: rgba(233,30,140,0.12);
+    box-shadow: 0 0 12px rgba(233,30,140,0.5), inset 0 0 8px rgba(233,30,140,0.1);
+    color: #ff40a8;
+  }
+
+  .cyber-btn-filled {
+    background: #e91e8c;
+    border: 1px solid #e91e8c;
+    color: #fff;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.5rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 12px rgba(233,30,140,0.5);
+  }
+
+  .cyber-btn-filled:hover {
+    background: #ff40a8;
+    box-shadow: 0 0 20px rgba(233,30,140,0.8);
+  }
+
+  /* Section heading with pink left bar */
+  .cyber-heading {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .cyber-heading::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 1em;
+    background: #e91e8c;
+    box-shadow: 0 0 8px rgba(233,30,140,0.8);
+    flex-shrink: 0;
+  }
+
+  /* Corner bracket decorators (the ╗ ╔ corners in the UI) */
+  .cyber-corners {
+    position: relative;
+  }
+
+  .cyber-corners::before,
+  .cyber-corners::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-color: #e91e8c;
+    border-style: solid;
+    opacity: 0.7;
+  }
+
+  .cyber-corners::before {
+    top: 0; left: 0;
+    border-width: 2px 0 0 2px;
+  }
+
+  .cyber-corners::after {
+    bottom: 0; right: 0;
+    border-width: 0 2px 2px 0;
+  }
+
+  /* Input field cyber style */
+  .cyber-input {
+    background: rgba(13,13,13,0.9);
+    border: 1px solid rgba(233,30,140,0.3);
+    color: #fff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    padding: 0.65rem 1rem;
+    width: 100%;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  .cyber-input:focus {
+    border-color: #e91e8c;
+    box-shadow: 0 0 10px rgba(233,30,140,0.3), inset 0 0 5px rgba(233,30,140,0.05);
+  }
+
+  .cyber-input::placeholder { color: #444; }
+
+  /* Label above input */
+  .cyber-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #888;
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  /* Status badge — ONLINE */
+  .status-online {
+    color: #39ff14;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-shadow: 0 0 8px rgba(57,255,20,0.7);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .status-online::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #39ff14;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(57,255,20,0.9);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  /* Verified badge */
+  .cyber-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: rgba(57,255,20,0.1);
+    border: 1px solid rgba(57,255,20,0.35);
+    color: #39ff14;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    text-shadow: 0 0 6px rgba(57,255,20,0.6);
+  }
+
+  /* Yellow diagonal corner decorators (top-right / bottom-left of page) */
+  .page-corners {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+  }
+
+  /* Neon border line (horizontal separator) */
+  .neon-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e91e8c, transparent);
+    box-shadow: 0 0 8px rgba(233,30,140,0.5);
+  }
+
+  /* Scan-line overlay */
+  .scan-overlay {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.04) 2px,
+      rgba(0,0,0,0.04) 4px
+    );
+  }
+
+  /* Pink tab / active indicator */
+  .cyber-tab {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #888;
+    padding: 0.6rem 1.2rem;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .cyber-tab.active,
+  .cyber-tab:hover {
+    color: #e91e8c;
+    border-bottom-color: #e91e8c;
+    text-shadow: 0 0 8px rgba(233,30,140,0.5);
+  }
+
+  /* Glitch font for big titles */
+  .cyber-title {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #ffffff;
+    text-shadow:
+      0 0 20px rgba(233,30,140,0.4),
+      2px 2px 0 rgba(233,30,140,0.2);
+  }
+
+  /* Field label + value pair (like profile details) */
+  .cyber-field label {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.55rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #666;
+  }
+
+  .cyber-field p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    color: #ffffff;
+    margin-top: 0.2rem;
+  }
+
+  /* Legacy utilities (kept for non-cyber pages) */
+  .glass        { @apply bg-white/5 backdrop-blur-md border border-white/10; }
+  .glass-dark   { @apply bg-dark-900/60 backdrop-blur-md border border-white/[0.06]; }
+  .glow         { box-shadow: 0 0 40px rgba(98,114,245,0.3); }
+  .glow-sm      { box-shadow: 0 0 20px rgba(98,114,245,0.2); }
+  .card-hover   { @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl; }
+  .btn-primary  {
+    @apply inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-500 to-brand-700
+           hover:from-brand-400 hover:to-brand-600 px-6 py-3 text-sm font-bold text-white
+           shadow-lg shadow-brand-600/30 transition-all hover:-translate-y-0.5 active:translate-y-0;
+  }
   .btn-secondary {
-    @apply inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5
-           px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm
-           transition-all duration-200 hover:bg-white/10 hover:border-white/20
-           hover:-translate-y-0.5 active:translate-y-0;
-  }
-
-  .section-padding {
-    @apply px-6 py-24 md:px-12 lg:px-24;
-  }
-
-  .card-hover {
-    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-600/10;
+    @apply inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/5
+           px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 hover:border-white/25
+           transition-all hover:-translate-y-0.5 active:translate-y-0;
   }
 }
 
-@layer utilities {
-  .animation-delay-100 { animation-delay: 100ms; }
-  .animation-delay-200 { animation-delay: 200ms; }
-  .animation-delay-300 { animation-delay: 300ms; }
-  .animation-delay-400 { animation-delay: 400ms; }
-  .animation-delay-500 { animation-delay: 500ms; }
-  .animation-delay-700 { animation-delay: 700ms; }
-  .animation-delay-1000 { animation-delay: 1000ms; }
-  .animation-delay-2000 { animation-delay: 2000ms; }
-  .animation-delay-3000 { animation-delay: 3000ms; }
-  .animation-delay-4000 { animation-delay: 4000ms; }
+/* ─── Keyframes ───────────────────────────────────────────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+@keyframes pulsePink {
+  0%, 100% { box-shadow: 0 0 8px rgba(233,30,140,0.6), 0 0 20px rgba(233,30,140,0.3); }
+  50%       { box-shadow: 0 0 15px rgba(233,30,140,0.9), 0 0 40px rgba(233,30,140,0.5); }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92%       { opacity: 1; }
+  93%       { opacity: 0.4; }
+  94%       { opacity: 1; }
+  96%       { opacity: 0.6; }
+  97%       { opacity: 1; }
+}
+
+@keyframes scanLine {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes glitchText {
+  0%, 85%, 100% { clip-path: none; transform: translate(0); }
+  86% { clip-path: polygon(0 15%, 100% 15%, 100% 35%, 0 35%); transform: translate(-4px, 1px); }
+  87% { clip-path: polygon(0 55%, 100% 55%, 100% 75%, 0 75%); transform: translate(4px, -1px); }
+  88% { clip-path: none; transform: translate(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-18px); }
+}
+
+@keyframes fadeInUp {
+  0%   { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes rotateRadar {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes particle {
+  0%   { transform: translateY(100vh) translateX(0px); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(-100px) translateX(100px); opacity: 0; }
+}
+
+/* ─── Polyhedron / 3D effect (CSS-only icosahedron feel) ─────────────────── */
+.polyhedron-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.polyhedron-wrap svg {
+  animation: rotateRadar 8s linear infinite;
 }

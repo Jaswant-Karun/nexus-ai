@@ -1,224 +1,346 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { NavBar, Sidebar } from "@nexus/ui";
-import { AppNavbar } from "@/components/layout/AppNavbar";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { CyberLayout } from "@/components/cyber/CyberLayout";
+import { UserCard }    from "@/components/cyber/UserCard";
+import { useAuth }     from "@/hooks/useAuth";
+import { cn }          from "@/lib/utils";
 
-/* ── Types ─────────────────────────────────────────────────────── */
 interface DashboardStats {
-  activeAgents:       number;
-  totalAgents:        number;
-  activeWorkflows:    number;
+  activeAgents: number;
+  totalAgents: number;
+  activeWorkflows: number;
   totalConversations: number;
-  totalMessages:      number;
-  knowledgeDocs:      number;
-  storageFiles:       number;
-  storageSizeGB:      number;
-  aiJobsDone:         number;
-  recentAgents: {
-    id:            string;
-    name:          string;
-    status:        string;
-    model:         string;
-    conversations: number;
-    createdAt:     string;
-  }[];
+  knowledgeDocs: number;
+  storageFiles: number;
+  storageSizeGB: number;
+  aiJobsDone: number;
+  recentAgents: { id: string; name: string; status: string; model: string; conversations: number }[];
 }
 
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard",        href: "/dashboard", icon: "📊", active: true },
-  { id: "chat",      label: "AI Agent Studio",   href: "/chat",      icon: "🤖" },
-  { id: "workflow",  label: "Workflow Builder",  href: "/workflow",  icon: "⚡" },
-  { id: "workspace", label: "Knowledge Engine",  href: "/workspace", icon: "🧠" },
-  { id: "storage",   label: "Storage",           href: "/storage",   icon: "☁️" },
-  { id: "settings",  label: "Platform Settings", href: "/settings",  icon: "⚙️" },
-];
-
-/* ── Stat Card ─────────────────────────────────────────────────── */
-function KpiCard({
-  title, value, sub, icon, accent,
-}: { title: string; value: string | number; sub: string; icon: string; accent: string }) {
-  const accents: Record<string, string> = {
-    brand:  "from-brand-500/10 to-brand-700/5 border-brand-500/20",
-    purple: "from-purple-500/10 to-purple-700/5 border-purple-500/20",
-    cyan:   "from-cyan-500/10 to-cyan-700/5 border-cyan-500/20",
-    amber:  "from-amber-500/10 to-amber-700/5 border-amber-500/20",
-    green:  "from-emerald-500/10 to-emerald-700/5 border-emerald-500/20",
-    rose:   "from-rose-500/10 to-rose-700/5 border-rose-500/20",
-  };
+/* ── Stat card ─────────────────────────────────────────────── */
+function StatTile({ label, value, sub, color = "#e91e8c" }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
-    <div className={cn("rounded-2xl border bg-gradient-to-br p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg", accents[accent] ?? accents.brand)}>
-      <div className="flex items-start justify-between mb-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-dark-300">{title}</p>
-        <span className="text-xl">{icon}</span>
-      </div>
-      <p className="text-3xl font-extrabold text-white">{value}</p>
-      <p className="mt-1 text-xs text-dark-400">{sub}</p>
+    <div className="cyber-card cyber-corners p-5 flex flex-col gap-1">
+      <p className="font-cyber text-[9px] font-bold tracking-[0.2em] uppercase" style={{ color: "#666" }}>{label}</p>
+      <p className="font-cyber text-3xl font-black text-white" style={{ textShadow: `0 0 20px ${color}66` }}>
+        {value}
+      </p>
+      {sub && <p className="font-mono text-[10px]" style={{ color: "#555" }}>{sub}</p>}
     </div>
   );
 }
 
-/* ── Main Page ─────────────────────────────────────────────────── */
+/* ── Quick action link ─────────────────────────────────────── */
+function QuickLink({ icon, label, href, color }: { icon: string; label: string; href: string; color: string }) {
+  return (
+    <Link href={href}
+      className="cyber-card p-4 flex flex-col items-center gap-2 transition-all hover:scale-105 cursor-pointer"
+      style={{ "--hover-border": color } as React.CSSProperties}>
+      <span className="text-2xl">{icon}</span>
+      <span className="font-cyber text-[9px] font-bold tracking-widest uppercase" style={{ color }}>{label}</span>
+    </Link>
+  );
+}
+
 export default function DashboardPage() {
+  const { user, loading: authLoading } = useAuth();
   const [stats,   setStats]   = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState("");
+  const [tab,     setTab]     = useState<"PROFILE" | "AGENTS" | "ACTIVITY">("PROFILE");
 
   useEffect(() => {
     fetch("/api/dashboard/stats")
       .then((r) => r.json())
-      .then((d: { success: boolean; data?: DashboardStats; error?: string }) => {
+      .then((d: { success: boolean; data?: DashboardStats }) => {
         if (d.success && d.data) setStats(d.data);
-        else setError(d.error ?? "Failed to load stats");
       })
-      .catch(() => setError("Network error — could not reach the server"))
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const STATUS_BADGE: Record<string, string> = {
-    ACTIVE: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-    PAUSED: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
-    DRAFT:  "bg-dark-700/60 text-dark-300 border border-dark-600/40",
+  const userName = user?.name ?? "NEXUS USER";
+  const userId   = user?.id?.slice(-8).toUpperCase() ?? "NEXUS001";
+  const userPlan = user?.organization?.plan ?? "FREE";
+
+  const STATUS_COLOR: Record<string, string> = {
+    ACTIVE: "#39ff14",
+    PAUSED: "#f5e642",
+    DRAFT:  "#555",
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <AppNavbar brandName="NEXUS AI" />
-      <div className="flex flex-1">
-        <Sidebar
-          items={sidebarItems}
-          currentPath="/dashboard"
-          onNavigate={(href) => { window.location.href = href; }}
+    <CyberLayout>
+      {/* ── 3-column layout exactly like INFINITUM ── */}
+      <div className="flex gap-5 items-start">
+
+        {/* LEFT — User profile card */}
+        <UserCard
+          name={userName}
+          userId={userId}
+          plan={userPlan}
+          email={user?.email}
+          level="LEVEL 2"
+          rank="PRISM"
         />
 
-        <main className="flex-1 p-8 space-y-8 overflow-y-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight">
-                Adaptive Intelligence Overview
-              </h1>
-              <p className="text-gray-400 mt-1">
-                Real-time telemetry and agent orchestration status from your PostgreSQL database.
-              </p>
+        {/* CENTRE — Main content panel */}
+        <div className="flex-1 min-w-0">
+          {/* Tabs (PROFILE / AGENTS / ACTIVITY) */}
+          <div className="flex items-center border-b border-neon-pink/15 mb-5">
+            {(["PROFILE", "AGENTS", "ACTIVITY"] as const).map((t) => (
+              <button key={t} type="button" onClick={() => setTab(t)}
+                className={cn("cyber-tab", tab === t && "active")}>
+                {t}
+              </button>
+            ))}
+          </div>
+
+          {/* ── PROFILE tab ──────────────────────────────── */}
+          {tab === "PROFILE" && (
+            <div className="space-y-5">
+              {/* PROFILE DETAILS heading */}
+              <div className="flex items-center justify-between">
+                <h2 className="cyber-heading text-sm">Profile Details</h2>
+                <Link href="/profile">
+                  <button type="button" className="cyber-btn text-[9px]">Edit Profile</button>
+                </Link>
+              </div>
+
+              {/* Details grid */}
+              {authLoading ? (
+                <div className="grid grid-cols-3 gap-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="space-y-1">
+                      <div className="h-2 w-16 bg-cyber-gray/40 rounded animate-pulse" />
+                      <div className="h-4 w-28 bg-cyber-gray/30 rounded animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              ) : user ? (
+                <div className="cyber-card p-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    {[
+                      { label: "Full Name",     value: user.name  },
+                      { label: "Email",         value: user.email },
+                      { label: "Role",          value: user.role  },
+                      { label: "Organization",  value: user.organization?.name ?? "—" },
+                      { label: "Plan",          value: user.organization?.plan ?? "—" },
+                      { label: "User ID",       value: user.id?.slice(0, 16) + "…" },
+                    ].map((f) => (
+                      <div key={f.label} className="cyber-field">
+                        <label>{f.label}</label>
+                        <p>{f.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="cyber-card p-5">
+                  <p className="font-cyber text-xs text-cyber-text-dim tracking-widest">
+                    — Not authenticated —
+                  </p>
+                </div>
+              )}
+
+              {/* KPI Stats */}
+              <h2 className="cyber-heading text-sm">Platform Stats</h2>
+              {loading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="cyber-card p-5 animate-pulse h-24" />
+                  ))}
+                </div>
+              ) : stats ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <StatTile label="Active Agents"     value={stats.activeAgents}     sub={`${stats.totalAgents} total`}      color="#e91e8c" />
+                  <StatTile label="Workflows"         value={stats.activeWorkflows}   sub="pipelines"                         color="#f5e642" />
+                  <StatTile label="Conversations"     value={stats.totalConversations} sub="chat sessions"                    color="#00ffff" />
+                  <StatTile label="AI Jobs Done"      value={stats.aiJobsDone}        sub="OCR + embed + summary"             color="#39ff14" />
+                </div>
+              ) : (
+                <div className="cyber-card p-4 font-cyber text-[10px] text-neon-pink tracking-widest uppercase">
+                  ⚠ Database unreachable — check PostgreSQL on localhost:5432
+                </div>
+              )}
+
+              {/* Quick links */}
+              <h2 className="cyber-heading text-sm">Quick Access</h2>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                <QuickLink icon="🤖" label="Agents"    href="/chat"           color="#e91e8c" />
+                <QuickLink icon="⚡" label="Workflows" href="/workflow"       color="#f5e642" />
+                <QuickLink icon="🧠" label="Knowledge" href="/workspace"     color="#00ffff" />
+                <QuickLink icon="☁️" label="Storage"   href="/storage"       color="#39ff14" />
+                <QuickLink icon="📊" label="Analytics" href="/analytics"     color="#9d00ff" />
+                <QuickLink icon="⚙️" label="Settings"  href="/settings"      color="#888" />
+              </div>
             </div>
-            {/* DB health indicator */}
-            <div className={cn(
-              "flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium border",
-              loading ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-              error   ? "bg-red-500/10 text-red-400 border-red-500/20" :
-                        "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-            )}>
-              <span className={cn("h-2 w-2 rounded-full", loading ? "bg-amber-400 animate-pulse" : error ? "bg-red-400" : "bg-emerald-400")} />
-              {loading ? "Connecting to DB…" : error ? "DB Error" : "PostgreSQL · Live"}
+          )}
+
+          {/* ── AGENTS tab ───────────────────────────────── */}
+          {tab === "AGENTS" && (
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <h2 className="cyber-heading text-sm">Deployed AI Agents</h2>
+                <Link href="/chat">
+                  <button type="button" className="cyber-btn text-[9px]">+ New Agent</button>
+                </Link>
+              </div>
+
+              {loading ? (
+                <div className="space-y-2">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="cyber-card p-4 h-14 animate-pulse" />
+                  ))}
+                </div>
+              ) : stats?.recentAgents.length ? (
+                <div className="cyber-card overflow-hidden">
+                  {/* Header */}
+                  <div className="grid grid-cols-[1fr_120px_80px_80px] gap-4 px-5 py-3 border-b border-neon-pink/10">
+                    {["Agent Name","Model","Status","Sessions"].map((h) => (
+                      <span key={h} className="font-cyber text-[9px] font-bold tracking-[0.15em] uppercase" style={{ color: "#666" }}>
+                        {h}
+                      </span>
+                    ))}
+                  </div>
+                  {stats.recentAgents.map((agent) => (
+                    <div key={agent.id}
+                      className="grid grid-cols-[1fr_120px_80px_80px] items-center gap-4 px-5 py-3.5 border-b border-neon-pink/5 last:border-0 hover:bg-neon-pink/[0.03] transition-colors">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="h-7 w-7 shrink-0 flex items-center justify-center rounded-full text-xs"
+                          style={{ background: "rgba(233,30,140,0.12)", border: "1px solid rgba(233,30,140,0.3)" }}>
+                          🤖
+                        </div>
+                        <span className="font-mono text-xs text-white truncate">{agent.name}</span>
+                      </div>
+                      <span className="font-mono text-[10px] truncate"
+                        style={{ color: "#666", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", padding: "2px 6px" }}>
+                        {agent.model}
+                      </span>
+                      <span className="font-cyber text-[9px] font-bold tracking-widest uppercase"
+                        style={{ color: STATUS_COLOR[agent.status] ?? "#555", textShadow: `0 0 6px ${STATUS_COLOR[agent.status] ?? "#555"}66` }}>
+                        {agent.status}
+                      </span>
+                      <span className="font-mono text-xs" style={{ color: "#888" }}>{agent.conversations}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="cyber-card p-6 text-center">
+                  <p className="font-cyber text-xs tracking-widest uppercase text-cyber-text-dim">
+                    No agents deployed yet
+                  </p>
+                  <Link href="/chat">
+                    <button type="button" className="cyber-btn-filled text-[9px] mt-4 px-5 py-2">
+                      Deploy First Agent
+                    </button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── ACTIVITY tab ─────────────────────────────── */}
+          {tab === "ACTIVITY" && (
+            <div className="space-y-5">
+              <h2 className="cyber-heading text-sm">Recent Activity</h2>
+              <div className="cyber-card divide-y divide-neon-pink/5">
+                {[
+                  { icon: "🤖", text: "Data Analyst Agent processed 1,240 records", time: "2 min ago",  color: "#e91e8c" },
+                  { icon: "⚡", text: "Document Intelligence Pipeline executed",     time: "15 min ago", color: "#f5e642" },
+                  { icon: "☁️", text: "8 files uploaded and AI-processed",           time: "1 hr ago",  color: "#39ff14" },
+                  { icon: "🧠", text: "6 knowledge documents indexed (1,420 chunks)", time: "2 hr ago", color: "#00ffff" },
+                  { icon: "🔐", text: "Login from admin@nexus.ai",                   time: "3 hr ago",  color: "#888" },
+                ].map((ev, i) => (
+                  <div key={i} className="flex items-start gap-3 px-5 py-4 hover:bg-neon-pink/[0.02] transition-colors">
+                    <div className="h-8 w-8 shrink-0 flex items-center justify-center text-base rounded-full"
+                      style={{ background: `${ev.color}12`, border: `1px solid ${ev.color}25` }}>
+                      {ev.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-mono text-xs text-white leading-relaxed">{ev.text}</p>
+                    </div>
+                    <span className="font-cyber text-[9px] tracking-widest shrink-0" style={{ color: "#444" }}>
+                      {ev.time}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT — small info panel */}
+        <div className="w-56 shrink-0 space-y-4">
+          {/* DB Status */}
+          <div className="cyber-card cyber-corners p-4">
+            <p className="font-cyber text-[9px] font-bold tracking-[0.2em] uppercase mb-3" style={{ color: "#666" }}>
+              Database
+            </p>
+            <div className="space-y-2">
+              {loading ? (
+                <div className="h-3 w-full bg-cyber-gray/30 rounded animate-pulse" />
+              ) : stats ? (
+                <>
+                  {[
+                    { label: "Agents",      val: stats.totalAgents },
+                    { label: "Workflows",   val: stats.activeWorkflows },
+                    { label: "Docs",        val: stats.knowledgeDocs },
+                    { label: "Files",       val: stats.storageFiles },
+                    { label: "Storage",     val: `${stats.storageSizeGB} GB` },
+                  ].map((row) => (
+                    <div key={row.label} className="flex items-center justify-between">
+                      <span className="font-cyber text-[9px] tracking-widest uppercase" style={{ color: "#555" }}>
+                        {row.label}
+                      </span>
+                      <span className="font-mono text-xs text-white">{row.val}</span>
+                    </div>
+                  ))}
+                  <div className="neon-line mt-2" />
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-neon-green" style={{ boxShadow: "0 0 4px rgba(57,255,20,0.8)" }} />
+                    <span className="font-cyber text-[8px] tracking-widest uppercase" style={{ color: "#39ff14" }}>
+                      PostgreSQL Live
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <p className="font-cyber text-[9px] tracking-widest uppercase" style={{ color: "#e91e8c" }}>
+                  ⚠ Offline
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Error state */}
-          {error && !loading && (
-            <div className="rounded-2xl bg-red-500/10 border border-red-500/20 px-6 py-4 text-sm text-red-400 flex items-center gap-3">
-              <span className="text-xl">⚠️</span>
-              <div>
-                <p className="font-semibold">Database connection error</p>
-                <p className="text-xs mt-0.5 text-red-400/70">{error} — make sure PostgreSQL is running on localhost:5432</p>
-              </div>
-            </div>
-          )}
-
-          {/* KPI cards */}
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="rounded-2xl border border-white/[0.06] bg-dark-900/60 p-5 animate-pulse">
-                  <div className="h-3 w-24 bg-dark-700 rounded mb-4" />
-                  <div className="h-8 w-16 bg-dark-700 rounded mb-2" />
-                  <div className="h-3 w-32 bg-dark-700 rounded" />
-                </div>
-              ))}
-            </div>
-          ) : stats && (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                <KpiCard title="Active AI Agents"      value={stats.activeAgents}        sub={`${stats.totalAgents} total agents deployed`}   icon="🤖" accent="brand"  />
-                <KpiCard title="Active Workflows"      value={stats.activeWorkflows}      sub="Automated pipelines"                             icon="⚡" accent="purple" />
-                <KpiCard title="Conversations"         value={stats.totalConversations}   sub={`${stats.totalMessages} messages stored`}        icon="💬" accent="cyan"   />
-                <KpiCard title="Knowledge Documents"   value={stats.knowledgeDocs}        sub="RAG-indexed for semantic search"                 icon="📚" accent="amber"  />
-                <KpiCard title="Storage Files"         value={stats.storageFiles}         sub={`${stats.storageSizeGB} GB stored`}              icon="☁️" accent="green"  />
-                <KpiCard title="AI Jobs Completed"     value={stats.aiJobsDone}           sub="OCR, summaries, embeddings"                     icon="🧠" accent="rose"   />
-                <KpiCard title="Total Messages"        value={stats.totalMessages}        sub="Chat history across all agents"                  icon="📨" accent="brand"  />
-                <KpiCard title="Storage Size"          value={`${stats.storageSizeGB} GB`} sub="Across all uploaded files"                    icon="💾" accent="purple" />
-              </div>
-
-              {/* Recent Agents table */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white">Active AI Agents</h2>
-                  <Link href="/chat" className="text-xs text-brand-400 hover:text-brand-300 transition-colors font-medium">
-                    View all agents →
-                  </Link>
-                </div>
-                <div className="rounded-2xl border border-white/[0.06] bg-dark-900/60 overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-white/[0.06] text-left text-xs text-dark-400 font-semibold uppercase tracking-wider">
-                        <th className="px-5 py-3.5">Agent Name</th>
-                        <th className="px-5 py-3.5">Model</th>
-                        <th className="px-5 py-3.5">Status</th>
-                        <th className="px-5 py-3.5">Conversations</th>
-                        <th className="px-5 py-3.5">Created</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/[0.04]">
-                      {stats.recentAgents.map((agent) => (
-                        <tr key={agent.id} className="hover:bg-white/[0.02] transition-colors">
-                          <td className="px-5 py-3.5">
-                            <div className="flex items-center gap-2.5">
-                              <div className="h-7 w-7 rounded-lg bg-brand-600/20 flex items-center justify-center text-sm">🤖</div>
-                              <span className="font-medium text-white">{agent.name}</span>
-                            </div>
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <span className="font-mono text-xs text-dark-200 bg-dark-800/80 border border-white/[0.06] rounded-lg px-2 py-1">
-                              {agent.model}
-                            </span>
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-semibold", STATUS_BADGE[agent.status] ?? STATUS_BADGE.DRAFT)}>
-                              {agent.status}
-                            </span>
-                          </td>
-                          <td className="px-5 py-3.5 text-dark-200">{agent.conversations}</td>
-                          <td className="px-5 py-3.5 text-dark-400 text-xs">
-                            {new Date(agent.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Quick actions */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {[
-                  { label: "New Agent",    icon: "🤖", href: "/chat",      color: "hover:bg-brand-500/10  hover:border-brand-500/20  text-dark-300" },
-                  { label: "New Workflow", icon: "⚡", href: "/workflow",  color: "hover:bg-purple-500/10 hover:border-purple-500/20 text-dark-300" },
-                  { label: "Upload Doc",   icon: "📄", href: "/workspace", color: "hover:bg-cyan-500/10   hover:border-cyan-500/20   text-dark-300" },
-                  { label: "Upload File",  icon: "☁️", href: "/storage/upload", color: "hover:bg-emerald-500/10 hover:border-emerald-500/20 text-dark-300" },
-                ].map((a) => (
-                  <Link key={a.label} href={a.href}
-                    className={cn("flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-dark-900/60 p-4 transition-all hover:-translate-y-0.5", a.color)}>
-                    <span className="text-2xl">{a.icon}</span>
-                    <span className="text-sm font-medium text-white">{a.label}</span>
-                  </Link>
-                ))}
-              </div>
-            </>
-          )}
-        </main>
+          {/* Platform links */}
+          <div className="cyber-card p-4 space-y-2">
+            <p className="font-cyber text-[9px] font-bold tracking-[0.2em] uppercase mb-3" style={{ color: "#666" }}>
+              Platform
+            </p>
+            {[
+              { label: "AI Agent Studio",  href: "/chat",      color: "#e91e8c" },
+              { label: "Workflow Builder", href: "/workflow",  color: "#f5e642" },
+              { label: "Smart Storage",    href: "/storage",   color: "#39ff14" },
+              { label: "Knowledge Base",   href: "/workspace", color: "#00ffff" },
+              { label: "Settings",         href: "/settings",  color: "#888" },
+            ].map((link) => (
+              <Link key={link.href} href={link.href}
+                className="flex items-center gap-2 py-1.5 hover:translate-x-0.5 transition-transform group">
+                <svg width={5} height={5} viewBox="0 0 10 10">
+                  <polygon points="0,0 10,5 0,10" fill={link.color}/>
+                </svg>
+                <span className="font-cyber text-[9px] font-bold tracking-widest uppercase"
+                  style={{ color: "#666" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = link.color)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}>
+                  {link.label}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </CyberLayout>
   );
 }
