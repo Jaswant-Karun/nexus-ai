@@ -6,3 +6,39 @@
    - Environments: .env.local
 
    Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/16) ...
+   Generating static pages (4/16) 
+   Generating static pages (8/16) 
+   Generating static pages (12/16) 
+ ✓ Generating static pages (16/16)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /_not-found                          168 B           106 kB
+├ ○ /agents                              168 B           106 kB
+├ ○ /ai-models                           168 B           106 kB
+├ ○ /analytics                           168 B           106 kB
+├ ○ /dashboard                           2.3 kB          108 kB
+├ ○ /logs                                168 B           106 kB
+├ ○ /monitoring                          168 B           106 kB
+├ ○ /organizations                       168 B           106 kB
+├ ○ /prompts                             168 B           106 kB
+├ ○ /security                            168 B           106 kB
+├ ○ /settings                            168 B           106 kB
+├ ○ /subscriptions                       168 B           106 kB
+├ ○ /system                              168 B           106 kB
+└ ○ /users                               168 B           106 kB
++ First Load JS shared by all            105 kB
+  ├ chunks/1a3b18f5-21ccc664349aa135.js  52.9 kB
+  ├ chunks/299-0d4f58d587bfb904.js       50.5 kB
+  └ other shared chunks (total)          1.95 kB
+
+
+ƒ Middleware                             31.9 kB
+
+○  (Static)  prerendered as static content
+

@@ -39,4 +39,6 @@ jobs:
         run: pnpm typecheck
 
       - name: Build workspace applications
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/nexus_ai
         run: pnpm build
