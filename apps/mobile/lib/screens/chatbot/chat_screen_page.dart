@@ -95,6 +95,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xff111827) : Colors.white;
     final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
     final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
