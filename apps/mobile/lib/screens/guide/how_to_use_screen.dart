@@ -263,9 +263,9 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xff111827) : Colors.white,
+              color: isDark ? const Color(0xff0e1626) : Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0), width: 1.2),
+              border: Border.all(color: isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0), width: 1.2),
               boxShadow: isDark
                   ? [
                       BoxShadow(
@@ -420,8 +420,8 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
     final Color color = item['color'] as Color;
     final List<String> steps = _isTamil ? (item['stepsTa'] as List<String>) : (item['stepsEn'] as List<String>);
 
-    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
-    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final cardBg = isDark ? const Color(0xff0e1626) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0);
     final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
     final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff64748b);
 

@@ -322,8 +322,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _metricCard(BuildContext context, String value, String label, IconData icon, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
-    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final cardBg = isDark ? const Color(0xff0e1626) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0);
     final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
     final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff64748b);
 
@@ -405,8 +405,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _actionBtn(BuildContext context, IconData icon, String label, Color color, VoidCallback onTap) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
-    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final cardBg = isDark ? const Color(0xff0e1626) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0);
     final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
 
     return Expanded(
@@ -461,8 +461,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _recentActivity(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
-    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final cardBg = isDark ? const Color(0xff0e1626) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0);
     final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
 
     return Container(

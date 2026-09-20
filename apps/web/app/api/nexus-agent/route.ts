@@ -143,13 +143,28 @@ const REFLECTIONS: Record<string, string> = {
   general:      "Verified: comprehensive and well-structured response.",
 };
 
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, x-api-key",
+    },
+  });
+}
+
 // ─── POST /api/nexus-agent ────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   // Auth check
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(req);
   if (!user) {
     return new Response(sse({ type: "error", error: "Not authenticated — please log in." }), {
-      status: 401, headers: { "Content-Type": "text/event-stream" },
+      status: 401,
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Access-Control-Allow-Origin": "*",
+      },
     });
   }
 
@@ -309,18 +324,24 @@ export async function POST(req: NextRequest) {
 
   return new Response(stream, {
     headers: {
-      "Content-Type":      "text/event-stream",
-      "Cache-Control":     "no-cache, no-transform",
-      "Connection":        "keep-alive",
-      "X-Accel-Buffering": "no",
+      "Content-Type":                "text/event-stream",
+      "Cache-Control":               "no-cache, no-transform",
+      "Connection":                  "keep-alive",
+      "X-Accel-Buffering":           "no",
+      "Access-Control-Allow-Origin": "*",
     },
   });
 }
 
 // ─── GET /api/nexus-agent — status + info ─────────────────────────────────────
-export async function GET() {
-  const user = await getCurrentUser();
-  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+export async function GET(req: NextRequest) {
+  const user = await getCurrentUser(req);
+  if (!user) {
+    return Response.json({ error: "Unauthorized" }, {
+      status: 401,
+      headers: { "Access-Control-Allow-Origin": "*" },
+    });
+  }
 
   const { available, model } = await checkOllama();
 
@@ -342,5 +363,7 @@ export async function GET() {
       "Architecture diagrams (Mermaid)",
       "Zero API keys — 100% local",
     ],
+  }, {
+    headers: { "Access-Control-Allow-Origin": "*" },
   });
 }

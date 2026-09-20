@@ -96,8 +96,8 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
-    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final cardBg = isDark ? const Color(0xff0e1626) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0);
     final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
     final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff64748b);
 
@@ -141,7 +141,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xff111827) : const Color(0xfff8fafc),
+                  color: isDark ? const Color(0xff0e1626) : const Color(0xfff8fafc),
                   border: Border(bottom: BorderSide(color: cardBorder)),
                 ),
                 child: Column(
@@ -160,7 +160,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
                             label: Text(m),
                             selected: isSelected,
                             selectedColor: _blue,
-                            backgroundColor: isDark ? const Color(0xff030712) : const Color(0xfff1f5f9),
+                            backgroundColor: isDark ? const Color(0xff070a12) : const Color(0xfff1f5f9),
                             labelStyle: TextStyle(
                               color: isSelected ? Colors.white : textMuted,
                               fontSize: 11,

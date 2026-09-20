@@ -21,7 +21,8 @@ class ApiConfig {
 
   // AI & Workflows endpoints
   static String get nexusAgentStreamUrl =>
-      '$webApiBaseUrl/api/nexus-agent/chat/stream';
+      '$webApiBaseUrl/api/nexus-agent';
+  static const ollamaChatUrl = 'http://localhost:11434/api/chat';
   static String get workflowsUrl => '$webApiBaseUrl/api/workflows';
   static String get knowledgeUrl => '$webApiBaseUrl/api/knowledge';
   static String get profileUrl => '$webApiBaseUrl/api/profile';

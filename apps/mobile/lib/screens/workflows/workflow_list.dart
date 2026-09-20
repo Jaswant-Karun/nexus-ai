@@ -72,7 +72,7 @@ class _WorkflowListScreenState extends State<WorkflowListScreen> {
   ];
 
   void _triggerWorkflow(Map<String, dynamic> wf, bool isDark) {
-    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
+    final cardBg = isDark ? const Color(0xff0e1626) : Colors.white;
     final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
     final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff6c7890);
 
@@ -117,7 +117,7 @@ class _WorkflowListScreenState extends State<WorkflowListScreen> {
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0)),
+                        side: BorderSide(color: isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0)),
                         foregroundColor: textPrimary,
                       ),
                       onPressed: () => Navigator.pop(context),

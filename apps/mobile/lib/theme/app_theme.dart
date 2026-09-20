@@ -12,11 +12,12 @@ class AppTheme {
   static const Color accentCyan = Color(0xff06b6d4);
   static const Color accentEmerald = Color(0xff10b981);
 
-  // ── Obsidian Dark Theme (Exact match to Web App) ──
+  // ── Obsidian Dark Theme (Exact match to Web App from Screenshot) ──
   static ThemeData get darkTheme {
-    const bg = Color(0xff030712); // web dark:bg-gray-950
-    const card = Color(0xff111827); // web dark:bg-gray-900
-    const border = Color(0xff1f2937); // web dark:border-gray-800
+    const bg = Color(0xff090d16); // web dark:bg-[#090d16]
+    const card = Color(0xff0e1626); // web dark card #0e1626
+    const border = Color(0xff1e293b); // web dark:border-slate-800
+    const inner = Color(0xff070a12);
 
     return ThemeData(
       useMaterial3: true,
@@ -43,19 +44,19 @@ class AppTheme {
         titleTextStyle: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w800,
-          color: Color(0xfff8fafc),
+          color: Colors.white,
           letterSpacing: -0.3,
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color(0xff0b0f19),
+        backgroundColor: Color(0xff090d16),
         selectedItemColor: primaryLight,
         unselectedItemColor: Color(0xff64748b),
         type: BottomNavigationBarType.fixed,
         elevation: 12,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: const Color(0xff0b0f19),
+        backgroundColor: const Color(0xff090d16),
         indicatorColor: primary.withValues(alpha: 0.25),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
@@ -72,7 +73,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xff0b101b),
+        fillColor: inner,
         labelStyle: const TextStyle(color: Color(0xff94a3b8), fontSize: 13),
         hintStyle: const TextStyle(color: Color(0xff64748b), fontSize: 13),
         border: OutlineInputBorder(
