@@ -135,10 +135,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xff4341cf), Color(0xff6272f5)]),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(13),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xff4341cf).withValues(alpha: 0.28),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(13),
+            child: Image.asset(
+              'assets/icons/app_icon.png',
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
