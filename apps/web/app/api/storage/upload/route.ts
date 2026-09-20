@@ -73,6 +73,19 @@ export async function POST(req: NextRequest) {
       await prisma.aiProcessingJob.createMany({ data: jobs });
     }
 
+    if (["document", "spreadsheet", "presentation"].includes(category)) {
+      await prisma.knowledgeDocument.create({
+        data: {
+          title: file.name,
+          sourceUrl: storageUrl,
+          mimeType: file.type || "application/octet-stream",
+          status: "PENDING",
+          sizeBytes: file.size,
+          organizationId: user.orgId,
+        },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       data: { ...record, sizeBytes: Number(record.sizeBytes), category },

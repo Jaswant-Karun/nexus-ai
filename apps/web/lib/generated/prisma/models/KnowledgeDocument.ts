@@ -44,6 +44,7 @@ export type KnowledgeDocumentMinAggregateOutputType = {
   status: string | null
   chunkCount: number | null
   sizeBytes: number | null
+  organizationId: string | null
   createdAt: Date | null
 }
 
@@ -55,6 +56,7 @@ export type KnowledgeDocumentMaxAggregateOutputType = {
   status: string | null
   chunkCount: number | null
   sizeBytes: number | null
+  organizationId: string | null
   createdAt: Date | null
 }
 
@@ -66,6 +68,7 @@ export type KnowledgeDocumentCountAggregateOutputType = {
   status: number
   chunkCount: number
   sizeBytes: number
+  organizationId: number
   createdAt: number
   _all: number
 }
@@ -89,6 +92,7 @@ export type KnowledgeDocumentMinAggregateInputType = {
   status?: true
   chunkCount?: true
   sizeBytes?: true
+  organizationId?: true
   createdAt?: true
 }
 
@@ -100,6 +104,7 @@ export type KnowledgeDocumentMaxAggregateInputType = {
   status?: true
   chunkCount?: true
   sizeBytes?: true
+  organizationId?: true
   createdAt?: true
 }
 
@@ -111,6 +116,7 @@ export type KnowledgeDocumentCountAggregateInputType = {
   status?: true
   chunkCount?: true
   sizeBytes?: true
+  organizationId?: true
   createdAt?: true
   _all?: true
 }
@@ -209,6 +215,7 @@ export type KnowledgeDocumentGroupByOutputType = {
   status: string
   chunkCount: number
   sizeBytes: number
+  organizationId: string
   createdAt: Date
   _count: KnowledgeDocumentCountAggregateOutputType | null
   _avg: KnowledgeDocumentAvgAggregateOutputType | null
@@ -243,7 +250,9 @@ export type KnowledgeDocumentWhereInput = {
   status?: Prisma.StringFilter<"KnowledgeDocument"> | string
   chunkCount?: Prisma.IntFilter<"KnowledgeDocument"> | number
   sizeBytes?: Prisma.IntFilter<"KnowledgeDocument"> | number
+  organizationId?: Prisma.StringFilter<"KnowledgeDocument"> | string
   createdAt?: Prisma.DateTimeFilter<"KnowledgeDocument"> | Date | string
+  organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
 }
 
 export type KnowledgeDocumentOrderByWithRelationInput = {
@@ -254,7 +263,9 @@ export type KnowledgeDocumentOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   chunkCount?: Prisma.SortOrder
   sizeBytes?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  organization?: Prisma.OrganizationOrderByWithRelationInput
 }
 
 export type KnowledgeDocumentWhereUniqueInput = Prisma.AtLeast<{
@@ -268,7 +279,9 @@ export type KnowledgeDocumentWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.StringFilter<"KnowledgeDocument"> | string
   chunkCount?: Prisma.IntFilter<"KnowledgeDocument"> | number
   sizeBytes?: Prisma.IntFilter<"KnowledgeDocument"> | number
+  organizationId?: Prisma.StringFilter<"KnowledgeDocument"> | string
   createdAt?: Prisma.DateTimeFilter<"KnowledgeDocument"> | Date | string
+  organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
 }, "id">
 
 export type KnowledgeDocumentOrderByWithAggregationInput = {
@@ -279,6 +292,7 @@ export type KnowledgeDocumentOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   chunkCount?: Prisma.SortOrder
   sizeBytes?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.KnowledgeDocumentCountOrderByAggregateInput
   _avg?: Prisma.KnowledgeDocumentAvgOrderByAggregateInput
@@ -298,6 +312,7 @@ export type KnowledgeDocumentScalarWhereWithAggregatesInput = {
   status?: Prisma.StringWithAggregatesFilter<"KnowledgeDocument"> | string
   chunkCount?: Prisma.IntWithAggregatesFilter<"KnowledgeDocument"> | number
   sizeBytes?: Prisma.IntWithAggregatesFilter<"KnowledgeDocument"> | number
+  organizationId?: Prisma.StringWithAggregatesFilter<"KnowledgeDocument"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"KnowledgeDocument"> | Date | string
 }
 
@@ -310,6 +325,7 @@ export type KnowledgeDocumentCreateInput = {
   chunkCount?: number
   sizeBytes?: number
   createdAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutKnowledgeDocumentsInput
 }
 
 export type KnowledgeDocumentUncheckedCreateInput = {
@@ -320,6 +336,7 @@ export type KnowledgeDocumentUncheckedCreateInput = {
   status?: string
   chunkCount?: number
   sizeBytes?: number
+  organizationId: string
   createdAt?: Date | string
 }
 
@@ -332,6 +349,7 @@ export type KnowledgeDocumentUpdateInput = {
   chunkCount?: Prisma.IntFieldUpdateOperationsInput | number
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutKnowledgeDocumentsNestedInput
 }
 
 export type KnowledgeDocumentUncheckedUpdateInput = {
@@ -342,6 +360,7 @@ export type KnowledgeDocumentUncheckedUpdateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   chunkCount?: Prisma.IntFieldUpdateOperationsInput | number
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -353,6 +372,7 @@ export type KnowledgeDocumentCreateManyInput = {
   status?: string
   chunkCount?: number
   sizeBytes?: number
+  organizationId: string
   createdAt?: Date | string
 }
 
@@ -375,7 +395,18 @@ export type KnowledgeDocumentUncheckedUpdateManyInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   chunkCount?: Prisma.IntFieldUpdateOperationsInput | number
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type KnowledgeDocumentListRelationFilter = {
+  every?: Prisma.KnowledgeDocumentWhereInput
+  some?: Prisma.KnowledgeDocumentWhereInput
+  none?: Prisma.KnowledgeDocumentWhereInput
+}
+
+export type KnowledgeDocumentOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type KnowledgeDocumentCountOrderByAggregateInput = {
@@ -386,6 +417,7 @@ export type KnowledgeDocumentCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   chunkCount?: Prisma.SortOrder
   sizeBytes?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -402,6 +434,7 @@ export type KnowledgeDocumentMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   chunkCount?: Prisma.SortOrder
   sizeBytes?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -413,6 +446,7 @@ export type KnowledgeDocumentMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   chunkCount?: Prisma.SortOrder
   sizeBytes?: Prisma.SortOrder
+  organizationId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -421,12 +455,161 @@ export type KnowledgeDocumentSumOrderByAggregateInput = {
   sizeBytes?: Prisma.SortOrder
 }
 
+export type KnowledgeDocumentCreateNestedManyWithoutOrganizationInput = {
+  create?: Prisma.XOR<Prisma.KnowledgeDocumentCreateWithoutOrganizationInput, Prisma.KnowledgeDocumentUncheckedCreateWithoutOrganizationInput> | Prisma.KnowledgeDocumentCreateWithoutOrganizationInput[] | Prisma.KnowledgeDocumentUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.KnowledgeDocumentCreateOrConnectWithoutOrganizationInput | Prisma.KnowledgeDocumentCreateOrConnectWithoutOrganizationInput[]
+  createMany?: Prisma.KnowledgeDocumentCreateManyOrganizationInputEnvelope
+  connect?: Prisma.KnowledgeDocumentWhereUniqueInput | Prisma.KnowledgeDocumentWhereUniqueInput[]
+}
+
+export type KnowledgeDocumentUncheckedCreateNestedManyWithoutOrganizationInput = {
+  create?: Prisma.XOR<Prisma.KnowledgeDocumentCreateWithoutOrganizationInput, Prisma.KnowledgeDocumentUncheckedCreateWithoutOrganizationInput> | Prisma.KnowledgeDocumentCreateWithoutOrganizationInput[] | Prisma.KnowledgeDocumentUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.KnowledgeDocumentCreateOrConnectWithoutOrganizationInput | Prisma.KnowledgeDocumentCreateOrConnectWithoutOrganizationInput[]
+  createMany?: Prisma.KnowledgeDocumentCreateManyOrganizationInputEnvelope
+  connect?: Prisma.KnowledgeDocumentWhereUniqueInput | Prisma.KnowledgeDocumentWhereUniqueInput[]
+}
+
+export type KnowledgeDocumentUpdateManyWithoutOrganizationNestedInput = {
+  create?: Prisma.XOR<Prisma.KnowledgeDocumentCreateWithoutOrganizationInput, Prisma.KnowledgeDocumentUncheckedCreateWithoutOrganizationInput> | Prisma.KnowledgeDocumentCreateWithoutOrganizationInput[] | Prisma.KnowledgeDocumentUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.KnowledgeDocumentCreateOrConnectWithoutOrganizationInput | Prisma.KnowledgeDocumentCreateOrConnectWithoutOrganizationInput[]
+  upsert?: Prisma.KnowledgeDocumentUpsertWithWhereUniqueWithoutOrganizationInput | Prisma.KnowledgeDocumentUpsertWithWhereUniqueWithoutOrganizationInput[]
+  createMany?: Prisma.KnowledgeDocumentCreateManyOrganizationInputEnvelope
+  set?: Prisma.KnowledgeDocumentWhereUniqueInput | Prisma.KnowledgeDocumentWhereUniqueInput[]
+  disconnect?: Prisma.KnowledgeDocumentWhereUniqueInput | Prisma.KnowledgeDocumentWhereUniqueInput[]
+  delete?: Prisma.KnowledgeDocumentWhereUniqueInput | Prisma.KnowledgeDocumentWhereUniqueInput[]
+  connect?: Prisma.KnowledgeDocumentWhereUniqueInput | Prisma.KnowledgeDocumentWhereUniqueInput[]
+  update?: Prisma.KnowledgeDocumentUpdateWithWhereUniqueWithoutOrganizationInput | Prisma.KnowledgeDocumentUpdateWithWhereUniqueWithoutOrganizationInput[]
+  updateMany?: Prisma.KnowledgeDocumentUpdateManyWithWhereWithoutOrganizationInput | Prisma.KnowledgeDocumentUpdateManyWithWhereWithoutOrganizationInput[]
+  deleteMany?: Prisma.KnowledgeDocumentScalarWhereInput | Prisma.KnowledgeDocumentScalarWhereInput[]
+}
+
+export type KnowledgeDocumentUncheckedUpdateManyWithoutOrganizationNestedInput = {
+  create?: Prisma.XOR<Prisma.KnowledgeDocumentCreateWithoutOrganizationInput, Prisma.KnowledgeDocumentUncheckedCreateWithoutOrganizationInput> | Prisma.KnowledgeDocumentCreateWithoutOrganizationInput[] | Prisma.KnowledgeDocumentUncheckedCreateWithoutOrganizationInput[]
+  connectOrCreate?: Prisma.KnowledgeDocumentCreateOrConnectWithoutOrganizationInput | Prisma.KnowledgeDocumentCreateOrConnectWithoutOrganizationInput[]
+  upsert?: Prisma.KnowledgeDocumentUpsertWithWhereUniqueWithoutOrganizationInput | Prisma.KnowledgeDocumentUpsertWithWhereUniqueWithoutOrganizationInput[]
+  createMany?: Prisma.KnowledgeDocumentCreateManyOrganizationInputEnvelope
+  set?: Prisma.KnowledgeDocumentWhereUniqueInput | Prisma.KnowledgeDocumentWhereUniqueInput[]
+  disconnect?: Prisma.KnowledgeDocumentWhereUniqueInput | Prisma.KnowledgeDocumentWhereUniqueInput[]
+  delete?: Prisma.KnowledgeDocumentWhereUniqueInput | Prisma.KnowledgeDocumentWhereUniqueInput[]
+  connect?: Prisma.KnowledgeDocumentWhereUniqueInput | Prisma.KnowledgeDocumentWhereUniqueInput[]
+  update?: Prisma.KnowledgeDocumentUpdateWithWhereUniqueWithoutOrganizationInput | Prisma.KnowledgeDocumentUpdateWithWhereUniqueWithoutOrganizationInput[]
+  updateMany?: Prisma.KnowledgeDocumentUpdateManyWithWhereWithoutOrganizationInput | Prisma.KnowledgeDocumentUpdateManyWithWhereWithoutOrganizationInput[]
+  deleteMany?: Prisma.KnowledgeDocumentScalarWhereInput | Prisma.KnowledgeDocumentScalarWhereInput[]
+}
+
 export type IntFieldUpdateOperationsInput = {
   set?: number
   increment?: number
   decrement?: number
   multiply?: number
   divide?: number
+}
+
+export type KnowledgeDocumentCreateWithoutOrganizationInput = {
+  id?: string
+  title: string
+  sourceUrl?: string | null
+  mimeType: string
+  status?: string
+  chunkCount?: number
+  sizeBytes?: number
+  createdAt?: Date | string
+}
+
+export type KnowledgeDocumentUncheckedCreateWithoutOrganizationInput = {
+  id?: string
+  title: string
+  sourceUrl?: string | null
+  mimeType: string
+  status?: string
+  chunkCount?: number
+  sizeBytes?: number
+  createdAt?: Date | string
+}
+
+export type KnowledgeDocumentCreateOrConnectWithoutOrganizationInput = {
+  where: Prisma.KnowledgeDocumentWhereUniqueInput
+  create: Prisma.XOR<Prisma.KnowledgeDocumentCreateWithoutOrganizationInput, Prisma.KnowledgeDocumentUncheckedCreateWithoutOrganizationInput>
+}
+
+export type KnowledgeDocumentCreateManyOrganizationInputEnvelope = {
+  data: Prisma.KnowledgeDocumentCreateManyOrganizationInput | Prisma.KnowledgeDocumentCreateManyOrganizationInput[]
+  skipDuplicates?: boolean
+}
+
+export type KnowledgeDocumentUpsertWithWhereUniqueWithoutOrganizationInput = {
+  where: Prisma.KnowledgeDocumentWhereUniqueInput
+  update: Prisma.XOR<Prisma.KnowledgeDocumentUpdateWithoutOrganizationInput, Prisma.KnowledgeDocumentUncheckedUpdateWithoutOrganizationInput>
+  create: Prisma.XOR<Prisma.KnowledgeDocumentCreateWithoutOrganizationInput, Prisma.KnowledgeDocumentUncheckedCreateWithoutOrganizationInput>
+}
+
+export type KnowledgeDocumentUpdateWithWhereUniqueWithoutOrganizationInput = {
+  where: Prisma.KnowledgeDocumentWhereUniqueInput
+  data: Prisma.XOR<Prisma.KnowledgeDocumentUpdateWithoutOrganizationInput, Prisma.KnowledgeDocumentUncheckedUpdateWithoutOrganizationInput>
+}
+
+export type KnowledgeDocumentUpdateManyWithWhereWithoutOrganizationInput = {
+  where: Prisma.KnowledgeDocumentScalarWhereInput
+  data: Prisma.XOR<Prisma.KnowledgeDocumentUpdateManyMutationInput, Prisma.KnowledgeDocumentUncheckedUpdateManyWithoutOrganizationInput>
+}
+
+export type KnowledgeDocumentScalarWhereInput = {
+  AND?: Prisma.KnowledgeDocumentScalarWhereInput | Prisma.KnowledgeDocumentScalarWhereInput[]
+  OR?: Prisma.KnowledgeDocumentScalarWhereInput[]
+  NOT?: Prisma.KnowledgeDocumentScalarWhereInput | Prisma.KnowledgeDocumentScalarWhereInput[]
+  id?: Prisma.StringFilter<"KnowledgeDocument"> | string
+  title?: Prisma.StringFilter<"KnowledgeDocument"> | string
+  sourceUrl?: Prisma.StringNullableFilter<"KnowledgeDocument"> | string | null
+  mimeType?: Prisma.StringFilter<"KnowledgeDocument"> | string
+  status?: Prisma.StringFilter<"KnowledgeDocument"> | string
+  chunkCount?: Prisma.IntFilter<"KnowledgeDocument"> | number
+  sizeBytes?: Prisma.IntFilter<"KnowledgeDocument"> | number
+  organizationId?: Prisma.StringFilter<"KnowledgeDocument"> | string
+  createdAt?: Prisma.DateTimeFilter<"KnowledgeDocument"> | Date | string
+}
+
+export type KnowledgeDocumentCreateManyOrganizationInput = {
+  id?: string
+  title: string
+  sourceUrl?: string | null
+  mimeType: string
+  status?: string
+  chunkCount?: number
+  sizeBytes?: number
+  createdAt?: Date | string
+}
+
+export type KnowledgeDocumentUpdateWithoutOrganizationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  chunkCount?: Prisma.IntFieldUpdateOperationsInput | number
+  sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type KnowledgeDocumentUncheckedUpdateWithoutOrganizationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  chunkCount?: Prisma.IntFieldUpdateOperationsInput | number
+  sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type KnowledgeDocumentUncheckedUpdateManyWithoutOrganizationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  chunkCount?: Prisma.IntFieldUpdateOperationsInput | number
+  sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -439,7 +622,9 @@ export type KnowledgeDocumentSelect<ExtArgs extends runtime.Types.Extensions.Int
   status?: boolean
   chunkCount?: boolean
   sizeBytes?: boolean
+  organizationId?: boolean
   createdAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["knowledgeDocument"]>
 
 export type KnowledgeDocumentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -450,7 +635,9 @@ export type KnowledgeDocumentSelectCreateManyAndReturn<ExtArgs extends runtime.T
   status?: boolean
   chunkCount?: boolean
   sizeBytes?: boolean
+  organizationId?: boolean
   createdAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["knowledgeDocument"]>
 
 export type KnowledgeDocumentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -461,7 +648,9 @@ export type KnowledgeDocumentSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   status?: boolean
   chunkCount?: boolean
   sizeBytes?: boolean
+  organizationId?: boolean
   createdAt?: boolean
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["knowledgeDocument"]>
 
 export type KnowledgeDocumentSelectScalar = {
@@ -472,14 +661,26 @@ export type KnowledgeDocumentSelectScalar = {
   status?: boolean
   chunkCount?: boolean
   sizeBytes?: boolean
+  organizationId?: boolean
   createdAt?: boolean
 }
 
-export type KnowledgeDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "sourceUrl" | "mimeType" | "status" | "chunkCount" | "sizeBytes" | "createdAt", ExtArgs["result"]["knowledgeDocument"]>
+export type KnowledgeDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "sourceUrl" | "mimeType" | "status" | "chunkCount" | "sizeBytes" | "organizationId" | "createdAt", ExtArgs["result"]["knowledgeDocument"]>
+export type KnowledgeDocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+}
+export type KnowledgeDocumentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+}
+export type KnowledgeDocumentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
+}
 
 export type $KnowledgeDocumentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "KnowledgeDocument"
-  objects: {}
+  objects: {
+    organization: Prisma.$OrganizationPayload<ExtArgs>
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     title: string
@@ -488,6 +689,7 @@ export type $KnowledgeDocumentPayload<ExtArgs extends runtime.Types.Extensions.I
     status: string
     chunkCount: number
     sizeBytes: number
+    organizationId: string
     createdAt: Date
   }, ExtArgs["result"]["knowledgeDocument"]>
   composites: {}
@@ -883,6 +1085,7 @@ readonly fields: KnowledgeDocumentFieldRefs;
  */
 export interface Prisma__KnowledgeDocumentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -919,6 +1122,7 @@ export interface KnowledgeDocumentFieldRefs {
   readonly status: Prisma.FieldRef<"KnowledgeDocument", 'String'>
   readonly chunkCount: Prisma.FieldRef<"KnowledgeDocument", 'Int'>
   readonly sizeBytes: Prisma.FieldRef<"KnowledgeDocument", 'Int'>
+  readonly organizationId: Prisma.FieldRef<"KnowledgeDocument", 'String'>
   readonly createdAt: Prisma.FieldRef<"KnowledgeDocument", 'DateTime'>
 }
     
@@ -936,6 +1140,10 @@ export type KnowledgeDocumentFindUniqueArgs<ExtArgs extends runtime.Types.Extens
    * Omit specific fields from the KnowledgeDocument
    */
   omit?: Prisma.KnowledgeDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentInclude<ExtArgs> | null
   /**
    * Filter, which KnowledgeDocument to fetch.
    */
@@ -955,6 +1163,10 @@ export type KnowledgeDocumentFindUniqueOrThrowArgs<ExtArgs extends runtime.Types
    */
   omit?: Prisma.KnowledgeDocumentOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentInclude<ExtArgs> | null
+  /**
    * Filter, which KnowledgeDocument to fetch.
    */
   where: Prisma.KnowledgeDocumentWhereUniqueInput
@@ -972,6 +1184,10 @@ export type KnowledgeDocumentFindFirstArgs<ExtArgs extends runtime.Types.Extensi
    * Omit specific fields from the KnowledgeDocument
    */
   omit?: Prisma.KnowledgeDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentInclude<ExtArgs> | null
   /**
    * Filter, which KnowledgeDocument to fetch.
    */
@@ -1021,6 +1237,10 @@ export type KnowledgeDocumentFindFirstOrThrowArgs<ExtArgs extends runtime.Types.
    */
   omit?: Prisma.KnowledgeDocumentOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentInclude<ExtArgs> | null
+  /**
    * Filter, which KnowledgeDocument to fetch.
    */
   where?: Prisma.KnowledgeDocumentWhereInput
@@ -1068,6 +1288,10 @@ export type KnowledgeDocumentFindManyArgs<ExtArgs extends runtime.Types.Extensio
    * Omit specific fields from the KnowledgeDocument
    */
   omit?: Prisma.KnowledgeDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentInclude<ExtArgs> | null
   /**
    * Filter, which KnowledgeDocuments to fetch.
    */
@@ -1117,6 +1341,10 @@ export type KnowledgeDocumentCreateArgs<ExtArgs extends runtime.Types.Extensions
    */
   omit?: Prisma.KnowledgeDocumentOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentInclude<ExtArgs> | null
+  /**
    * The data needed to create a KnowledgeDocument.
    */
   data: Prisma.XOR<Prisma.KnowledgeDocumentCreateInput, Prisma.KnowledgeDocumentUncheckedCreateInput>
@@ -1150,6 +1378,10 @@ export type KnowledgeDocumentCreateManyAndReturnArgs<ExtArgs extends runtime.Typ
    */
   data: Prisma.KnowledgeDocumentCreateManyInput | Prisma.KnowledgeDocumentCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1164,6 +1396,10 @@ export type KnowledgeDocumentUpdateArgs<ExtArgs extends runtime.Types.Extensions
    * Omit specific fields from the KnowledgeDocument
    */
   omit?: Prisma.KnowledgeDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentInclude<ExtArgs> | null
   /**
    * The data needed to update a KnowledgeDocument.
    */
@@ -1216,6 +1452,10 @@ export type KnowledgeDocumentUpdateManyAndReturnArgs<ExtArgs extends runtime.Typ
    * Limit how many KnowledgeDocuments to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1230,6 +1470,10 @@ export type KnowledgeDocumentUpsertArgs<ExtArgs extends runtime.Types.Extensions
    * Omit specific fields from the KnowledgeDocument
    */
   omit?: Prisma.KnowledgeDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentInclude<ExtArgs> | null
   /**
    * The filter to search for the KnowledgeDocument to update in case it exists.
    */
@@ -1256,6 +1500,10 @@ export type KnowledgeDocumentDeleteArgs<ExtArgs extends runtime.Types.Extensions
    * Omit specific fields from the KnowledgeDocument
    */
   omit?: Prisma.KnowledgeDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentInclude<ExtArgs> | null
   /**
    * Filter which KnowledgeDocument to delete.
    */
@@ -1288,4 +1536,8 @@ export type KnowledgeDocumentDefaultArgs<ExtArgs extends runtime.Types.Extension
    * Omit specific fields from the KnowledgeDocument
    */
   omit?: Prisma.KnowledgeDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentInclude<ExtArgs> | null
 }

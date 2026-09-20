@@ -315,10 +315,10 @@ async function main() {
   /* ── 7. Real Knowledge Documents ───────────────────────────────────────── */
   console.log("📚  Indexing platform knowledge documents…");
   const knowledgeDocs = [
-    { title: "NEXUS AI System Architecture & Microservices Guide", mimeType: "text/markdown", status: "INDEXED", chunkCount: 1240, sizeBytes: 52_000 },
-    { title: "Enterprise Multi-Model LLM Routing Specification", mimeType: "text/markdown", status: "INDEXED", chunkCount: 860, sizeBytes: 38_000 },
-    { title: "Security, RBAC & SOC-2 Compliance Manual", mimeType: "text/markdown", status: "INDEXED", chunkCount: 940, sizeBytes: 44_000 },
-    { title: "Intelligent Storage & Vector Search Pipeline Documentation", mimeType: "text/markdown", status: "INDEXED", chunkCount: 620, sizeBytes: 28_000 },
+    { title: "NEXUS AI System Architecture & Microservices Guide", mimeType: "text/markdown", status: "INDEXED", chunkCount: 1240, sizeBytes: 52_000, organizationId: org.id },
+    { title: "Enterprise Multi-Model LLM Routing Specification", mimeType: "text/markdown", status: "INDEXED", chunkCount: 860, sizeBytes: 38_000, organizationId: org.id },
+    { title: "Security, RBAC & SOC-2 Compliance Manual", mimeType: "text/markdown", status: "INDEXED", chunkCount: 940, sizeBytes: 44_000, organizationId: org.id },
+    { title: "Intelligent Storage & Vector Search Pipeline Documentation", mimeType: "text/markdown", status: "INDEXED", chunkCount: 620, sizeBytes: 28_000, organizationId: org.id },
   ];
 
   for (const doc of knowledgeDocs) {

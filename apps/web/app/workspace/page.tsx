@@ -6,6 +6,7 @@ import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { summarizeText } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface KnowledgeDoc {
   id:         string;
@@ -130,10 +131,10 @@ export default function WorkspacePage() {
                   : <><span>🧠</span> AI Summary</>
                 }
               </button>
-              <button type="button"
+              <Link href="/storage/upload"
                 className="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-medium text-sm rounded-xl transition-all shadow-md shadow-cyan-500/20">
                 + Upload Document
-              </button>
+              </Link>
             </div>
           </div>
 

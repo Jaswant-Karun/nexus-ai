@@ -11,9 +11,10 @@ export async function GET(req: NextRequest) {
     const search = req.nextUrl.searchParams.get("q");
 
     const docs = await prisma.knowledgeDocument.findMany({
-      where: search
-        ? { title: { contains: search, mode: "insensitive" } }
-        : undefined,
+      where: {
+        organizationId: user.orgId,
+        ...(search ? { title: { contains: search, mode: "insensitive" as const } } : {}),
+      },
       orderBy: { createdAt: "desc" },
     });
 
@@ -44,7 +45,8 @@ export async function POST(req: NextRequest) {
         title:    body.title.trim(),
         mimeType: body.mimeType ?? "application/pdf",
         sourceUrl: body.sourceUrl ?? null,
-        status:   "INDEXED",
+        status:   "PENDING",
+        organizationId: user.orgId,
       },
     });
 

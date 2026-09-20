@@ -72,6 +72,7 @@ model Organization {
   users          User[]
   agents         Agent[]
   workflows      Workflow[]
+  knowledgeDocuments KnowledgeDocument[]
   storageFolders StorageFolder[]
   storageFiles   StorageFile[]
 }
@@ -155,14 +156,16 @@ model Workflow {
 }
 
 model KnowledgeDocument {
-  id         String   @id @default(cuid())
-  title      String
-  sourceUrl  String?
-  mimeType   String
-  status     String   @default("INDEXED")
-  chunkCount Int      @default(0)
-  sizeBytes  Int      @default(0)
-  createdAt  DateTime @default(now())
+  id             String       @id @default(cuid())
+  title          String
+  sourceUrl      String?
+  mimeType       String
+  status         String       @default("PENDING")
+  chunkCount     Int          @default(0)
+  sizeBytes      Int          @default(0)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
 }
 
 // ─── Storage Service models ───────────────────────────────────────────────────

@@ -193,6 +193,7 @@ export type OrganizationWhereInput = {
   users?: Prisma.UserListRelationFilter
   agents?: Prisma.AgentListRelationFilter
   workflows?: Prisma.WorkflowListRelationFilter
+  knowledgeDocuments?: Prisma.KnowledgeDocumentListRelationFilter
   storageFolders?: Prisma.StorageFolderListRelationFilter
   storageFiles?: Prisma.StorageFileListRelationFilter
 }
@@ -207,6 +208,7 @@ export type OrganizationOrderByWithRelationInput = {
   users?: Prisma.UserOrderByRelationAggregateInput
   agents?: Prisma.AgentOrderByRelationAggregateInput
   workflows?: Prisma.WorkflowOrderByRelationAggregateInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentOrderByRelationAggregateInput
   storageFolders?: Prisma.StorageFolderOrderByRelationAggregateInput
   storageFiles?: Prisma.StorageFileOrderByRelationAggregateInput
 }
@@ -224,6 +226,7 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   users?: Prisma.UserListRelationFilter
   agents?: Prisma.AgentListRelationFilter
   workflows?: Prisma.WorkflowListRelationFilter
+  knowledgeDocuments?: Prisma.KnowledgeDocumentListRelationFilter
   storageFolders?: Prisma.StorageFolderListRelationFilter
   storageFiles?: Prisma.StorageFileListRelationFilter
 }, "id" | "slug">
@@ -262,6 +265,7 @@ export type OrganizationCreateInput = {
   users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentCreateNestedManyWithoutOrganizationInput
   storageFolders?: Prisma.StorageFolderCreateNestedManyWithoutOrganizationInput
   storageFiles?: Prisma.StorageFileCreateNestedManyWithoutOrganizationInput
 }
@@ -276,6 +280,7 @@ export type OrganizationUncheckedCreateInput = {
   users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentUncheckedCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedCreateNestedManyWithoutOrganizationInput
   storageFolders?: Prisma.StorageFolderUncheckedCreateNestedManyWithoutOrganizationInput
   storageFiles?: Prisma.StorageFileUncheckedCreateNestedManyWithoutOrganizationInput
 }
@@ -290,6 +295,7 @@ export type OrganizationUpdateInput = {
   users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUpdateManyWithoutOrganizationNestedInput
   storageFolders?: Prisma.StorageFolderUpdateManyWithoutOrganizationNestedInput
   storageFiles?: Prisma.StorageFileUpdateManyWithoutOrganizationNestedInput
 }
@@ -304,6 +310,7 @@ export type OrganizationUncheckedUpdateInput = {
   users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUncheckedUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedUpdateManyWithoutOrganizationNestedInput
   storageFolders?: Prisma.StorageFolderUncheckedUpdateManyWithoutOrganizationNestedInput
   storageFiles?: Prisma.StorageFileUncheckedUpdateManyWithoutOrganizationNestedInput
 }
@@ -417,6 +424,20 @@ export type OrganizationUpdateOneRequiredWithoutWorkflowsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutWorkflowsInput, Prisma.OrganizationUpdateWithoutWorkflowsInput>, Prisma.OrganizationUncheckedUpdateWithoutWorkflowsInput>
 }
 
+export type OrganizationCreateNestedOneWithoutKnowledgeDocumentsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutKnowledgeDocumentsInput, Prisma.OrganizationUncheckedCreateWithoutKnowledgeDocumentsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutKnowledgeDocumentsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutKnowledgeDocumentsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutKnowledgeDocumentsInput, Prisma.OrganizationUncheckedCreateWithoutKnowledgeDocumentsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutKnowledgeDocumentsInput
+  upsert?: Prisma.OrganizationUpsertWithoutKnowledgeDocumentsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutKnowledgeDocumentsInput, Prisma.OrganizationUpdateWithoutKnowledgeDocumentsInput>, Prisma.OrganizationUncheckedUpdateWithoutKnowledgeDocumentsInput>
+}
+
 export type OrganizationCreateNestedOneWithoutStorageFoldersInput = {
   create?: Prisma.XOR<Prisma.OrganizationCreateWithoutStorageFoldersInput, Prisma.OrganizationUncheckedCreateWithoutStorageFoldersInput>
   connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutStorageFoldersInput
@@ -454,6 +475,7 @@ export type OrganizationCreateWithoutUsersInput = {
   updatedAt?: Date | string
   agents?: Prisma.AgentCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentCreateNestedManyWithoutOrganizationInput
   storageFolders?: Prisma.StorageFolderCreateNestedManyWithoutOrganizationInput
   storageFiles?: Prisma.StorageFileCreateNestedManyWithoutOrganizationInput
 }
@@ -467,6 +489,7 @@ export type OrganizationUncheckedCreateWithoutUsersInput = {
   updatedAt?: Date | string
   agents?: Prisma.AgentUncheckedCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedCreateNestedManyWithoutOrganizationInput
   storageFolders?: Prisma.StorageFolderUncheckedCreateNestedManyWithoutOrganizationInput
   storageFiles?: Prisma.StorageFileUncheckedCreateNestedManyWithoutOrganizationInput
 }
@@ -496,6 +519,7 @@ export type OrganizationUpdateWithoutUsersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   agents?: Prisma.AgentUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUpdateManyWithoutOrganizationNestedInput
   storageFolders?: Prisma.StorageFolderUpdateManyWithoutOrganizationNestedInput
   storageFiles?: Prisma.StorageFileUpdateManyWithoutOrganizationNestedInput
 }
@@ -509,6 +533,7 @@ export type OrganizationUncheckedUpdateWithoutUsersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   agents?: Prisma.AgentUncheckedUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedUpdateManyWithoutOrganizationNestedInput
   storageFolders?: Prisma.StorageFolderUncheckedUpdateManyWithoutOrganizationNestedInput
   storageFiles?: Prisma.StorageFileUncheckedUpdateManyWithoutOrganizationNestedInput
 }
@@ -522,6 +547,7 @@ export type OrganizationCreateWithoutAgentsInput = {
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentCreateNestedManyWithoutOrganizationInput
   storageFolders?: Prisma.StorageFolderCreateNestedManyWithoutOrganizationInput
   storageFiles?: Prisma.StorageFileCreateNestedManyWithoutOrganizationInput
 }
@@ -535,6 +561,7 @@ export type OrganizationUncheckedCreateWithoutAgentsInput = {
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedCreateNestedManyWithoutOrganizationInput
   storageFolders?: Prisma.StorageFolderUncheckedCreateNestedManyWithoutOrganizationInput
   storageFiles?: Prisma.StorageFileUncheckedCreateNestedManyWithoutOrganizationInput
 }
@@ -564,6 +591,7 @@ export type OrganizationUpdateWithoutAgentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUpdateManyWithoutOrganizationNestedInput
   storageFolders?: Prisma.StorageFolderUpdateManyWithoutOrganizationNestedInput
   storageFiles?: Prisma.StorageFileUpdateManyWithoutOrganizationNestedInput
 }
@@ -577,6 +605,7 @@ export type OrganizationUncheckedUpdateWithoutAgentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedUpdateManyWithoutOrganizationNestedInput
   storageFolders?: Prisma.StorageFolderUncheckedUpdateManyWithoutOrganizationNestedInput
   storageFiles?: Prisma.StorageFileUncheckedUpdateManyWithoutOrganizationNestedInput
 }
@@ -590,6 +619,7 @@ export type OrganizationCreateWithoutWorkflowsInput = {
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentCreateNestedManyWithoutOrganizationInput
   storageFolders?: Prisma.StorageFolderCreateNestedManyWithoutOrganizationInput
   storageFiles?: Prisma.StorageFileCreateNestedManyWithoutOrganizationInput
 }
@@ -603,6 +633,7 @@ export type OrganizationUncheckedCreateWithoutWorkflowsInput = {
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentUncheckedCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedCreateNestedManyWithoutOrganizationInput
   storageFolders?: Prisma.StorageFolderUncheckedCreateNestedManyWithoutOrganizationInput
   storageFiles?: Prisma.StorageFileUncheckedCreateNestedManyWithoutOrganizationInput
 }
@@ -632,6 +663,7 @@ export type OrganizationUpdateWithoutWorkflowsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUpdateManyWithoutOrganizationNestedInput
   storageFolders?: Prisma.StorageFolderUpdateManyWithoutOrganizationNestedInput
   storageFiles?: Prisma.StorageFileUpdateManyWithoutOrganizationNestedInput
 }
@@ -645,6 +677,79 @@ export type OrganizationUncheckedUpdateWithoutWorkflowsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUncheckedUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUncheckedUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutKnowledgeDocumentsInput = {
+  id?: string
+  name: string
+  slug: string
+  plan?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
+  agents?: Prisma.AgentCreateNestedManyWithoutOrganizationInput
+  workflows?: Prisma.WorkflowCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutKnowledgeDocumentsInput = {
+  id?: string
+  name: string
+  slug: string
+  plan?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
+  agents?: Prisma.AgentUncheckedCreateNestedManyWithoutOrganizationInput
+  workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFolders?: Prisma.StorageFolderUncheckedCreateNestedManyWithoutOrganizationInput
+  storageFiles?: Prisma.StorageFileUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutKnowledgeDocumentsInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutKnowledgeDocumentsInput, Prisma.OrganizationUncheckedCreateWithoutKnowledgeDocumentsInput>
+}
+
+export type OrganizationUpsertWithoutKnowledgeDocumentsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutKnowledgeDocumentsInput, Prisma.OrganizationUncheckedUpdateWithoutKnowledgeDocumentsInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutKnowledgeDocumentsInput, Prisma.OrganizationUncheckedCreateWithoutKnowledgeDocumentsInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutKnowledgeDocumentsInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutKnowledgeDocumentsInput, Prisma.OrganizationUncheckedUpdateWithoutKnowledgeDocumentsInput>
+}
+
+export type OrganizationUpdateWithoutKnowledgeDocumentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  plan?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
+  agents?: Prisma.AgentUpdateManyWithoutOrganizationNestedInput
+  workflows?: Prisma.WorkflowUpdateManyWithoutOrganizationNestedInput
+  storageFolders?: Prisma.StorageFolderUpdateManyWithoutOrganizationNestedInput
+  storageFiles?: Prisma.StorageFileUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutKnowledgeDocumentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  plan?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
+  agents?: Prisma.AgentUncheckedUpdateManyWithoutOrganizationNestedInput
+  workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutOrganizationNestedInput
   storageFolders?: Prisma.StorageFolderUncheckedUpdateManyWithoutOrganizationNestedInput
   storageFiles?: Prisma.StorageFileUncheckedUpdateManyWithoutOrganizationNestedInput
 }
@@ -659,6 +764,7 @@ export type OrganizationCreateWithoutStorageFoldersInput = {
   users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentCreateNestedManyWithoutOrganizationInput
   storageFiles?: Prisma.StorageFileCreateNestedManyWithoutOrganizationInput
 }
 
@@ -672,6 +778,7 @@ export type OrganizationUncheckedCreateWithoutStorageFoldersInput = {
   users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentUncheckedCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedCreateNestedManyWithoutOrganizationInput
   storageFiles?: Prisma.StorageFileUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
@@ -701,6 +808,7 @@ export type OrganizationUpdateWithoutStorageFoldersInput = {
   users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUpdateManyWithoutOrganizationNestedInput
   storageFiles?: Prisma.StorageFileUpdateManyWithoutOrganizationNestedInput
 }
 
@@ -714,6 +822,7 @@ export type OrganizationUncheckedUpdateWithoutStorageFoldersInput = {
   users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUncheckedUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedUpdateManyWithoutOrganizationNestedInput
   storageFiles?: Prisma.StorageFileUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
@@ -727,6 +836,7 @@ export type OrganizationCreateWithoutStorageFilesInput = {
   users?: Prisma.UserCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentCreateNestedManyWithoutOrganizationInput
   storageFolders?: Prisma.StorageFolderCreateNestedManyWithoutOrganizationInput
 }
 
@@ -740,6 +850,7 @@ export type OrganizationUncheckedCreateWithoutStorageFilesInput = {
   users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganizationInput
   agents?: Prisma.AgentUncheckedCreateNestedManyWithoutOrganizationInput
   workflows?: Prisma.WorkflowUncheckedCreateNestedManyWithoutOrganizationInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedCreateNestedManyWithoutOrganizationInput
   storageFolders?: Prisma.StorageFolderUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
@@ -769,6 +880,7 @@ export type OrganizationUpdateWithoutStorageFilesInput = {
   users?: Prisma.UserUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUpdateManyWithoutOrganizationNestedInput
   storageFolders?: Prisma.StorageFolderUpdateManyWithoutOrganizationNestedInput
 }
 
@@ -782,6 +894,7 @@ export type OrganizationUncheckedUpdateWithoutStorageFilesInput = {
   users?: Prisma.UserUncheckedUpdateManyWithoutOrganizationNestedInput
   agents?: Prisma.AgentUncheckedUpdateManyWithoutOrganizationNestedInput
   workflows?: Prisma.WorkflowUncheckedUpdateManyWithoutOrganizationNestedInput
+  knowledgeDocuments?: Prisma.KnowledgeDocumentUncheckedUpdateManyWithoutOrganizationNestedInput
   storageFolders?: Prisma.StorageFolderUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
@@ -794,6 +907,7 @@ export type OrganizationCountOutputType = {
   users: number
   agents: number
   workflows: number
+  knowledgeDocuments: number
   storageFolders: number
   storageFiles: number
 }
@@ -802,6 +916,7 @@ export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Exte
   users?: boolean | OrganizationCountOutputTypeCountUsersArgs
   agents?: boolean | OrganizationCountOutputTypeCountAgentsArgs
   workflows?: boolean | OrganizationCountOutputTypeCountWorkflowsArgs
+  knowledgeDocuments?: boolean | OrganizationCountOutputTypeCountKnowledgeDocumentsArgs
   storageFolders?: boolean | OrganizationCountOutputTypeCountStorageFoldersArgs
   storageFiles?: boolean | OrganizationCountOutputTypeCountStorageFilesArgs
 }
@@ -840,6 +955,13 @@ export type OrganizationCountOutputTypeCountWorkflowsArgs<ExtArgs extends runtim
 /**
  * OrganizationCountOutputType without action
  */
+export type OrganizationCountOutputTypeCountKnowledgeDocumentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.KnowledgeDocumentWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
 export type OrganizationCountOutputTypeCountStorageFoldersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.StorageFolderWhereInput
 }
@@ -862,6 +984,7 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   users?: boolean | Prisma.Organization$usersArgs<ExtArgs>
   agents?: boolean | Prisma.Organization$agentsArgs<ExtArgs>
   workflows?: boolean | Prisma.Organization$workflowsArgs<ExtArgs>
+  knowledgeDocuments?: boolean | Prisma.Organization$knowledgeDocumentsArgs<ExtArgs>
   storageFolders?: boolean | Prisma.Organization$storageFoldersArgs<ExtArgs>
   storageFiles?: boolean | Prisma.Organization$storageFilesArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
@@ -899,6 +1022,7 @@ export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   users?: boolean | Prisma.Organization$usersArgs<ExtArgs>
   agents?: boolean | Prisma.Organization$agentsArgs<ExtArgs>
   workflows?: boolean | Prisma.Organization$workflowsArgs<ExtArgs>
+  knowledgeDocuments?: boolean | Prisma.Organization$knowledgeDocumentsArgs<ExtArgs>
   storageFolders?: boolean | Prisma.Organization$storageFoldersArgs<ExtArgs>
   storageFiles?: boolean | Prisma.Organization$storageFilesArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
@@ -912,6 +1036,7 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     users: Prisma.$UserPayload<ExtArgs>[]
     agents: Prisma.$AgentPayload<ExtArgs>[]
     workflows: Prisma.$WorkflowPayload<ExtArgs>[]
+    knowledgeDocuments: Prisma.$KnowledgeDocumentPayload<ExtArgs>[]
     storageFolders: Prisma.$StorageFolderPayload<ExtArgs>[]
     storageFiles: Prisma.$StorageFilePayload<ExtArgs>[]
   }
@@ -1319,6 +1444,7 @@ export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends run
   users<T extends Prisma.Organization$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   agents<T extends Prisma.Organization$agentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$agentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AgentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   workflows<T extends Prisma.Organization$workflowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$workflowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  knowledgeDocuments<T extends Prisma.Organization$knowledgeDocumentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$knowledgeDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KnowledgeDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   storageFolders<T extends Prisma.Organization$storageFoldersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$storageFoldersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StorageFolderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   storageFiles<T extends Prisma.Organization$storageFilesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$storageFilesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StorageFilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1818,6 +1944,30 @@ export type Organization$workflowsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.WorkflowScalarFieldEnum | Prisma.WorkflowScalarFieldEnum[]
+}
+
+/**
+ * Organization.knowledgeDocuments
+ */
+export type Organization$knowledgeDocumentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the KnowledgeDocument
+   */
+  select?: Prisma.KnowledgeDocumentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the KnowledgeDocument
+   */
+  omit?: Prisma.KnowledgeDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeDocumentInclude<ExtArgs> | null
+  where?: Prisma.KnowledgeDocumentWhereInput
+  orderBy?: Prisma.KnowledgeDocumentOrderByWithRelationInput | Prisma.KnowledgeDocumentOrderByWithRelationInput[]
+  cursor?: Prisma.KnowledgeDocumentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.KnowledgeDocumentScalarFieldEnum | Prisma.KnowledgeDocumentScalarFieldEnum[]
 }
 
 /**

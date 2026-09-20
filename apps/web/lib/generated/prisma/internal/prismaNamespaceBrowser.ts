@@ -175,6 +175,7 @@ export const KnowledgeDocumentScalarFieldEnum = {
   status: 'status',
   chunkCount: 'chunkCount',
   sizeBytes: 'sizeBytes',
+  organizationId: 'organizationId',
   createdAt: 'createdAt'
 } as const
 
