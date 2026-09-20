@@ -1,27 +1,41 @@
 /**
- * NEXUS AI — Client for the FastAPI AI service at localhost:8001
- * All frontend pages import from here to call the backend AI service.
+ * NEXUS AI — Client for the FastAPI AI service.
+ * Routes through /api/ai/... (Next.js proxy) so calls are server-side.
+ * No CORS issues, no direct browser-to-port-8001 connection needed.
  */
 
-const AI_BASE = process.env.NEXT_PUBLIC_AI_SERVICE_URL ?? "http://localhost:8001";
+// In the browser we always call our own Next.js proxy at /api/ai/...
+// On the server (SSR) we call the AI service directly.
+const AI_BASE =
+  typeof window === "undefined"
+    ? (process.env.AI_SERVICE_URL ?? "http://localhost:8001")
+    : "/api/ai";
 
-// ── Generic fetch helper ──────────────────────────────────────────────────────
+// ── Generic fetch helpers ─────────────────────────────────────────────────────
 async function aiPost<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${AI_BASE}${path}`, {
+  // Strip leading /api/v1 when going through proxy (proxy re-adds it)
+  const url = `${AI_BASE}${path}`;
+  const res = await fetch(url, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify(body),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error((err as { detail?: string }).detail ?? "AI service error");
+    const err = await res.json().catch(() => ({ detail: res.statusText })) as {
+      detail?: string; error?: string;
+    };
+    throw new Error(err.detail ?? err.error ?? `AI service error ${res.status}`);
   }
   return res.json() as Promise<T>;
 }
 
 async function aiGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${AI_BASE}${path}`);
-  if (!res.ok) throw new Error(`AI service error: ${res.statusText}`);
+  const url = `${AI_BASE}${path}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText })) as { error?: string };
+    throw new Error(err.error ?? `AI service error ${res.status}`);
+  }
   return res.json() as Promise<T>;
 }
 

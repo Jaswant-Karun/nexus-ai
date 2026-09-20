@@ -35,14 +35,19 @@ const AGENT_ROLES = [
 ];
 
 function now() {
-  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (typeof window === "undefined") return "--:--";
+  return new Date().toLocaleTimeString([], {
+    hour:   "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 
 export default function ChatPage() {
-  const [messages,    setMessages]    = useState<Message[]>([{
+  const [messages, setMessages] = useState<Message[]>(() => [{
     id: "0", role: "assistant",
     content: "Hello! I am the NEXUS AI Agent. I use GPT-4o on the backend — ask me anything about data analysis, code, research, or let me help you plan tasks.",
-    time: now(),
+    time: "--:--",
     model: "system",
   }]);
   const [input,       setInput]       = useState("");
@@ -52,9 +57,9 @@ export default function ChatPage() {
   const [aiStatus,    setAiStatus]    = useState<"online" | "offline" | "checking">("checking");
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Check if AI service is running
+  // Check if AI service is running via our server-side proxy
   useEffect(() => {
-    fetch("http://localhost:8001/health")
+    fetch("/api/ai/health")
       .then((r) => r.ok ? setAiStatus("online") : setAiStatus("offline"))
       .catch(() => setAiStatus("offline"));
   }, []);
