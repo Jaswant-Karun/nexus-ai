@@ -1,0 +1,10 @@
+{
+  "name": "@nexus/auth",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  }
+}
