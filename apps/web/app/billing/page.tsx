@@ -1,123 +1,158 @@
 "use client";
 
-import { Sidebar } from "@nexus/ui";
+import { useEffect, useState } from "react";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/sidebar/AppSidebar";
-import { StatCard } from "@/components/cards/StatCard";
-import { UsageBar } from "@/components/charts/UsageBar";
-import { StatusBadge } from "@/components/common/StatusBadge";
+import { cn } from "@/lib/utils";
 
-const plans = [
-  { name: "Starter",    price: "$49/mo",   highlight: false },
-  { name: "Pro",        price: "$149/mo",  highlight: false },
-  { name: "Enterprise", price: "Custom",   highlight: true  },
-];
+interface BillingData {
+  plan:          string;
+  orgName:       string;
+  usedStorageGB: number;
+  quotaGB:       number;
+  usedStorageBytes: number;
+  quotaBytes:    number;
+  storageFiles:  number;
+  aiJobsDone:    number;
+  agentCount:    number;
+  conversationCount: number;
+  docCount:      number;
+}
 
-const invoices = [
-  { id: "INV-2026-07", period: "July 2026",  amount: "$1,240.00", status: "success" as const },
-  { id: "INV-2026-06", period: "June 2026",  amount: "$980.50",   status: "success" as const },
-  { id: "INV-2026-05", period: "May 2026",   amount: "$1,105.00", status: "success" as const },
-  { id: "INV-2026-04", period: "April 2026", amount: "$870.00",   status: "success" as const },
+function UsageBar({ label, used, max, unit = "" }: { label: string; used: number; max: number; unit?: string }) {
+  const pct = max > 0 ? Math.min((used / max) * 100, 100) : 0;
+  const color = pct > 80 ? "bg-red-500" : pct > 60 ? "bg-amber-500" : "bg-brand-500";
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-medium text-white">{label}</span>
+        <span className="text-gray-400">{used.toLocaleString()}{unit} / {max.toLocaleString()}{unit}</span>
+      </div>
+      <div className="h-2 w-full rounded-full bg-gray-800 overflow-hidden">
+        <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${pct}%` }} />
+      </div>
+      <p className="text-right text-[10px] text-gray-500">{pct.toFixed(1)}%</p>
+    </div>
+  );
+}
+
+const PLANS = [
+  { name: "Starter",    price: "$49/mo",  highlight: false },
+  { name: "Pro",        price: "$149/mo", highlight: false },
+  { name: "Enterprise", price: "Custom",  highlight: false },
 ];
 
 export default function BillingPage() {
+  const [data,    setData]    = useState<BillingData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/billing")
+      .then((r) => r.json())
+      .then((d: { success: boolean; data?: BillingData }) => {
+        if (d.success && d.data) setData(d.data);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const plan     = data?.plan ?? "FREE";
+  const plans    = PLANS.map((p) => ({ ...p, highlight: p.name.toUpperCase() === plan }));
+  const isLoading = loading || !data;
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1">
         <AppSidebar />
-
         <main className="flex-1 p-8 space-y-8 overflow-y-auto">
+          {/* Header */}
           <div>
             <h1 className="text-3xl font-extrabold text-white tracking-tight">Billing & Usage</h1>
-            <p className="text-gray-400 mt-1">Manage your subscription plan, invoices, and usage quotas.</p>
+            <p className="text-gray-400 mt-1">
+              {isLoading ? "Loading…" : `${data.orgName} · ${data.plan} Plan`}
+            </p>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-            <StatCard title="Current Plan"       value="Enterprise"   trend="Active subscription" accent="brand"  />
-            <StatCard title="Next Billing Date"  value="Aug 1, 2026"  trend="29 days remaining"   accent="purple" />
-            <StatCard title="Monthly Spend"      value="$1,240"       trend="+12% vs last month"  trendUp accent="amber" />
-            <StatCard title="Cost per Request"   value="$0.002"       trend="-18% optimised"      trendUp={true} accent="green" />
+            {[
+              { title: "Current Plan",     value: isLoading ? "—" : plan,                                    sub: "Active subscription",          accent: "brand"  },
+              { title: "Storage Used",     value: isLoading ? "—" : `${data.usedStorageGB.toFixed(2)} GB`,   sub: `of ${data?.quotaGB ?? 1} GB`,   accent: "purple" },
+              { title: "Total Files",      value: isLoading ? "—" : data.storageFiles,                       sub: "Uploaded to storage",           accent: "cyan"   },
+              { title: "AI Jobs Done",     value: isLoading ? "—" : data.aiJobsDone,                         sub: "OCR + summarise + embed",       accent: "green"  },
+            ].map((s) => (
+              <div key={s.title}
+                className={`rounded-2xl border bg-gradient-to-br p-5 ${
+                  s.accent === "brand"  ? "from-brand-500/10  to-brand-700/5  border-brand-500/20"  :
+                  s.accent === "purple" ? "from-purple-500/10 to-purple-700/5 border-purple-500/20" :
+                  s.accent === "cyan"   ? "from-cyan-500/10   to-cyan-700/5   border-cyan-500/20"   :
+                  "from-emerald-500/10 to-emerald-700/5 border-emerald-500/20"
+                }`}>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">{s.title}</p>
+                <p className={`text-3xl font-extrabold text-white ${isLoading ? "animate-pulse" : ""}`}>{s.value}</p>
+                <p className="mt-1 text-xs text-gray-500">{s.sub}</p>
+              </div>
+            ))}
           </div>
 
           {/* Plans */}
           <div className="space-y-3">
             <h2 className="text-xl font-bold text-white">Plans</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {plans.map((plan) => (
-                <div
-                  key={plan.name}
+              {plans.map((p) => (
+                <div key={p.name}
                   className={`rounded-2xl border p-6 flex flex-col gap-4 transition-all ${
-                    plan.highlight
+                    p.highlight
                       ? "border-brand-500/50 bg-brand-500/10 ring-1 ring-brand-500/30"
                       : "border-white/[0.06] bg-gray-900/60"
-                  }`}
-                >
-                  {plan.highlight && (
+                  }`}>
+                  {p.highlight && (
                     <span className="self-start rounded-full bg-brand-500 px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
                       Current Plan
                     </span>
                   )}
                   <div>
-                    <p className="text-lg font-bold text-white">{plan.name}</p>
-                    <p className="text-3xl font-extrabold text-white mt-1">{plan.price}</p>
+                    <p className="text-lg font-bold text-white">{p.name}</p>
+                    <p className="text-3xl font-extrabold text-white mt-1">{p.price}</p>
                   </div>
-                  <button
-                    type="button"
+                  <button type="button"
                     className={`mt-auto rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                      plan.highlight
+                      p.highlight
                         ? "bg-brand-600 text-white hover:bg-brand-500"
                         : "border border-white/10 bg-white/5 text-white hover:bg-white/10"
-                    }`}
-                  >
-                    {plan.highlight ? "Manage Plan" : "Upgrade"}
+                    }`}>
+                    {p.highlight ? "Manage Plan" : "Upgrade"}
                   </button>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Usage */}
+          {/* Usage bars — real data from DB */}
           <div className="rounded-2xl border border-white/[0.06] bg-gray-900/60 p-6 space-y-5">
-            <h2 className="text-base font-semibold text-white">Resource Usage — July 2026</h2>
-            <UsageBar label="API Tokens"        used={18_400_000} total={50_000_000} unit=" tok" />
-            <UsageBar label="Agent Executions"  used={42_310}     total={100_000} />
-            <UsageBar label="Vector Storage"    used={284}        total={1024} unit=" GB" />
-            <UsageBar label="Knowledge Docs"    used={482}        total={5000} />
+            <h2 className="text-base font-semibold text-white">Resource Usage</h2>
+            {isLoading ? (
+              <div className="space-y-4 animate-pulse">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-8 bg-gray-800/60 rounded-xl" />
+                ))}
+              </div>
+            ) : (
+              <>
+                <UsageBar label="Storage"          used={Math.round(data.usedStorageGB * 100)} max={data.quotaGB * 100}       unit=" GB" />
+                <UsageBar label="AI Agent Sessions" used={data.conversationCount}               max={Math.max(data.conversationCount * 3, 100)} />
+                <UsageBar label="AI Jobs Processed" used={data.aiJobsDone}                      max={Math.max(data.aiJobsDone * 2, 50)}     />
+                <UsageBar label="Knowledge Docs"    used={data.docCount}                        max={Math.max(data.docCount * 3, 20)}       />
+              </>
+            )}
           </div>
 
-          {/* Invoices */}
-          <div className="space-y-3">
-            <h2 className="text-xl font-bold text-white">Invoice History</h2>
-            <div className="rounded-2xl border border-white/[0.06] bg-gray-900/60 overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-white/[0.06] text-left text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                    <th className="px-5 py-3.5">Invoice</th>
-                    <th className="px-5 py-3.5">Period</th>
-                    <th className="px-5 py-3.5">Amount</th>
-                    <th className="px-5 py-3.5">Status</th>
-                    <th className="px-5 py-3.5">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/[0.04]">
-                  {invoices.map((inv) => (
-                    <tr key={inv.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-5 py-3.5 font-mono text-xs text-cyan-400">{inv.id}</td>
-                      <td className="px-5 py-3.5 text-gray-300">{inv.period}</td>
-                      <td className="px-5 py-3.5 font-semibold text-white">{inv.amount}</td>
-                      <td className="px-5 py-3.5"><StatusBadge status={inv.status} label="Paid" /></td>
-                      <td className="px-5 py-3.5">
-                        <button type="button" className="text-xs text-brand-400 hover:text-brand-300 transition-colors font-medium">
-                          Download PDF
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          {/* No invoices until connected to a real billing provider */}
+          <div className="rounded-2xl border border-white/[0.06] bg-gray-900/60 p-6 text-center">
+            <p className="text-gray-500 text-sm">
+              Invoice history will appear here once connected to a billing provider.
+            </p>
           </div>
         </main>
       </div>
