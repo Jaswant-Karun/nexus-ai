@@ -43,7 +43,7 @@ app = FastAPI(
 
 app.add_middleware(
 	CORSMiddleware,
-	allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+	allow_origins=["*"],
 	allow_credentials=True,
 	allow_methods=["*"],
 	allow_headers=["*"],
@@ -55,6 +55,28 @@ app.include_router(models_router, prefix="/v1")
 app.include_router(documents_router, prefix="/v1")
 app.include_router(memory_router, prefix="/v1")
 app.include_router(knowledge_graph_router, prefix="/v1")
+
+import secrets
+import time
+
+@app.post("/v1/tokens")
+async def generate_token(payload: dict = None):
+	payload = payload or {}
+	label = payload.get("label", "Mobile API Key")
+	scope = payload.get("scope", "Full Access")
+	token_raw = f"nx_live_{secrets.token_hex(16)}"
+	return {
+		"success": True,
+		"token": {
+			"id": f"tok_{int(time.time()*1000)}",
+			"name": label,
+			"prefix": f"{token_raw[:12]}****************",
+			"secret": token_raw,
+			"scope": scope,
+			"created": "Just now",
+			"lastUsed": "Never"
+		}
+	}
 
 
 @app.get("/")

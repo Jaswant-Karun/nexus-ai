@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
+        token,
         user: {
           id: user.id,
           name: user.name,

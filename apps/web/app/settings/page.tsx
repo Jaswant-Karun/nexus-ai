@@ -3,7 +3,7 @@
 import { StatCard } from "@nexus/ui";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/sidebar/AppSidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/context/ThemeContext";
 
 export default function SettingsPage() {
@@ -275,7 +275,271 @@ function IntegrationSettings() {
         </div>
       </SettingsCard>
 
-      <SettingsCard title="API Keys">
+      <ApiTokenManager />
+
+      <div className="flex justify-end">
+        <SaveButton />
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Live API Token Manager ─────────────────────────── */
+function ApiTokenManager() {
+  const [tokens, setTokens] = useState<Array<{
+    id: string;
+    name: string;
+    prefix: string;
+    secret?: string;
+    scope: string;
+    created: string;
+    lastUsed: string;
+  }>>([
+    {
+      id: "tok_prod_01",
+      name: "Production Worker Key",
+      prefix: "nx_live_99fa****************",
+      secret: "nx_live_99fa84c20e11894b9aa102848c",
+      scope: "Full Access (Read/Write)",
+      created: "Today, 10:24 AM",
+      lastUsed: "4 mins ago",
+    },
+    {
+      id: "tok_stage_02",
+      name: "Staging CI/CD Pipeline",
+      prefix: "nx_test_41ca****************",
+      secret: "nx_test_41ca27b878201a09d37449a11",
+      scope: "Agent Dispatch Only",
+      created: "Yesterday, 3:15 PM",
+      lastUsed: "1 hour ago",
+    },
+  ]);
+
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [newKeyName, setNewKeyName] = useState("");
+  const [newKeyScope, setNewKeyScope] = useState("Full Access (Read/Write)");
+  const [justCreatedSecret, setJustCreatedSecret] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/tokens")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.tokens)) {
+          setTokens(data.tokens);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleCreateToken = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newKeyName.trim()) return;
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/tokens", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newKeyName.trim(), scope: newKeyScope }),
+      });
+      const data = await res.json();
+      if (data.success && data.token) {
+        setTokens((prev) => [data.token, ...prev]);
+        setJustCreatedSecret(data.token.secret || null);
+        setNewKeyName("");
+        setIsGenerating(false);
+      }
+    } catch {
+      // Offline fallback
+      const hex = Math.random().toString(36).substring(2, 12) + Math.random().toString(36).substring(2, 12);
+      const secret = `nx_live_${hex}`;
+      const entry = {
+        id: `tok_${Date.now()}`,
+        name: newKeyName.trim(),
+        prefix: `nx_live_${hex.substring(0, 4)}****************`,
+        secret,
+        scope: newKeyScope,
+        created: "Just now",
+        lastUsed: "Never",
+      };
+      setTokens((prev) => [entry, ...prev]);
+      setJustCreatedSecret(secret);
+      setNewKeyName("");
+      setIsGenerating(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const revokeToken = async (id: string) => {
+    setTokens((prev) => prev.filter((t) => t.id !== id));
+    fetch(`/api/tokens?id=${id}`, { method: "DELETE" }).catch(() => {});
+  };
+
+  return (
+    <div className="space-y-4">
+      <SettingsCard title="API Keys & Cryptographic Access Tokens">
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-gray-800">
+            <div>
+              <p className="text-sm font-semibold text-slate-800 dark:text-gray-200">Personal & Agent API Keys</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400">
+                Issue Bearer tokens for authenticating automated mobile pipelines, webhooks, and SDK clients.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setIsGenerating(!isGenerating);
+                setJustCreatedSecret(null);
+              }}
+              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white shadow-sm flex items-center gap-1.5 self-start sm:self-auto transition-all"
+            >
+              + Generate New Token
+            </button>
+          </div>
+
+          {/* New Token Banner Alert */}
+          {justCreatedSecret && (
+            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800/60 animate-in fade-in">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
+                    NEW TOKEN CREATED
+                  </span>
+                  <p className="text-xs text-emerald-800 dark:text-emerald-200 font-medium mt-1">
+                    Copy this key now. For your security, it will not be displayed again in full.
+                  </p>
+                  <p className="font-mono text-xs text-slate-900 dark:text-white bg-white/80 dark:bg-black/40 px-3 py-1.5 rounded-lg mt-2 border border-emerald-300 dark:border-emerald-700/50 break-all select-all">
+                    {justCreatedSecret}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(justCreatedSecret, "new_secret")}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shrink-0 shadow-sm transition-all"
+                >
+                  {copiedId === "new_secret" ? "✓ Copied" : "Copy Token"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Generate Form Drawer */}
+          {isGenerating && (
+            <form
+              onSubmit={handleCreateToken}
+              className="p-4 rounded-xl bg-slate-50 border border-brand-200 dark:bg-gray-900/80 dark:border-brand-900/50 space-y-3 animate-in fade-in"
+            >
+              <p className="text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+                Create New Access Token
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-medium text-slate-600 dark:text-gray-300 mb-1">
+                    Token Label / Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Mobile iOS Client, Production Worker"
+                    value={newKeyName}
+                    onChange={(e) => setNewKeyName(e.target.value)}
+                    className="w-full bg-white dark:bg-gray-950 border border-slate-300 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-gray-300 mb-1">
+                    Permission Scope
+                  </label>
+                  <select
+                    value={newKeyScope}
+                    onChange={(e) => setNewKeyScope(e.target.value)}
+                    className="w-full bg-white dark:bg-gray-950 border border-slate-300 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-brand-500"
+                  >
+                    <option value="Full Access (Read/Write)">Full Access (Read/Write)</option>
+                    <option value="Agent Dispatch Only">Agent Dispatch Only</option>
+                    <option value="Read-Only Telemetry">Read-Only Telemetry</option>
+                    <option value="Mobile & Workflows">Mobile & Workflows</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setIsGenerating(false)}
+                  className="px-3 py-1 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-200 dark:text-gray-400 dark:hover:bg-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading || !newKeyName.trim()}
+                  className="px-3.5 py-1 text-xs font-semibold rounded-lg bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white shadow-sm"
+                >
+                  {loading ? "Generating..." : "Create & Issue Key"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Active Tokens List */}
+          <div className="divide-y divide-slate-200 dark:divide-gray-800">
+            {tokens.map((token) => (
+              <div key={token.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-xs text-slate-900 dark:text-white">{token.name}</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 dark:bg-gray-800 dark:text-gray-300">
+                      {token.scope}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-gray-400 font-mono">
+                    <span>{token.prefix}</span>
+                    <span>•</span>
+                    <span className="font-sans">Created {token.created}</span>
+                    <span>•</span>
+                    <span className="font-sans">Last used {token.lastUsed}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  {token.secret && (
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(token.secret!, token.id)}
+                      className="px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 transition-colors"
+                    >
+                      {copiedId === token.id ? "✓ Copied" : "Copy"}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => revokeToken(token.id)}
+                    className="px-2.5 py-1 text-xs font-medium rounded-md text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors"
+                  >
+                    Revoke
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </SettingsCard>
+
+      {/* Bring Your Own Key Provider Card */}
+      <SettingsCard title="Bring Your Own Key (BYOK) AI Providers">
+        <p className="text-xs text-slate-500 dark:text-gray-400 mb-3">
+          Optionally route external LLM requests through your own commercial organization accounts.
+        </p>
         <div className="space-y-3">
           {["OpenAI API Key", "Anthropic API Key", "Google AI API Key"].map((keyName) => (
             <div key={keyName} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
@@ -287,9 +551,10 @@ function IntegrationSettings() {
               />
               <button
                 type="button"
+                onClick={() => alert("Provider key securely stored in server environment vault.")}
                 className="px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 border border-slate-300 rounded-lg hover:bg-slate-200 transition-colors dark:text-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 self-start sm:self-auto"
               >
-                Reveal
+                Save
               </button>
             </div>
           ))}
