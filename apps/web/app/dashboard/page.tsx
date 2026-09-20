@@ -1,6 +1,7 @@
 "use client";
 
 import { NavBar, Sidebar, StatCard, InsightCard, DataTable } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 
 export default function DashboardPage() {
   const sidebarItems = [
@@ -41,7 +42,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1">
         <Sidebar
           items={sidebarItems}
