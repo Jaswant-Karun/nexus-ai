@@ -13,6 +13,7 @@ import type { FileCategory } from "@/types/storage";
 const CATEGORIES = Object.keys(CATEGORY_META) as FileCategory[];
 
 export default function SearchPage() {
+  const router    = useRouter();
   const [query,    setQuery]    = useState("");
   const [category, setCategory] = useState<FileCategory | "all">("all");
   const [mode,     setMode]     = useState<"keyword" | "semantic">("keyword");
@@ -101,7 +102,7 @@ export default function SearchPage() {
               ) : (
                 <div className="space-y-2">
                   {results.map((f) => (
-                    <FileCard key={f.id} file={f} view="list" onOpen={(file) => window.location.href = `/storage/file/${file.id}`} />
+                    <FileCard key={f.id} file={f} view="list" onOpen={(file) => router.push(`/storage/file/${file.id}`)} />
                   ))}
                 </div>
               )}
