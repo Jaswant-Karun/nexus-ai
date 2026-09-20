@@ -3,3 +3,5 @@ packages:
   - "backend/*"
   - "ai/*"
   - "packages/*"
+  - "scripts/*"
+  - "docker/*"

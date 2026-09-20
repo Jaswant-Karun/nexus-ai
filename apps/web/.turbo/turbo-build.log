@@ -1,0 +1,22 @@
+
+> @nexus/web@ build C:\Users\jaswant karun\OneDrive\Desktop\nexus-ai\apps\web
+> next build
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\jaswant karun\package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * C:\Users\jaswant karun\OneDrive\Desktop\nexus-ai\pnpm-lock.yaml
+
+   ▲ Next.js 15.5.22
+
+
+> Build error occurred
+[Error: EINVAL: invalid argument, readlink 'C:\Users\jaswant karun\OneDrive\Desktop\nexus-ai\apps\web\.next\server\app-paths-manifest.json'] {
+  errno: -4071,
+  code: 'EINVAL',
+  syscall: 'readlink',
+  path: 'C:\\Users\\jaswant karun\\OneDrive\\Desktop\\nexus-ai\\apps\\web\\.next\\server\\app-paths-manifest.json'
+}
+ ELIFECYCLE  Command failed with exit code 1.
