@@ -35,6 +35,10 @@ export const CATEGORY_META: Record<FileCategory, { label: string; color: string;
   other:        { label: "Other",        color: "text-dark-300",    bg: "bg-dark-700/50",    icon: "📁" },
 };
 
+// ─── Storage Capacity Constants ──────────────────────────────────────────────
+export const STORAGE_QUOTA_BYTES = 2 * 1024 * 1024 * 1024; // 2 GB Memory / Storage Capacity
+export const STORAGE_USED_BYTES = 840 * 1024 * 1024; // 840 MB currently used (~39%)
+
 // ─── Format bytes ─────────────────────────────────────────────────────────────
 
 export function formatBytes(bytes: number, decimals = 1): string {

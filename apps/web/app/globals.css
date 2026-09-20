@@ -12,6 +12,16 @@
     @apply box-border;
   }
 
+  button {
+    @apply cursor-pointer select-none;
+    touch-action: manipulation;
+  }
+
+  button:active:not(:disabled) {
+    transform: scale(0.98);
+    transition: transform 0.05s ease-out;
+  }
+
   html {
     @apply scroll-smooth;
   }

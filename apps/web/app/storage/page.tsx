@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { NavBar } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { FileIcon } from "@/components/storage/FileIcon";
 import { formatBytes, MOCK_FILES, MOCK_FOLDERS } from "@/lib/storage";
 import { cn } from "@/lib/utils";
+import type { StorageFile, StorageFolder } from "@/types/storage";
 
 /* ── Top bar ─────────────────────────────────────────────────────── */
-function TopBar() {
+function TopBar({ onSearch }: { onSearch: (q: string) => void }) {
   const [query, setQuery] = useState("");
   return (
     <div className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-white/[0.06] bg-dark-950/95 backdrop-blur-sm px-6 py-3">
@@ -27,9 +28,15 @@ function TopBar() {
         <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-dark-400" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
         </svg>
-        <input value={query} onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search your files…"
-          className="w-full rounded-2xl border border-white/[0.08] bg-dark-800/60 py-2 pl-10 pr-4 text-sm text-white placeholder:text-dark-400 focus:border-brand-500/60 focus:outline-none focus:ring-1 focus:ring-brand-500/20 transition" />
+        <input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            onSearch(e.target.value);
+          }}
+          placeholder="Search your files, documents, datasets…"
+          className="w-full rounded-2xl border border-white/[0.08] bg-dark-800/60 py-2 pl-10 pr-4 text-sm text-white placeholder:text-dark-400 focus:border-brand-500/60 focus:outline-none focus:ring-1 focus:ring-brand-500/20 transition"
+        />
       </div>
 
       <Link href="/storage/upload"
@@ -42,6 +49,58 @@ function TopBar() {
     </div>
   );
 }
+
+/* ── Storage Catalog Info: What NexusStorage Stores ──────────────── */
+const STORAGE_CAPABILITIES = [
+  {
+    icon: "📄",
+    title: "Enterprise Documents",
+    formats: "PDF, DOCX, TXT, Markdown, RTF",
+    desc: "Contracts, technical whitepapers, and specs with automated OCR, text extraction, and RAG chunking.",
+    badge: "Vector Embeddings & OCR",
+    badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  },
+  {
+    icon: "📊",
+    title: "Datasets & Tabular Data",
+    formats: "CSV, XLSX, Parquet, JSON, JSONL",
+    desc: "Analytical sheets, transactional records, and machine learning training datasets with schema inference.",
+    badge: "AI Querying & Analytics",
+    badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  },
+  {
+    icon: "🧠",
+    title: "AI Artifacts & Memory",
+    formats: "PgVector Embeddings, Checkpoints, Prompts",
+    desc: "Persistent agent state, long-term semantic conversation memory, vector indices, and tool schemas.",
+    badge: "Semantic RAG Indexing",
+    badgeColor: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  },
+  {
+    icon: "🎬",
+    title: "Rich Media & Visual Assets",
+    formats: "PNG, JPG, WebP, SVG, MP4, WebM",
+    desc: "Design prototypes, marketing renders, UI screenshots, and product demo screen recordings.",
+    badge: "AI Thumbnailing & Previews",
+    badgeColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  },
+  {
+    icon: "🎵",
+    title: "Audio & Meeting Transcripts",
+    formats: "MP3, WAV, M4A, OGG",
+    desc: "Customer calls, audio memos, and interviews with automated Whisper multi-speaker speech-to-text transcription.",
+    badge: "Whisper Transcription",
+    badgeColor: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+  },
+  {
+    icon: "🔒",
+    title: "Audit Logs & Version History",
+    formats: "SHA-256 Hashes, Delta History, Access Logs",
+    desc: "Cryptographic SHA-256 tamper verification, virus scan telemetry, download history, and multi-version snapshots.",
+    badge: "SHA-256 Tamper Proof",
+    badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  },
+];
 
 /* ── Quick Access cards ──────────────────────────────────────────── */
 const QUICK_ACCESS = [
@@ -57,17 +116,108 @@ const QUICK_ACCESS = [
 /* ── Recent files table ──────────────────────────────────────────── */
 
 export default function StorageDashboardPage() {
-  const recentFiles = MOCK_FILES.filter((f) => !f.isTrashed).slice(0, 6);
-  const rootFolders = MOCK_FOLDERS.filter((f) => !f.parentId).slice(0, 4);
+  const [files, setFiles] = useState<StorageFile[]>(MOCK_FILES);
+  const [folders, setFolders] = useState<StorageFolder[]>(MOCK_FOLDERS);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+    async function fetchLiveStorage() {
+      try {
+        const [filesRes, foldersRes] = await Promise.all([
+          fetch("/api/storage/files", { credentials: "include" }).catch(() => null),
+          fetch("/api/storage/folders", { credentials: "include" }).catch(() => null),
+        ]);
+
+        if (filesRes && filesRes.ok) {
+          const filesJson = await filesRes.json();
+          if (filesJson.success && Array.isArray(filesJson.data) && filesJson.data.length > 0) {
+            if (mounted) setFiles(filesJson.data);
+          }
+        }
+
+        if (foldersRes && foldersRes.ok) {
+          const foldersJson = await foldersRes.json();
+          if (foldersJson.success && Array.isArray(foldersJson.data) && foldersJson.data.length > 0) {
+            if (mounted) setFolders(foldersJson.data);
+          }
+        }
+      } catch (e) {
+        console.error("Error loading storage:", e);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    fetchLiveStorage();
+    return () => { mounted = false; };
+  }, []);
+
+  const filteredFiles = files.filter(
+    (f) =>
+      !f.isTrashed &&
+      (searchQuery ? f.name.toLowerCase().includes(searchQuery.toLowerCase()) : true)
+  );
+
+  const recentFiles = filteredFiles.slice(0, 6);
+  const rootFolders = folders.filter((f) => !f.parentId).slice(0, 4);
 
   return (
     <div className="min-h-screen bg-dark-950 text-white flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
         <StorageLayout>
-          <TopBar />
+          <TopBar onSearch={(q) => setSearchQuery(q)} />
 
           <div className="px-6 py-6 space-y-8">
+            {/* What NexusStorage Stores (Catalog Overview) */}
+            <section className="rounded-2xl border border-brand-500/25 bg-gradient-to-br from-brand-950/30 via-dark-900/90 to-dark-950 p-6 space-y-4 shadow-xl">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🗄️</span>
+                    <h2 className="text-base font-bold text-white tracking-tight">
+                      What NexusStorage Stores & Indexes
+                    </h2>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                      Multi-Modal AI Storage
+                    </span>
+                  </div>
+                  <p className="text-xs text-dark-300 mt-1">
+                    Unified enterprise storage engine tailored for autonomous AI agents, RAG vector indexing, and media pipelines.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-dark-400 font-mono">
+                  <span>Quota: 2.0 GB</span>
+                  <span>•</span>
+                  <span className="text-emerald-400">PostgreSQL + PgVector Active</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {STORAGE_CAPABILITIES.map((cap) => (
+                  <div
+                    key={cap.title}
+                    className="rounded-xl border border-white/[0.06] bg-dark-800/50 p-3.5 hover:border-brand-500/30 transition-all space-y-2 group"
+                  >
+                    <div className="flex items-start justify-between">
+                      <span className="text-2xl p-2 rounded-lg bg-white/5 border border-white/5 group-hover:scale-110 transition-transform">
+                        {cap.icon}
+                      </span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border ${cap.badgeColor}`}>
+                        {cap.badge}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white">{cap.title}</h3>
+                      <p className="text-[11px] font-mono text-brand-400/90 mt-0.5">{cap.formats}</p>
+                      <p className="text-xs text-dark-300 mt-1.5 leading-relaxed">{cap.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             {/* Quick Access */}
             <section>
               <div className="flex items-center justify-between mb-4">
@@ -88,7 +238,6 @@ export default function StorageDashboardPage() {
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-2xl">
                         {item.icon}
                       </div>
-                      {/* Overlap avatars */}
                       <div className="flex -space-x-2">
                         {item.avatars.map((a, i) => (
                           <div key={i} className="h-6 w-6 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 border border-dark-950 flex items-center justify-center text-[9px] font-bold text-white">
@@ -121,7 +270,6 @@ export default function StorageDashboardPage() {
                 {rootFolders.map((folder) => (
                   <Link key={folder.id} href={`/storage/files?folder=${folder.id}`}
                     className="group flex flex-col gap-3 rounded-2xl border border-white/[0.06] bg-dark-900/60 p-4 hover:border-brand-500/25 hover:bg-dark-800/60 transition-all">
-                    {/* Folder icon with stacked look */}
                     <div className="relative h-12 w-14">
                       <div className="absolute top-0 left-0 h-9 w-12 rounded-lg opacity-30" style={{ backgroundColor: folder.color ?? "#6272f5" }} />
                       <div className="absolute top-2 left-1 h-10 w-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: folder.color ?? "#6272f5" }}>
@@ -130,7 +278,6 @@ export default function StorageDashboardPage() {
                         </svg>
                       </div>
                     </div>
-                    {/* 3-dot menu */}
                     <div className="flex items-start justify-between">
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-white truncate">{folder.name}</p>
@@ -138,34 +285,34 @@ export default function StorageDashboardPage() {
                           {folder.fileCount} files · {formatBytes(folder.totalSize)}
                         </p>
                       </div>
-                      <button type="button" onClick={(e) => e.preventDefault()}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-white/10 text-dark-400 hover:text-white transition-all">
-                        <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor">
-                          <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
-                        </svg>
-                      </button>
                     </div>
                   </Link>
                 ))}
               </div>
             </section>
 
-            {/* Recent Files */}
+            {/* Recent Files Table */}
             <section>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold text-white">Recent Files</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-bold text-white">Recent Files</h2>
+                  {loading ? (
+                    <span className="text-[10px] text-brand-400 font-mono animate-pulse">Syncing…</span>
+                  ) : (
+                    <span className="text-[10px] text-emerald-400 font-mono">Live</span>
+                  )}
+                </div>
                 <Link href="/storage/files" className="text-xs text-dark-400 hover:text-brand-400 transition-colors flex items-center gap-1">
-                  View all
+                  View all ({files.length})
                   <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                 </Link>
               </div>
               <div className="rounded-2xl border border-white/[0.06] bg-dark-900/60 overflow-hidden">
-                {/* Table header */}
                 <div className="grid grid-cols-[auto_1fr_140px_120px_100px] items-center gap-4 px-5 py-3 border-b border-white/[0.06] text-[11px] font-semibold uppercase tracking-wider text-dark-400">
                   <span className="w-8" />
                   <span>Name</span>
                   <span className="hidden md:block">Last modified</span>
-                  <span className="hidden md:block">Member</span>
+                  <span className="hidden md:block">Status</span>
                   <span />
                 </div>
                 {recentFiles.map((file) => (
@@ -174,19 +321,16 @@ export default function StorageDashboardPage() {
                     <FileIcon mimeType={file.mimeType} size="sm" />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-white truncate group-hover:text-brand-300 transition-colors">{file.name}</p>
-                      <p className="text-[11px] text-dark-500 mt-0.5">{formatBytes(file.sizeBytes)}</p>
+                      <p className="text-[11px] text-dark-500 mt-0.5 font-mono">{formatBytes(file.sizeBytes)} • {file.category.toUpperCase()}</p>
                     </div>
                     <span className="hidden md:block text-xs text-dark-400">
-                      {new Date(file.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      {new Date(file.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </span>
-                    <span className="hidden md:block text-xs text-dark-300">Only you</span>
-                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button type="button" onClick={(e) => e.preventDefault()}
-                        className="p-1.5 rounded-lg hover:bg-white/10 text-dark-400 hover:text-white transition-colors">
-                        <svg width={13} height={13} viewBox="0 0 24 24" fill="currentColor">
-                          <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
-                        </svg>
-                      </button>
+                    <span className="hidden md:block text-xs text-emerald-400 font-mono">
+                      {file.virusScanStatus ? file.virusScanStatus.toUpperCase() : "VERIFIED"}
+                    </span>
+                    <div className="flex items-center justify-end gap-1 text-xs text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span>View File →</span>
                     </div>
                   </Link>
                 ))}

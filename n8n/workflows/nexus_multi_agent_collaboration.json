@@ -38,6 +38,17 @@
     },
     {
       "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [440, 20],
+      "id": "groq-chat-model",
+      "name": "Groq Chat Model"
+    },
+    {
+      "parameters": {
         "promptType": "define",
         "text": "=Role: Security & Architecture Auditor\nGoal: {{ $json.goal }}\nTask: Review security policies, encryption levels (AES-256, TLS 1.3), and compliance considerations. Return a 3-bullet security audit.",
         "options": {}
@@ -50,12 +61,23 @@
     },
     {
       "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [440, 600],
+      "id": "gemini-chat-model",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
         "mode": "combine",
         "combineBy": "combineAll"
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
-      "position": [720, 300],
+      "position": [740, 300],
       "id": "merge-agents",
       "name": "Consolidate Outputs"
     },
@@ -69,9 +91,20 @@
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
-      "position": [960, 300],
+      "position": [980, 300],
       "id": "agent-synthesizer",
       "name": "Agent 3: Lead Synthesizer"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [980, 500],
+      "id": "openai-chat-model-synthesizer",
+      "name": "OpenAI Chat Model"
     },
     {
       "parameters": {
@@ -81,7 +114,7 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [1200, 300],
+      "position": [1220, 300],
       "id": "return-response",
       "name": "Return Final Report"
     }
@@ -109,6 +142,28 @@
           {
             "node": "Agent 2: Security Auditor",
             "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent 1: Data Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent 2: Security Auditor",
+            "type": "ai_languageModel",
             "index": 0
           }
         ]
@@ -142,6 +197,17 @@
           {
             "node": "Agent 3: Lead Synthesizer",
             "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent 3: Lead Synthesizer",
+            "type": "ai_languageModel",
             "index": 0
           }
         ]

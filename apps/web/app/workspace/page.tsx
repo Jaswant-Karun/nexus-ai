@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { NavBar, Sidebar, DataTable } from "@nexus/ui";
+import { Sidebar, DataTable } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { summarizeText } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
 
@@ -116,7 +117,7 @@ export default function WorkspacePage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1">
         <Sidebar items={sidebarItems} currentPath="/workspace"
           onNavigate={(href) => { window.location.href = href; }} />

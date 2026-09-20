@@ -1,6 +1,6 @@
 "use client";
 
-import { NavBar } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { FileIcon } from "@/components/storage/FileIcon";
 import { formatBytes, MOCK_FILES } from "@/lib/storage";
@@ -22,7 +22,7 @@ export default function VersionsPage() {
 
   return (
     <div className="min-h-screen bg-dark-950 text-white flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
         <StorageLayout>
           <div>

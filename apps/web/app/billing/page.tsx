@@ -1,6 +1,7 @@
 "use client";
 
-import { NavBar, Sidebar } from "@nexus/ui";
+import { Sidebar } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StatCard } from "@/components/cards/StatCard";
 import { UsageBar } from "@/components/charts/UsageBar";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -29,7 +30,7 @@ const invoices = [
 export default function BillingPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1">
         <Sidebar
           items={sidebarItems}

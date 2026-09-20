@@ -1,12 +1,12 @@
 "use client";
 
-import { NavBar } from "@nexus/ui";
+import { useState, use } from "react";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { FileIcon } from "@/components/storage/FileIcon";
 import { formatBytes, relativeTime, virusBadge, MOCK_FILES } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { use } from "react";
 
 export default function FileDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -14,11 +14,11 @@ export default function FileDetailPage({ params }: { params: Promise<{ id: strin
 
   const scanBadge = virusBadge(file.virusScanStatus);
   const tabs = ["Overview", "AI Insights", "Versions", "Access Log", "Sharing"];
-  const activeTab = "Overview";
+  const [activeTab, setActiveTab] = useState("Overview");
 
   return (
     <div className="min-h-screen bg-dark-950 text-white flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
         <StorageLayout>
           {/* Back */}
@@ -54,8 +54,8 @@ export default function FileDetailPage({ params }: { params: Promise<{ id: strin
           {/* Tabs */}
           <div className="flex border-b border-white/[0.06]">
             {tabs.map((t) => (
-              <button key={t} type="button"
-                className={cn("px-5 py-3 text-sm font-medium transition-colors relative",
+              <button key={t} type="button" onClick={() => setActiveTab(t)}
+                className={cn("px-5 py-3 text-sm font-medium transition-colors relative cursor-pointer active:scale-95",
                   t === activeTab
                     ? "text-brand-400 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-brand-500"
                     : "text-dark-300 hover:text-white")}>

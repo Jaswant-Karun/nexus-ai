@@ -7,8 +7,11 @@ from __future__ import annotations
 
 import os
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings
+
+_ROOT_ENV = str(Path(__file__).resolve().parents[2] / ".env")
 
 
 class Settings(BaseSettings):
@@ -47,7 +50,7 @@ class Settings(BaseSettings):
     ai_service_port: int = 8001
 
     class Config:
-        env_file = "../../.env"
+        env_file = (_ROOT_ENV, "../../.env", ".env")
         env_file_encoding = "utf-8"
         extra = "ignore"
 

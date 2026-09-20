@@ -1,6 +1,6 @@
 "use client";
 
-import { NavBar } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { formatBytes, MOCK_FILES } from "@/lib/storage";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ export default function StorageAnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-dark-950 text-white flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
         <StorageLayout>
           <div>

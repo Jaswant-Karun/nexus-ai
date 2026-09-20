@@ -10,7 +10,8 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { NavBar, Sidebar } from "@nexus/ui";
+import { Sidebar } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { cn } from "@/lib/utils";
 
 const sidebarItems = [
@@ -109,7 +110,7 @@ export default function UsagePage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           items={sidebarItems}

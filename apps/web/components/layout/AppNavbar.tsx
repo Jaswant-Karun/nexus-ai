@@ -19,6 +19,7 @@ interface AppNavbarProps {
   showBackButton?: boolean;
   backHref?: string;
   backLabel?: string;
+  actions?: React.ReactNode;
 }
 
 export function AppNavbar({
@@ -26,6 +27,7 @@ export function AppNavbar({
   showBackButton = false,
   backHref = "/dashboard",
   backLabel = "Back to Dashboard",
+  actions,
 }: AppNavbarProps) {
   const { user, loading, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -64,6 +66,7 @@ export function AppNavbar({
 
       {/* Right side controls */}
       <div className="flex items-center gap-2.5">
+        {actions}
         {/* Light / Dark Mode Toggle */}
         <ThemeToggle />
 

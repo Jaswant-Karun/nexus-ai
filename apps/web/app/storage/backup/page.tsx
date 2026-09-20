@@ -1,6 +1,6 @@
 "use client";
 
-import { NavBar } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { formatBytes } from "@/lib/storage";
 import { cn } from "@/lib/utils";
@@ -31,7 +31,7 @@ const STATUS_BADGE: Record<BackupRecord["status"], string> = {
 export default function BackupPage() {
   return (
     <div className="min-h-screen bg-dark-950 text-white flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
         <StorageLayout>
           <div className="flex items-center justify-between">

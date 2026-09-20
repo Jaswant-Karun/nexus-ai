@@ -1,6 +1,6 @@
 "use client";
 
-import { NavBar } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ const ACTION_BADGE: Record<string, string> = {
 export default function SecurityPage() {
   return (
     <div className="min-h-screen bg-dark-950 text-white flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
         <StorageLayout>
           <div>

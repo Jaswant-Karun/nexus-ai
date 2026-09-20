@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { NavBar } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +27,7 @@ export default function StorageSettingsPage() {
 
   return (
     <div className="min-h-screen bg-dark-950 text-white flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
         <StorageLayout>
           <div>
@@ -54,9 +54,9 @@ export default function StorageSettingsPage() {
                 <h2 className="text-sm font-semibold text-white">Storage Quota</h2>
                 <div className="space-y-4">
                   {[
-                    { label: "Total Quota",     value: "1 TB",   sub: "Enterprise Plan" },
-                    { label: "Used Storage",    value: "284 GB", sub: "62.4% of 1 TB" },
-                    { label: "Available Space", value: "740 GB", sub: "37.6% free" },
+                    { label: "Total Quota",     value: "2 GB",   sub: "Standard Memory Plan" },
+                    { label: "Used Storage",    value: "840 MB", sub: "42% of 2 GB" },
+                    { label: "Available Space", value: "1.16 GB", sub: "58% free" },
                   ].map((s) => (
                     <div key={s.label} className="flex items-center justify-between rounded-xl bg-dark-800/60 border border-white/[0.06] px-4 py-3">
                       <div>

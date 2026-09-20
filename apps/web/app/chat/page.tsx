@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { NavBar, Sidebar } from "@nexus/ui";
+import { Sidebar } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { streamChat } from "@/lib/chat-client";
 import { cn } from "@/lib/utils";
 import { MarkdownRenderer } from "@/components/markdown/MarkdownRenderer";
@@ -166,7 +167,7 @@ export default function ChatPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           items={sidebarItems}

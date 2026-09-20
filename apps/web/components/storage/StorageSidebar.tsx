@@ -4,11 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { formatBytes, MOCK_FOLDERS, buildFolderTree } from "@/lib/storage";
+import { formatBytes, MOCK_FOLDERS, buildFolderTree, STORAGE_QUOTA_BYTES, STORAGE_USED_BYTES } from "@/lib/storage";
 import type { FolderTreeNode } from "@/types/storage";
 
-const USED_BYTES  = 42_400_000_000;
-const QUOTA_BYTES = 50_000_000_000;
+const USED_BYTES  = STORAGE_USED_BYTES; // 840 MB
+const QUOTA_BYTES = STORAGE_QUOTA_BYTES; // 2 GB Capacity
 
 interface SidebarSection {
   id: string;
@@ -221,10 +221,10 @@ export function StorageSidebar({ className }: { className?: string }) {
           </div>
           <div className="space-y-1.5">
             {[
-              { label: "Videos",    size: "16.2 GB", color: "bg-red-500" },
-              { label: "Photos",    size: "12.1 GB", color: "bg-emerald-500" },
-              { label: "Documents", size: "9 GB",    color: "bg-blue-500" },
-              { label: "Other",     size: "5.1 GB",  color: "bg-amber-500" },
+              { label: "Videos",    size: "320 MB", color: "bg-red-500" },
+              { label: "Photos",    size: "240 MB", color: "bg-emerald-500" },
+              { label: "Documents", size: "180 MB", color: "bg-blue-500" },
+              { label: "Other",     size: "100 MB", color: "bg-amber-500" },
             ].map((c) => (
               <div key={c.label} className="flex items-center justify-between text-[11px]">
                 <span className="flex items-center gap-1.5 text-dark-300">
@@ -235,9 +235,9 @@ export function StorageSidebar({ className }: { className?: string }) {
               </div>
             ))}
           </div>
-          <button type="button" className="mt-3 w-full rounded-xl bg-brand-600 hover:bg-brand-500 py-2 text-xs font-semibold text-white transition-colors">
+          <Link href="/billing" className="mt-3 block w-full text-center rounded-xl bg-brand-600 hover:bg-brand-500 active:scale-[0.98] py-2 text-xs font-semibold text-white transition-all shadow-md shadow-brand-600/20">
             Upgrade to PRO
-          </button>
+          </Link>
         </div>
       </div>
     </aside>

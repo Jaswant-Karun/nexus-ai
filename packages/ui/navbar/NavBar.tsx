@@ -51,7 +51,7 @@ export function NavBar({
           <a
             href={backHref}
             onClick={handleBack}
-            className="ml-3 flex items-center gap-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-cyan-500/30 px-3.5 py-1.5 text-xs font-semibold text-cyan-300 hover:text-white shadow-md transition-all hover:border-cyan-500/60"
+            className="ml-3 flex items-center gap-2 rounded-xl bg-gray-900 hover:bg-gray-800 active:scale-95 border border-cyan-500/30 px-3.5 py-1.5 text-xs font-semibold text-cyan-300 hover:text-white shadow-md transition-all hover:border-cyan-500/60 cursor-pointer"
           >
             <svg
               width={14}
@@ -73,12 +73,16 @@ export function NavBar({
 
       <div className="flex items-center gap-4">
         {actions}
-        <div className="flex items-center gap-3 pl-4 border-l border-gray-800">
-          <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-semibold text-white">
+        <a
+          href="/profile"
+          className="flex items-center gap-3 pl-4 border-l border-gray-800 hover:opacity-80 transition-opacity"
+          title="View Profile"
+        >
+          <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-semibold text-white shadow-sm">
             {userName.charAt(0)}
           </div>
           <span className="text-sm font-medium text-gray-300 hidden md:inline">{userName}</span>
-        </div>
+        </a>
       </div>
     </header>
   );

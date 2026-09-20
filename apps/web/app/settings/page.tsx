@@ -1,6 +1,7 @@
 "use client";
 
-import { NavBar, Sidebar, StatCard } from "@nexus/ui";
+import { Sidebar, StatCard } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { useState } from "react";
 
 export default function SettingsPage() {
@@ -17,7 +18,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1">
         <Sidebar
           items={sidebarItems}

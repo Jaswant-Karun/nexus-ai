@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { NavBar } from "@nexus/ui";
+import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { FileIcon } from "@/components/storage/FileIcon";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,7 @@ export default function SharedFilesPage() {
 
   return (
     <div className="min-h-screen bg-dark-950 text-white flex flex-col">
-      <NavBar brandName="NEXUS AI" />
+      <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
         <StorageLayout>
           <div className="flex items-center justify-between">
