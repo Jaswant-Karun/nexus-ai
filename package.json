@@ -8,8 +8,8 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "test": "pnpm test:python",
-    "test:python": "python -m unittest discover -s tests -p \"test_*.py\"",
-    "typecheck": "turbo run typecheck"
+    "test:python": "python -m unittest discover -s tests/api -p \"test_*.py\"",
+    "typecheck": "pnpm --filter @nexus-ai/web typecheck && pnpm --filter @nexus-ai/admin typecheck"
   },
   "devDependencies": {
     "@types/node": "22.10.2",
