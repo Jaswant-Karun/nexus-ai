@@ -12,10 +12,10 @@ export function createSessionToken(session: Omit<AuthSession, "expiresAt">): { t
   const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
   const payload = JSON.stringify({ ...session, expiresAt });
   // Base64 encoding token for lightweight auth session transport
-  const token = typeof btoa !== "undefined" 
-    ? btoa(payload) 
+  const token = typeof btoa !== "undefined"
+    ? btoa(payload)
     : Buffer.from(payload).toString("base64");
-  
+
   return { token, expiresAt };
 }
 
