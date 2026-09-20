@@ -65,6 +65,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final innerFieldBg = isDark ? const Color(0xff030712) : const Color(0xfff8fafc);
+    final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
+    final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff64748b);
 
     return Scaffold(
       appBar: AppBar(
@@ -241,10 +246,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isSelected ? (a['color'] as Color).withValues(alpha: 0.15) : Theme.of(context).cardColor,
+                      color: isSelected ? (a['color'] as Color).withValues(alpha: 0.15) : cardBg,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: isSelected ? (a['color'] as Color) : (isDark ? const Color(0xff1f293d) : const Color(0xffe2e8f0)),
+                        color: isSelected ? (a['color'] as Color) : cardBorder,
                         width: isSelected ? 1.5 : 1,
                       ),
                     ),
@@ -257,7 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            color: isSelected ? (a['color'] as Color) : null,
+                            color: isSelected ? (a['color'] as Color) : textPrimary,
                           ),
                         ),
                       ],
@@ -270,21 +275,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 22),
 
           // ── 2. Cognitive Telemetry Progress Gauges ──
-          const Text('Cognitive Telemetry', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          Text('Cognitive Telemetry', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textPrimary)),
           const SizedBox(height: 10),
           Row(
             children: [
-              _gaugeItem('Autonomous Swarms', '88% Active', 0.88, const Color(0xff4f52ea), isDark),
+              _gaugeItem('Autonomous Swarms', '88% Active', 0.88, const Color(0xff4f52ea), isDark, cardBg, cardBorder, textMuted),
               const SizedBox(width: 10),
-              _gaugeItem('Neural Workflows', '76% Optimal', 0.76, const Color(0xff9333ea), isDark),
+              _gaugeItem('Neural Workflows', '76% Optimal', 0.76, const Color(0xff9333ea), isDark, cardBg, cardBorder, textMuted),
             ],
           ),
           const SizedBox(height: 10),
           Row(
             children: [
-              _gaugeItem('Vector Memory', '14.8M Tokens', 0.94, const Color(0xff06b6d4), isDark),
+              _gaugeItem('Vector Memory', '14.8M Tokens', 0.94, const Color(0xff06b6d4), isDark, cardBg, cardBorder, textMuted),
               const SizedBox(width: 10),
-              _gaugeItem('Crypto Files', '100% Encrypted', 1.0, const Color(0xff10b981), isDark),
+              _gaugeItem('Crypto Files', '100% Encrypted', 1.0, const Color(0xff10b981), isDark, cardBg, cardBorder, textMuted),
             ],
           ),
           const SizedBox(height: 22),
@@ -293,18 +298,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+              color: cardBg,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: isDark ? const Color(0xff1f293d) : const Color(0xffe2e8f0)),
+              border: Border.all(color: cardBorder, width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.04),
+                  blurRadius: isDark ? 10 : 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('📈 Neural Activity Pulse', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                    Text('🔥 24-Day Streak', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xff10b981))),
+                    Text('📈 Neural Activity Pulse', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textPrimary)),
+                    const Text('🔥 24-Day Streak', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xff10b981))),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -355,38 +367,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+              color: cardBg,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: isDark ? const Color(0xff1f293d) : const Color(0xffe2e8f0)),
+              border: Border.all(color: cardBorder, width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.04),
+                  blurRadius: isDark ? 10 : 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.smart_toy_rounded, color: _blue, size: 20),
-                    SizedBox(width: 8),
-                    Text('Personal AI Co-Pilot Configuration', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    const Icon(Icons.smart_toy_rounded, color: _blue, size: 20),
+                    const SizedBox(width: 8),
+                    Text('Personal AI Co-Pilot Configuration', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textPrimary)),
                   ],
                 ),
                 const SizedBox(height: 14),
                 TextField(
                   controller: _copilotNameController,
+                  style: TextStyle(color: textPrimary, fontSize: 13.5),
                   decoration: InputDecoration(
                     labelText: 'Companion Codename',
+                    labelStyle: TextStyle(color: textMuted),
                     filled: true,
-                    fillColor: isDark ? const Color(0xff111827) : const Color(0xfff8fafc),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    fillColor: innerFieldBg,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _blue, width: 1.5)),
                   ),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _copilotTone,
+                  dropdownColor: cardBg,
+                  style: TextStyle(color: textPrimary, fontSize: 13.5),
                   decoration: InputDecoration(
                     labelText: 'Communication Tone',
+                    labelStyle: TextStyle(color: textMuted),
                     filled: true,
-                    fillColor: isDark ? const Color(0xff111827) : const Color(0xfff8fafc),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    fillColor: innerFieldBg,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _blue, width: 1.5)),
                   ),
                   items: const [
                     DropdownMenuItem(value: 'Technical & Concise', child: Text('Technical & Concise')),
@@ -398,11 +426,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _copilotModel,
+                  dropdownColor: cardBg,
+                  style: TextStyle(color: textPrimary, fontSize: 13.5),
                   decoration: InputDecoration(
                     labelText: 'Default Reasoning Engine',
+                    labelStyle: TextStyle(color: textMuted),
                     filled: true,
-                    fillColor: isDark ? const Color(0xff111827) : const Color(0xfff8fafc),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    fillColor: innerFieldBg,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _blue, width: 1.5)),
                   ),
                   items: const [
                     DropdownMenuItem(value: 'GPT-4o', child: Text('GPT-4o (High Speed & Code)')),
@@ -421,53 +454,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+              color: cardBg,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: isDark ? const Color(0xff1f293d) : const Color(0xffe2e8f0)),
+              border: Border.all(color: cardBorder, width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.04),
+                  blurRadius: isDark ? 10 : 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Account Information', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                Text('Account Information', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textPrimary)),
                 const SizedBox(height: 14),
                 TextField(
                   controller: _nameController,
+                  style: TextStyle(color: textPrimary, fontSize: 13.5),
                   decoration: InputDecoration(
                     labelText: 'Full Name',
+                    labelStyle: TextStyle(color: textMuted),
                     filled: true,
-                    fillColor: isDark ? const Color(0xff111827) : const Color(0xfff8fafc),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    fillColor: innerFieldBg,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _blue, width: 1.5)),
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _emailController,
+                  style: TextStyle(color: textPrimary, fontSize: 13.5),
                   decoration: InputDecoration(
                     labelText: 'Email Address',
+                    labelStyle: TextStyle(color: textMuted),
                     filled: true,
-                    fillColor: isDark ? const Color(0xff111827) : const Color(0xfff8fafc),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    fillColor: innerFieldBg,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _blue, width: 1.5)),
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _titleController,
+                  style: TextStyle(color: textPrimary, fontSize: 13.5),
                   decoration: InputDecoration(
                     labelText: 'Title / Designation',
+                    labelStyle: TextStyle(color: textMuted),
                     filled: true,
-                    fillColor: isDark ? const Color(0xff111827) : const Color(0xfff8fafc),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    fillColor: innerFieldBg,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _blue, width: 1.5)),
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _bioController,
                   maxLines: 2,
+                  style: TextStyle(color: textPrimary, fontSize: 13.5),
                   decoration: InputDecoration(
                     labelText: 'Bio Statement',
+                    labelStyle: TextStyle(color: textMuted),
                     filled: true,
-                    fillColor: isDark ? const Color(0xff111827) : const Color(0xfff8fafc),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    fillColor: innerFieldBg,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _blue, width: 1.5)),
                   ),
                 ),
               ],
@@ -493,19 +549,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
 );
   }
 
-  Widget _gaugeItem(String title, String status, double progress, Color color, bool isDark) {
+  Widget _gaugeItem(String title, String status, double progress, Color color, bool isDark, Color cardBg, Color cardBorder, Color textMuted) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: cardBg,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: isDark ? const Color(0xff1f293d) : const Color(0xffe2e8f0)),
+          border: Border.all(color: cardBorder, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 11, color: Color(0xff6c7890))),
+            Text(title, style: TextStyle(fontSize: 11, color: textMuted)),
             const SizedBox(height: 4),
             Text(status, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: color)),
             const SizedBox(height: 8),

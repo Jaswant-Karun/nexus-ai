@@ -104,7 +104,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
-          sliver: SliverToBoxAdapter(child: _sectionTitle('AI Overview', 'View live')),
+          sliver: SliverToBoxAdapter(child: _sectionTitle(context, 'AI Overview', 'View live')),
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -112,7 +112,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-          sliver: SliverToBoxAdapter(child: _sectionTitle('Platform modules', '5 active')),
+          sliver: SliverToBoxAdapter(child: _sectionTitle(context, 'Platform modules', '5 active')),
         ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -127,6 +127,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _header(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: [
         Container(
@@ -139,12 +141,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
         ),
         const SizedBox(width: 12),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Nexus AI Enterprise', style: TextStyle(fontSize: 12, color: _muted, fontWeight: FontWeight.w600)),
-              Text('Jaswant Karun', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              Text('Nexus AI Enterprise',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? const Color(0xff94a3b8) : _muted,
+                    fontWeight: FontWeight.w600,
+                  )),
+              Text(
+                'Jaswant Karun',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? Colors.white : const Color(0xff0f172a),
+                ),
+              ),
             ],
           ),
         ),
@@ -276,11 +290,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _sectionTitle(String title, String action) {
+  Widget _sectionTitle(BuildContext context, String title, String action) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: isDark ? Colors.white : const Color(0xff0f172a),
+          ),
+        ),
         Text(action, style: const TextStyle(color: _blue, fontSize: 12, fontWeight: FontWeight.w600)),
       ],
     );
@@ -299,31 +321,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _metricCard(BuildContext context, String value, String label, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
+    final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff64748b);
+
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: cardBg,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: _darkMode ? const Color(0xff1f293d) : const Color(0xffe2e8f0),
-          ),
+          border: Border.all(color: cardBorder, width: 1.2),
+          boxShadow: isDark
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.14),
+                color: color.withValues(alpha: isDark ? 0.2 : 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: color, size: 18),
             ),
             const SizedBox(height: 12),
-            Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
+            Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textPrimary)),
             const SizedBox(height: 2),
-            Text(label, style: const TextStyle(fontSize: 10, color: _muted)),
+            Text(label, style: TextStyle(fontSize: 10, color: textMuted, fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -363,6 +404,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _actionBtn(BuildContext context, IconData icon, String label, Color color, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
+
     return Expanded(
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -370,18 +416,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
+            color: cardBg,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: _darkMode ? const Color(0xff1f293d) : const Color(0xffe2e8f0),
-            ),
+            border: Border.all(color: cardBorder, width: 1.2),
+            boxShadow: isDark
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
+                  color: color.withValues(alpha: isDark ? 0.2 : 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: color, size: 20),
@@ -390,7 +449,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textPrimary),
                 ),
               ),
             ],
@@ -401,35 +460,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _recentActivity(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: cardBg,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: _darkMode ? const Color(0xff1f293d) : const Color(0xffe2e8f0),
-        ),
+        border: Border.all(color: cardBorder, width: 1.2),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Recent Telemetry Log', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          Text('Recent Telemetry Log', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textPrimary)),
           const SizedBox(height: 12),
           _activityTile(
+            context,
             Icons.check_circle_rounded,
             const Color(0xff10b981),
             'Lead Pipeline Executed',
             'Webhook dispatched 42 events · 4 min ago',
           ),
-          const Divider(height: 16),
+          Divider(height: 16, color: cardBorder),
           _activityTile(
+            context,
             Icons.auto_awesome,
             _blue,
             'GPT-4o Vector Query Completed',
             'Grounded in 14.8M token RAG index · 18 min ago',
           ),
-          const Divider(height: 16),
+          Divider(height: 16, color: cardBorder),
           _activityTile(
+            context,
             Icons.security_rounded,
             const Color(0xff9333ea),
             'SOC 2 Compliance Scan Passed',
@@ -440,14 +520,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _activityTile(IconData icon, Color color, String title, String subtitle) {
+  Widget _activityTile(BuildContext context, IconData icon, Color color, String title, String subtitle) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
+    final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff64748b);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.all(7),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
+            color: color.withValues(alpha: isDark ? 0.2 : 0.12),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: color, size: 16),
@@ -457,8 +541,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-              Text(subtitle, style: const TextStyle(fontSize: 10, color: _muted)),
+              Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textPrimary)),
+              Text(subtitle, style: TextStyle(fontSize: 10, color: textMuted)),
             ],
           ),
         ),

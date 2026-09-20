@@ -12,30 +12,32 @@ class AppTheme {
   static const Color accentCyan = Color(0xff06b6d4);
   static const Color accentEmerald = Color(0xff10b981);
 
-  // ── Obsidian Dark Theme ──
+  // ── Obsidian Dark Theme (Exact match to Web App) ──
   static ThemeData get darkTheme {
-    const bg = Color(0xff080c14);
-    const surface = Color(0xff0f172a);
-    const card = Color(0xff111827);
-    const border = Color(0xff1e293b);
+    const bg = Color(0xff030712); // web dark:bg-gray-950
+    const card = Color(0xff111827); // web dark:bg-gray-900
+    const border = Color(0xff1f2937); // web dark:border-gray-800
 
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: bg,
+      canvasColor: bg,
+      cardColor: card,
+      dividerColor: border,
       colorScheme: const ColorScheme.dark(
         primary: primary,
         secondary: accentCyan,
-        surface: surface,
-        surfaceContainerHighest: card,
+        surface: card,
+        surfaceContainer: card,
+        surfaceContainerHigh: card,
+        surfaceContainerHighest: border,
         outline: border,
-        onSurface: Color(0xfff1f5f9),
+        onSurface: Colors.white,
       ),
-      cardColor: card,
-      dividerColor: border,
       appBarTheme: const AppBarTheme(
         backgroundColor: bg,
-        foregroundColor: Color(0xfff8fafc),
+        foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(

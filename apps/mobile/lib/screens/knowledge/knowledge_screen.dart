@@ -126,10 +126,10 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
             hintText: 'Search semantic vector memory...',
             prefixIcon: const Icon(Icons.search_rounded, color: _blue),
             filled: true,
-            fillColor: Theme.of(context).cardColor,
+            fillColor: isDark ? const Color(0xff111827) : Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: isDark ? const Color(0xff1f293d) : const Color(0xffe2e8f0)),
+              borderSide: BorderSide(color: isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0)),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
@@ -162,9 +162,24 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
+                color: isDark ? const Color(0xff111827) : Colors.white,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: isDark ? const Color(0xff1f293d) : const Color(0xffe2e8f0)),
+                border: Border.all(color: isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0), width: 1.2),
+                boxShadow: isDark
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
               child: Row(
                 children: [
@@ -172,7 +187,7 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: const Color(0xff06b6d4).withValues(alpha: 0.12),
+                      color: const Color(0xff06b6d4).withValues(alpha: isDark ? 0.2 : 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.article_rounded, color: Color(0xff06b6d4)),
@@ -182,10 +197,18 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(doc['title']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        Text(doc['title']!,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: isDark ? Colors.white : const Color(0xff0f172a),
+                            )),
                         const SizedBox(height: 3),
                         Text('${doc['chunks']} • ${doc['size']} • ${doc['updated']}',
-                            style: const TextStyle(color: Color(0xff6c7890), fontSize: 11)),
+                            style: TextStyle(
+                              color: isDark ? const Color(0xff94a3b8) : const Color(0xff6c7890),
+                              fontSize: 11,
+                            )),
                       ],
                     ),
                   ),
@@ -233,9 +256,24 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
               margin: const EdgeInsets.only(bottom: 14),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
+                color: isDark ? const Color(0xff111827) : Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: isDark ? const Color(0xff1f293d) : const Color(0xffe2e8f0)),
+                border: Border.all(color: isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0), width: 1.2),
+                boxShadow: isDark
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,19 +286,32 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(f['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                            Text(f['size'] as String, style: const TextStyle(color: Color(0xff6c7890), fontSize: 11)),
+                            Text(f['name'] as String,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: isDark ? Colors.white : const Color(0xff0f172a),
+                                )),
+                            Text(f['size'] as String,
+                                style: TextStyle(
+                                  color: isDark ? const Color(0xff94a3b8) : const Color(0xff6c7890),
+                                  fontSize: 11,
+                                )),
                           ],
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xff10b981).withValues(alpha: 0.12),
+                          color: const Color(0xff10b981).withValues(alpha: isDark ? 0.2 : 0.12),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(f['ocrStatus'] as String,
-                            style: const TextStyle(color: Color(0xff047857), fontWeight: FontWeight.bold, fontSize: 10)),
+                            style: TextStyle(
+                              color: isDark ? const Color(0xff34d399) : const Color(0xff047857),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            )),
                       ),
                     ],
                   ),
@@ -268,8 +319,9 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xff111827) : const Color(0xfff8fafc),
+                      color: isDark ? const Color(0xff0b101b) : const Color(0xfff8fafc),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0)),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,7 +330,11 @@ class _KnowledgeScreenState extends State<KnowledgeScreen> with SingleTickerProv
                         Expanded(
                           child: Text(
                             f['summary'] as String,
-                            style: const TextStyle(fontSize: 11, height: 1.3, color: Color(0xff6c7890)),
+                            style: TextStyle(
+                              fontSize: 11,
+                              height: 1.3,
+                              color: isDark ? const Color(0xff94a3b8) : const Color(0xff6c7890),
+                            ),
                           ),
                         ),
                       ],

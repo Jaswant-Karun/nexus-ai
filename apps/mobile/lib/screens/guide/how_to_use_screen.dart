@@ -263,9 +263,24 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+              color: isDark ? const Color(0xff111827) : Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: isDark ? const Color(0xff1f293d) : const Color(0xffe2e8f0)),
+              border: Border.all(color: isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0), width: 1.2),
+              boxShadow: isDark
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
             ),
             child: Column(
               children: [
@@ -405,13 +420,33 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
     final Color color = item['color'] as Color;
     final List<String> steps = _isTamil ? (item['stepsTa'] as List<String>) : (item['stepsEn'] as List<String>);
 
+    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
+    final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff64748b);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: cardBg,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: isDark ? const Color(0xff1f293d) : const Color(0xffe2e8f0)),
+        border: Border.all(color: cardBorder, width: 1.2),
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,7 +457,7 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.14),
+                  color: color.withValues(alpha: isDark ? 0.2 : 0.14),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(item['icon'] as IconData, color: color, size: 22),
@@ -435,7 +470,7 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.12),
+                        color: color.withValues(alpha: isDark ? 0.2 : 0.12),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -446,7 +481,7 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
                     const SizedBox(height: 4),
                     Text(
                       _isTamil ? item['titleTa'] as String : item['titleEn'] as String,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: textPrimary),
                     ),
                   ],
                 ),
@@ -456,14 +491,14 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
           const SizedBox(height: 12),
           Text(
             _isTamil ? item['descTa'] as String : item['descEn'] as String,
-            style: const TextStyle(fontSize: 12, height: 1.4, color: Color(0xff6c7890)),
+            style: TextStyle(fontSize: 12, height: 1.4, color: textMuted),
           ),
           const SizedBox(height: 14),
 
           // Steps list
           Text(
             _isTamil ? 'படிப்படியான வழிகாட்டி:' : 'Step-by-Step Instructions:',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textPrimary),
           ),
           const SizedBox(height: 8),
           ...steps.asMap().entries.map((e) => Padding(
@@ -476,7 +511,7 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
                       width: 18,
                       height: 18,
                       decoration: BoxDecoration(
-                        color: _blue.withValues(alpha: 0.12),
+                        color: _blue.withValues(alpha: isDark ? 0.25 : 0.12),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -488,7 +523,7 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(e.value, style: const TextStyle(fontSize: 12, height: 1.35)),
+                      child: Text(e.value, style: TextStyle(fontSize: 12, height: 1.35, color: textPrimary)),
                     ),
                   ],
                 ),
@@ -499,9 +534,15 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xff10b981).withValues(alpha: 0.1),
+              color: isDark
+                  ? const Color(0xff064e3b).withValues(alpha: 0.25)
+                  : const Color(0xff10b981).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xff10b981).withValues(alpha: 0.25)),
+              border: Border.all(
+                color: isDark
+                    ? const Color(0xff059669).withValues(alpha: 0.4)
+                    : const Color(0xff10b981).withValues(alpha: 0.25),
+              ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -511,7 +552,12 @@ class _HowToUseScreenState extends State<HowToUseScreen> {
                 Expanded(
                   child: Text(
                     '${_isTamil ? "சிறப்பு குறிப்பு: " : "Pro Tip: "}${_isTamil ? item['tipTa'] : item['tipEn']}',
-                    style: const TextStyle(fontSize: 11, color: Color(0xff047857), fontWeight: FontWeight.w600, height: 1.3),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark ? const Color(0xff6ee7b7) : const Color(0xff047857),
+                      fontWeight: FontWeight.w600,
+                      height: 1.3,
+                    ),
                   ),
                 ),
               ],

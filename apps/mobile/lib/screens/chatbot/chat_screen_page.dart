@@ -95,7 +95,10 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xff111827) : Colors.white;
+    final cardBorder = isDark ? const Color(0xff1f2937) : const Color(0xffe2e8f0);
+    final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
+    final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff64748b);
 
     return Scaffold(
       appBar: AppBar(
@@ -115,7 +118,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text('Nexus AI Chat', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                Text('Active: $_selectedModel', style: const TextStyle(fontSize: 10, color: Color(0xff6c7890))),
+                Text('Active: $_selectedModel', style: TextStyle(fontSize: 10, color: textMuted)),
               ],
             ),
           ],
@@ -128,93 +131,104 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // ── Model Selector & Tools Bar ──
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xff0f172a) : const Color(0xfff1f5f9),
-              border: Border(bottom: BorderSide(color: isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0))),
-            ),
-            child: Column(
-              children: [
-                // Models row
-                SizedBox(
-                  height: 32,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _models.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 6),
-                    itemBuilder: (context, i) {
-                      final m = _models[i];
-                      final isSelected = _selectedModel == m;
-                      return ChoiceChip(
-                        label: Text(m),
-                        selected: isSelected,
-                        selectedColor: _blue,
-                        labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : null,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        onSelected: (_) => setState(() => _selectedModel = m),
-                      );
-                    },
-                  ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            children: [
+              // ── Model Selector & Tools Bar ──
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xff111827) : const Color(0xfff8fafc),
+                  border: Border(bottom: BorderSide(color: cardBorder)),
                 ),
-                const SizedBox(height: 6),
-                // Tool Toggles
-                Row(
+                child: Column(
                   children: [
-                    _toolToggle('🌐 Web', _webSearchEnabled, () => setState(() => _webSearchEnabled = !_webSearchEnabled)),
-                    const SizedBox(width: 6),
-                    _toolToggle('💻 Code', _codeSandboxEnabled, () => setState(() => _codeSandboxEnabled = !_codeSandboxEnabled)),
-                    const SizedBox(width: 6),
-                    _toolToggle('🧠 Memory', _memoryEnabled, () => setState(() => _memoryEnabled = !_memoryEnabled)),
+                    // Models row
+                    SizedBox(
+                      height: 32,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _models.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 6),
+                        itemBuilder: (context, i) {
+                          final m = _models[i];
+                          final isSelected = _selectedModel == m;
+                          return ChoiceChip(
+                            label: Text(m),
+                            selected: isSelected,
+                            selectedColor: _blue,
+                            backgroundColor: isDark ? const Color(0xff030712) : const Color(0xfff1f5f9),
+                            labelStyle: TextStyle(
+                              color: isSelected ? Colors.white : textMuted,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            side: BorderSide(
+                              color: isSelected ? _blue : cardBorder,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            onSelected: (_) => setState(() => _selectedModel = m),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    // Tool Toggles
+                    Row(
+                      children: [
+                        _toolToggle('🌐 Web', _webSearchEnabled, () => setState(() => _webSearchEnabled = !_webSearchEnabled)),
+                        const SizedBox(width: 6),
+                        _toolToggle('💻 Code', _codeSandboxEnabled, () => setState(() => _codeSandboxEnabled = !_codeSandboxEnabled)),
+                        const SizedBox(width: 6),
+                        _toolToggle('🧠 Memory', _memoryEnabled, () => setState(() => _memoryEnabled = !_memoryEnabled)),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
 
-          // ── Message Stream ──
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              itemCount: _messages.length + (_isSending ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _messages.length) return _thinkingBubble();
-                return _bubble(_messages[index]);
-              },
-            ),
-          ),
-
-          // Starter Suggestions if chat is fresh
-          if (_messages.length <= 1)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: SizedBox(
-                height: 32,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _starters.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, i) => ActionChip(
-                    label: Text(_starters[i]),
-                    labelStyle: const TextStyle(fontSize: 11),
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    onPressed: () => _send(_starters[i]),
-                  ),
+              // ── Message Stream ──
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                  itemCount: _messages.length + (_isSending ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == _messages.length) return _thinkingBubble(isDark, cardBg, cardBorder, textMuted);
+                    return _bubble(_messages[index], isDark, cardBg, cardBorder, textPrimary);
+                  },
                 ),
               ),
-            ),
 
-          // ── Composer ──
-          _composer(),
-        ],
+              // Starter Suggestions if chat is fresh
+              if (_messages.length <= 1)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  child: SizedBox(
+                    height: 32,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _starters.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (context, i) => ActionChip(
+                        label: Text(_starters[i]),
+                        backgroundColor: cardBg,
+                        side: BorderSide(color: cardBorder),
+                        labelStyle: TextStyle(fontSize: 11, color: textPrimary),
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        onPressed: () => _send(_starters[i]),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // ── Composer ──
+              _composer(isDark, cardBg, cardBorder, textPrimary, textMuted),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -238,7 +252,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
     );
   }
 
-  Widget _bubble(_ChatMessage message) {
+  Widget _bubble(_ChatMessage message, bool isDark, Color cardBg, Color cardBorder, Color textPrimary) {
     return Align(
       alignment: message.fromUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -247,18 +261,25 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: message.isError
-              ? const Color(0xffffe8e8)
+              ? (isDark ? const Color(0xff451a1a) : const Color(0xffffe8e8))
               : message.fromUser
                   ? _blue
-                  : Theme.of(context).cardColor,
+                  : cardBg,
           borderRadius: BorderRadius.circular(18).copyWith(
             bottomRight: message.fromUser ? Radius.zero : null,
             bottomLeft: message.fromUser ? null : Radius.zero,
           ),
+          border: Border.all(
+            color: message.isError
+                ? const Color(0xffef4444).withValues(alpha: 0.3)
+                : message.fromUser
+                    ? Colors.transparent
+                    : cardBorder,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 4,
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+              blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
@@ -285,10 +306,10 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
               message.text,
               style: TextStyle(
                 color: message.isError
-                    ? const Color(0xffa52222)
+                    ? (isDark ? const Color(0xfffca5a5) : const Color(0xffa52222))
                     : message.fromUser
                         ? Colors.white
-                        : null,
+                        : textPrimary,
                 height: 1.4,
                 fontSize: 13.5,
               ),
@@ -299,7 +320,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
     );
   }
 
-  Widget _thinkingBubble() {
+  Widget _thinkingBubble(bool isDark, Color cardBg, Color cardBorder, Color textMuted) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
@@ -307,8 +328,16 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: cardBg,
           borderRadius: BorderRadius.circular(18).copyWith(bottomLeft: Radius.zero),
+          border: Border.all(color: cardBorder),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -322,7 +351,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
             Flexible(
               child: Text(
                 _reasoningSteps.isEmpty ? 'Nexus is reasoning with $_selectedModel...' : _reasoningSteps.last,
-                style: const TextStyle(color: Color(0xff6c7890), fontSize: 12),
+                style: TextStyle(color: textMuted, fontSize: 12),
               ),
             ),
           ],
@@ -331,7 +360,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
     );
   }
 
-  Widget _composer() {
+  Widget _composer(bool isDark, Color cardBg, Color cardBorder, Color textPrimary, Color textMuted) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
@@ -341,16 +370,25 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
               child: TextField(
                 controller: _inputController,
                 enabled: !_isSending,
+                style: TextStyle(color: textPrimary, fontSize: 13.5),
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => _send(),
                 decoration: InputDecoration(
                   hintText: 'Ask Nexus ($_selectedModel)...',
-                  hintStyle: const TextStyle(fontSize: 13),
+                  hintStyle: TextStyle(fontSize: 13, color: textMuted),
                   filled: true,
-                  fillColor: Theme.of(context).cardColor,
+                  fillColor: cardBg,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(color: cardBorder),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide(color: cardBorder),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: const BorderSide(color: _blue, width: 1.5),
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                 ),
