@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { formatBytes, getMimeCategory, MOCK_FOLDERS, STORAGE_QUOTA_BYTES, STORAGE_USED_BYTES } from "@/lib/storage";
@@ -63,7 +63,6 @@ export default function UploadPage() {
       setTasks((p) => p.map((t) => t.id === task.id ? { ...t, status: "uploading", progress: 15 } : t));
       
       try {
-        // Attempt real upload if file object is valid
         const fd = new FormData();
         fd.append("file", task.file);
         if (folderId) fd.append("folderId", folderId);
@@ -73,24 +72,38 @@ export default function UploadPage() {
           body: fd,
         });
 
-        if (res.ok) {
-          setTasks((p) => p.map((t) => t.id === task.id ? { ...t, status: "done", progress: 100 } : t));
-          continue;
+        const payload = await res.json().catch(() => null) as {
+          data?: { id?: string };
+          error?: string;
+        } | null;
+        if (!res.ok) {
+          throw new Error(payload?.error ?? `Upload failed (${res.status})`);
         }
-      } catch {
-        // Fallback to quick simulated upload without blocking delay
-      }
 
-      // Fast responsive simulated progress
-      for (let pct = 25; pct <= 90; pct += 25) {
-        await new Promise((r) => setTimeout(r, 40));
-        setTasks((p) => p.map((t) => t.id === task.id ? { ...t, progress: Math.min(pct, 90) } : t));
+        setTasks((p) => p.map((t) => t.id === task.id ? {
+          ...t,
+          status: "done",
+          progress: 100,
+          uploadedFileId: payload?.data?.id,
+        } : t));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Upload failed";
+        setTasks((p) => p.map((t) => t.id === task.id ? {
+          ...t,
+          status: "error",
+          progress: 0,
+          error: message,
+        } : t));
       }
-      await new Promise((r) => setTimeout(r, 60));
-      setTasks((p) => p.map((t) => t.id === task.id ? { ...t, status: "done", progress: 100 } : t));
     }
     setUploading(false);
   };
+
+  useEffect(() => {
+    if (!uploading && tasks.some((task) => task.status === "queued")) {
+      void uploadAll();
+    }
+  }, [tasks, uploading]);
 
   const queued  = tasks.filter((t) => t.status === "queued").length;
   const active  = tasks.filter((t) => t.status === "uploading").length;
@@ -226,7 +239,7 @@ export default function UploadPage() {
                             ) : (task.status === "queued" || task.status === "error") && (
                               <button type="button" onClick={() => cancel(task.id)}
                                 className="text-xs text-dark-400 hover:text-white border border-dark-600 hover:border-red-500/50 hover:text-red-400 rounded-lg px-2.5 py-1 transition-colors shrink-0">
-                                Cancel Upload
+                                {task.status === "error" ? "Remove failed upload" : "Cancel Upload"}
                               </button>
                             )}
                           </div>
@@ -247,7 +260,7 @@ export default function UploadPage() {
                               <p className="text-[10px] text-dark-500">
                                 {task.status === "done" ? `Upload finished to path: ${task.name}` :
                                  task.status === "uploading" ? `Uploading to path: ${task.name}` :
-                                 task.status === "queued" ? "Queued" : task.error ?? ""}
+                                 task.status === "queued" ? "Queued — click Upload" : task.error ?? ""}
                               </p>
                               <span className="text-[10px] font-semibold text-dark-400">{task.progress}%</span>
                             </div>

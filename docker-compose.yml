@@ -36,6 +36,19 @@ services:
     networks:
       - nexus-network
 
+  # ─── Qdrant Vector Database ─────────────────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:v1.13.6
+    container_name: nexus-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - nexus-network
+
   # ─── n8n Workflow & Agent Automation Engine ────────────────────────
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
@@ -65,4 +78,5 @@ networks:
 
 volumes:
   postgres_data:
+  qdrant_data:
   n8n_data:

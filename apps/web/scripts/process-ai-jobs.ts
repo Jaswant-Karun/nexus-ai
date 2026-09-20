@@ -1,4 +1,5 @@
 import "dotenv/config";
+import crypto from "node:crypto";
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 import { PDFParse } from "pdf-parse";
@@ -18,6 +19,11 @@ const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessi
 
 const pool = new Pool({ connectionString });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+
+function vectorId(fileId: string, chunkIndex: number): string {
+  const hash = crypto.createHash("sha256").update(`${fileId}:${chunkIndex}`).digest("hex");
+  return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-${((parseInt(hash.slice(16, 18), 16) & 0x3f) | 0x80).toString(16).padStart(2, "0")}${hash.slice(18, 20)}-${hash.slice(20, 32)}`;
+}
 
 function chunkCount(text: string): number {
   if (!text.trim()) return 0;
@@ -123,7 +129,7 @@ async function processEmbedJob(job: {
       body: JSON.stringify({
         collection: `nexus_docs_${job.file.organizationId}`,
         documents,
-        ids: documents.map((_, index) => `${job.file.id}_${index}`),
+        ids: documents.map((_, index) => vectorId(job.file.id, index)),
         metadata: documents.map((_, index) => ({
           organizationId: job.file.organizationId,
           fileId: job.file.id,
