@@ -18,6 +18,13 @@ interface KnowledgeDoc {
   createdAt:  string;
 }
 
+interface SearchHit {
+  id: string;
+  score: number;
+  text: string;
+  metadata?: { source?: string; fileId?: string; chunkIndex?: number };
+}
+
 function formatBytes(b: number) {
   if (b === 0) return "0 B";
   const k = 1024, sizes = ["B","KB","MB","GB"];
@@ -31,6 +38,9 @@ export default function WorkspacePage() {
   const [searchText, setSearchText] = useState("");
   const [aiSummary,  setAiSummary]  = useState("");
   const [summarising,setSummarising]= useState(false);
+  const [searchHits, setSearchHits] = useState<SearchHit[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
 
   // Load real docs from PostgreSQL via /api/knowledge
   useEffect(() => {
@@ -46,6 +56,32 @@ export default function WorkspacePage() {
   const filtered = docs.filter((d) =>
     d.title.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  const handleSemanticSearch = async () => {
+    const query = searchText.trim();
+    if (!query || searching) {
+      setSearchHits([]);
+      setSearchError("");
+      return;
+    }
+    setSearching(true);
+    setSearchError("");
+    try {
+      const response = await fetch("/api/knowledge/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, topK: 5 }),
+      });
+      const payload = await response.json() as { hits?: SearchHit[]; error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Search failed");
+      setSearchHits(payload.hits ?? []);
+    } catch (error) {
+      setSearchHits([]);
+      setSearchError(error instanceof Error ? error.message : "Knowledge search failed");
+    } finally {
+      setSearching(false);
+    }
+  };
 
   const totalChunks = docs.reduce((a, d) => a + d.chunkCount, 0);
   const totalSize   = docs.reduce((a, d) => a + d.sizeBytes, 0);
@@ -172,11 +208,32 @@ export default function WorkspacePage() {
                 <input
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") void handleSemanticSearch(); }}
                   placeholder="Search documents…"
                   className="rounded-xl border border-white/10 bg-dark-800/80 pl-9 pr-4 py-2 text-sm text-white placeholder:text-dark-500 focus:border-brand-500/60 focus:outline-none transition"
                 />
+                <button type="button" onClick={() => void handleSemanticSearch()} disabled={searching}
+                  className="ml-2 rounded-xl bg-cyan-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">
+                  {searching ? "Searching…" : "Semantic Search"}
+                </button>
               </div>
             </div>
+
+            {searchError && <p className="text-sm text-amber-400">{searchError}</p>}
+            {searchHits.length > 0 && (
+              <div className="space-y-3 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5">
+                <h3 className="text-sm font-bold text-cyan-300">Relevant knowledge chunks</h3>
+                {searchHits.map((hit) => (
+                  <article key={hit.id} className="rounded-xl border border-white/10 bg-dark-900/70 p-4">
+                    <div className="mb-2 flex items-center justify-between text-[11px] text-dark-400">
+                      <span>{hit.metadata?.source ?? "Knowledge document"}</span>
+                      <span>Score {(hit.score * 100).toFixed(1)}%</span>
+                    </div>
+                    <p className="text-sm leading-relaxed text-dark-100">{hit.text}</p>
+                  </article>
+                ))}
+              </div>
+            )}
 
             {loading ? (
               <div className="rounded-2xl border border-white/[0.06] bg-dark-900/60 p-8 text-center">

@@ -9,6 +9,7 @@ import { Pool } from "pg";
 
 const connectionString = process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/nexus_ai";
 const uploadRoot = process.env.UPLOAD_DIR ?? path.resolve(process.cwd(), "uploads");
+const aiServiceUrl = process.env.AI_SERVICE_URL ?? "http://localhost:8001";
 const chunkSize = 900;
 const chunkOverlap = 120;
 const textExtensions = new Set([".txt", ".md", ".markdown", ".csv", ".json", ".html", ".htm", ".xml", ".ts", ".tsx", ".js", ".jsx", ".py"]);
@@ -96,6 +97,63 @@ async function processExtractJob(job: {
   }
 }
 
+async function processEmbedJob(job: {
+  id: string;
+  file: { id: string; name: string; storageUrl: string; organizationId: string; aiExtractedText: string | null };
+}): Promise<void> {
+  const claimed = await prisma.aiProcessingJob.updateMany({
+    where: { id: job.id, status: "PENDING" },
+    data: { status: "PROCESSING", startedAt: new Date(), progress: 10 },
+  });
+  if (claimed.count === 0) return;
+
+  try {
+    if (!job.file.aiExtractedText?.trim()) {
+      throw new Error("No extracted text is available for embedding");
+    }
+
+    const text = job.file.aiExtractedText.trim();
+    const documents = Array.from(
+      { length: chunkCount(text) },
+      (_, index) => text.slice(index * (chunkSize - chunkOverlap), index * (chunkSize - chunkOverlap) + chunkSize),
+    );
+    const response = await fetch(`${aiServiceUrl}/v1/vector-search/index`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        collection: `nexus_docs_${job.file.organizationId}`,
+        documents,
+        ids: documents.map((_, index) => `${job.file.id}_${index}`),
+        metadata: documents.map((_, index) => ({
+          organizationId: job.file.organizationId,
+          fileId: job.file.id,
+          source: job.file.storageUrl,
+          chunkIndex: index,
+        })),
+      }),
+    });
+    if (!response.ok) throw new Error(`Embedding service returned HTTP ${response.status}`);
+
+    const result = await response.json() as { indexed?: number; failed?: number };
+    if ((result.failed ?? 0) > 0 || (result.indexed ?? 0) !== documents.length) {
+      throw new Error(`Embedding service indexed ${result.indexed ?? 0}/${documents.length} chunks`);
+    }
+
+    await prisma.aiProcessingJob.update({
+      where: { id: job.id },
+      data: { status: "COMPLETED", progress: 100, completedAt: new Date(), result: { indexed: documents.length } },
+    });
+    console.log(`Embedded ${job.file.name}: ${documents.length} chunks`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await prisma.aiProcessingJob.update({
+      where: { id: job.id },
+      data: { status: "FAILED", progress: 0, completedAt: new Date(), errorMessage: message },
+    });
+    console.error(`Failed to embed ${job.file.name}: ${message}`);
+  }
+}
+
 async function main(): Promise<void> {
   const jobs = await prisma.aiProcessingJob.findMany({
     where: { jobType: "EXTRACT", status: "PENDING" },
@@ -104,8 +162,16 @@ async function main(): Promise<void> {
     take: 20,
   });
 
+  const embedJobs = await prisma.aiProcessingJob.findMany({
+    where: { jobType: "EMBED", status: "PENDING" },
+    include: { file: { select: { id: true, name: true, storageUrl: true, organizationId: true, aiExtractedText: true } } },
+    orderBy: { createdAt: "asc" },
+    take: 20,
+  });
+
   for (const job of jobs) await processExtractJob(job);
-  console.log(`Processed ${jobs.length} extraction job(s)`);
+  for (const job of embedJobs) await processEmbedJob(job);
+  console.log(`Processed ${jobs.length} extraction and ${embedJobs.length} embedding job(s)`);
 }
 
 main()
