@@ -71,6 +71,16 @@ const nextConfig: NextConfig = {
       { source: "/auth/logout",   destination: "/api/auth/logout", permanent: false },
     ];
   },
+
+  // ── Rewrites ──────────────────────────────────────────────────────────────
+  async rewrites() {
+    return [
+      {
+        source: "/api/chat",
+        destination: "/api/nexus-chat",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
