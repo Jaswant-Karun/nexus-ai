@@ -9,9 +9,13 @@ const NAVIGATION = [
   ["Organizations", "/organizations"],
   ["Agents", "/agents"],
   ["AI Models", "/ai-models"],
+  ["Prompts", "/prompts"],
   ["Analytics", "/analytics"],
   ["Logs", "/logs"],
+  ["Monitoring", "/monitoring"],
   ["Security", "/security"],
+  ["Subscriptions", "/subscriptions"],
+  ["System", "/system"],
   ["Settings", "/settings"],
 ] as const;
 
