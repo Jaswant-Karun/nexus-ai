@@ -59,8 +59,10 @@ function now() {
   });
 }
 
+let _seq = 0;
 function makeId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  _seq += 1;
+  return `msg-${Date.now()}-${_seq}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -247,14 +249,17 @@ export default function ChatPage() {
       .catch(() => setNexusStatus("offline"));
   }, []);
 
-  /* ── Load agent list for API Chat agent sub-mode ────────────────────────── */
+  /* ── Load agent list for API Chat agent sub-mode (only needed when using agents) ── */
   useEffect(() => {
+    // Only try if we might show the agent strip — quiet fail if FastAPI is offline
     fetch("/api/ai/api/v1/agents/list")
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then((d: { agents?: AgentInfo[] }) => {
         if (d.agents) setAgentList(d.agents);
       })
-      .catch(() => {});
+      .catch(() => {
+        // FastAPI offline — agents list stays empty, UI shows graceful fallback
+      });
   }, []);
 
   const currentAgent = agentList.find(a => a.type === selectedAgent);
@@ -273,11 +278,12 @@ export default function ChatPage() {
      SEND — NEXUS AGENT (streaming SSE from Python agent)
   ───────────────────────────────────────────────────────────────────────── */
   const sendNexusMessage = async (text: string) => {
+    const userId      = makeId();
     const assistantId = makeId();
     setMessages(prev => [
       ...prev,
-      { id: makeId(), role: "user", content: text, time: now() },
-      { id: assistantId, role: "assistant", content: "", time: now(), streaming: true },
+      { id: userId,      role: "user",      content: text, time: now() },
+      { id: assistantId, role: "assistant",  content: "", time: now(), streaming: true },
     ]);
     setLoading(true);
 
@@ -302,7 +308,11 @@ export default function ChatPage() {
 
       if (!res.ok || !res.body) {
         const errData = await res.json().catch(() => ({ error: `HTTP ${res.status}` })) as { error?: string };
-        throw new Error(errData.error ?? `NEXUS Agent returned ${res.status}`);
+        const errMsg = errData.error ?? `NEXUS Agent returned ${res.status}`;
+        // Give an actionable message for common errors
+        if (res.status === 401) throw new Error("Not logged in — please refresh the page.");
+        if (res.status === 503) throw new Error("No AI provider keys configured. Add GOOGLE_AI_API_KEY to apps/web/.env.local");
+        throw new Error(errMsg);
       }
 
       const reader  = res.body.getReader();
@@ -377,10 +387,11 @@ export default function ChatPage() {
      SEND — API CHAT (streaming from Next.js /api/chat)
   ───────────────────────────────────────────────────────────────────────── */
   const sendApiMessage = async (text: string) => {
+    const userId      = makeId();
     const assistantId = makeId();
     setMessages(prev => [
       ...prev,
-      { id: makeId(), role: "user", content: text, time: now() },
+      { id: userId,      role: "user",     content: text, time: now() },
       { id: assistantId, role: "assistant", content: "", time: now(), streaming: true },
     ]);
     setLoading(true);
@@ -423,11 +434,12 @@ export default function ChatPage() {
 
   /* ── Specialist agent send (sub-mode inside API Chat) ─────────────────── */
   const sendSpecialistAgent = async (text: string) => {
+    const userId      = makeId();
     const assistantId = makeId();
     setMessages(prev => [
       ...prev,
-      { id: makeId(), role: "user", content: text, time: now() },
-      { id: assistantId, role: "assistant", content: "", time: now(), streaming: true },
+      { id: userId,      role: "user",      content: text, time: now() },
+      { id: assistantId, role: "assistant",  content: "", time: now(), streaming: true },
     ]);
     setLoading(true);
 

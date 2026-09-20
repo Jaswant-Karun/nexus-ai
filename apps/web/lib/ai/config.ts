@@ -64,7 +64,7 @@ export const PROVIDER_CONFIGS: ProviderConfig[] = [
         "gemini-2.5-pro",
         "Gemini 2.5 Pro",
         "gemini",
-        process.env.GEMINI_MODEL_PRO ?? "gemini-2.5-pro",
+        process.env.GEMINI_MODEL_PRO ?? "gemini-2.5-pro-preview-06-05",
         1_000_000,
         0.00125,
         0.005,

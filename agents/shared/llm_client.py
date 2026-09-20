@@ -167,7 +167,7 @@ _GEMINI_MODELS = {
     "gpt-4o-mini":               "models/gemini-2.5-flash-lite",
     "claude-3-5-sonnet-20241022":"models/gemini-2.5-flash",
     "claude-3-5-haiku-20241022": "models/gemini-2.5-flash-lite",
-    "gemini-1.5-pro":            "models/gemini-2.5-pro",
+    "gemini-1.5-pro":            "models/gemini-2.5-pro-preview-06-05",
     "gemini-1.5-flash":          "models/gemini-2.5-flash",
 }
 
