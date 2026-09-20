@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import ModuleLayout from '@/components/layout/ModuleLayout';
 import { 
@@ -27,7 +27,18 @@ const projectsSubnav = [
   { label: 'Settings', href: '/projects/settings' },
 ];
 
-const mockTasks = [
+type ProjectTask = {
+  id: string;
+  title: string;
+  assignee: string;
+  isAgent: boolean;
+  status: string;
+  priority: string;
+  due: string;
+  projectId?: string;
+};
+
+const mockTasks: ProjectTask[] = [
   {
     id: 'tsk-1',
     title: 'Synthesize Food Delivery Dispatch DAG Topology',
@@ -70,10 +81,46 @@ export default function ProjectTasksPage() {
   const [tasks, setTasks] = useState(mockTasks);
   const [search, setSearch] = useState('');
 
+  useEffect(() => {
+    const storedProjects = window.localStorage.getItem('nexus_projects');
+    if (!storedProjects) return;
+    try {
+      const projects = JSON.parse(storedProjects) as Array<{ id: string; tasks?: Array<{ id: string; title: string; completed: boolean }> }>;
+      const generatedTasks = projects.flatMap((project) => (project.tasks ?? []).map((task) => ({
+        id: task.id,
+        title: task.title,
+        assignee: 'NEXUS Master Orchestrator',
+        isAgent: true,
+        status: task.completed ? 'Completed' : 'Todo',
+        priority: 'High',
+        due: 'Next milestone',
+        projectId: project.id,
+      })));
+      setTasks((current) => [...generatedTasks, ...current.filter((task) => !generatedTasks.some((generated) => generated.id === task.id))]);
+    } catch {
+      window.localStorage.removeItem('nexus_projects');
+    }
+  }, []);
+
   const toggleTask = (id: string) => {
     setTasks(tasks.map(t => {
       if (t.id === id) {
-        return { ...t, status: t.status === 'Completed' ? 'In Progress' : 'Completed' };
+        const status = t.status === 'Completed' ? 'In Progress' : 'Completed';
+        if (t.projectId) {
+          const storedProjects = window.localStorage.getItem('nexus_projects');
+          if (storedProjects) {
+            try {
+              const projects = JSON.parse(storedProjects) as Array<{ id: string; tasks?: Array<{ id: string; title: string; completed: boolean }> }>;
+              window.localStorage.setItem('nexus_projects', JSON.stringify(projects.map((project) => ({
+                ...project,
+                tasks: project.tasks?.map((task) => task.id === id ? { ...task, completed: status === 'Completed' } : task),
+              }))));
+            } catch {
+              window.localStorage.removeItem('nexus_projects');
+            }
+          }
+        }
+        return { ...t, status };
       }
       return t;
     }));

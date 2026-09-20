@@ -50,6 +50,25 @@ export default function ProjectDetailPage() {
   const projectStatus = project ? `${project.status} (${project.progress}%)` : 'In Progress (75%)';
   const projectTasks = project?.tasks ?? [];
 
+  function toggleTask(taskId: string) {
+    if (!project) return;
+    const tasks = project.tasks?.map((task) => (
+      task.id === taskId ? { ...task, completed: !task.completed } : task
+    )) ?? [];
+    const progress = tasks.length === 0 ? project.progress : Math.round((tasks.filter((task) => task.completed).length / tasks.length) * 100);
+    const updatedProject = { ...project, tasks, progress, status: progress === 100 ? 'Complete' : 'Planning' };
+    setProject(updatedProject);
+
+    const storedProjects = window.localStorage.getItem('nexus_projects');
+    if (!storedProjects) return;
+    try {
+      const projects = JSON.parse(storedProjects) as Array<typeof updatedProject & { id: string }>;
+      window.localStorage.setItem('nexus_projects', JSON.stringify(projects.map((candidate) => candidate.id === projectId ? updatedProject : candidate)));
+    } catch {
+      window.localStorage.removeItem('nexus_projects');
+    }
+  }
+
   return (
     <ModuleLayout
       title={`Project: ${projectId}`}
@@ -108,10 +127,11 @@ export default function ProjectDetailPage() {
             </div>
             <div className="space-y-2">
               {projectTasks.map((task, index) => (
-                <div key={task.id} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 text-sm text-slate-200">
+                <button type="button" key={task.id} onClick={() => toggleTask(task.id)} className="flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3 text-left text-sm text-slate-200 transition hover:border-indigo-500/40">
+                  <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-xs ${task.completed ? 'border-emerald-400 bg-emerald-500/20 text-emerald-300' : 'border-slate-600 text-transparent'}`}>✓</span>
                   <span className="text-xs font-mono text-indigo-400">0{index + 1}</span>
-                  <span>{task.title}</span>
-                </div>
+                  <span className={task.completed ? 'text-slate-500 line-through' : undefined}>{task.title}</span>
+                </button>
               ))}
             </div>
           </section>
