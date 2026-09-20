@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { NavBar, Sidebar } from "@nexus/ui";
 import { runAgent } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
+import { MarkdownRenderer } from "@/components/markdown/MarkdownRenderer";
 
 const sidebarItems = [
   { id: "dashboard", label: "Dashboard",        href: "/dashboard", icon: "📊" },
@@ -189,7 +190,11 @@ export default function ChatPage() {
                       ? "bg-red-500/8 border border-red-500/20 text-red-300 rounded-tl-sm"
                       : "bg-dark-800/60 border border-white/[0.06] text-dark-100 rounded-tl-sm"
                   )}>
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    {msg.role === "assistant" ? (
+                      <MarkdownRenderer content={msg.content} />
+                    ) : (
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    )}
                   </div>
 
                   {/* Steps (reasoning trace) */}
