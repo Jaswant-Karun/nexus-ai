@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AppNavbar } from "@/components/layout/AppNavbar";
+import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { Sidebar } from "@nexus/ui";
 import { useTheme } from "@/context/ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,15 +27,6 @@ interface ProfileData {
     uploadedFiles: number;
   };
 }
-
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: "📊" },
-  { id: "chat", label: "AI Agent Studio", href: "/chat", icon: "🤖" },
-  { id: "workflow", label: "Workflow Builder", href: "/workflow", icon: "⚡" },
-  { id: "workspace", label: "Knowledge Engine", href: "/workspace", icon: "🧠" },
-  { id: "storage", label: "Storage", href: "/storage", icon: "☁️" },
-  { id: "settings", label: "Platform Settings", href: "/settings", icon: "⚙️" },
-];
 
 const TABS = ["General Profile", "Theme & Appearance", "Security & Access", "API Keys"];
 
@@ -101,13 +93,7 @@ export default function ProfilePage() {
       <AppNavbar brandName="NEXUS AI" />
 
       <div className="flex flex-1">
-        <Sidebar
-          items={sidebarItems}
-          currentPath="/profile"
-          onNavigate={(href) => {
-            window.location.href = href;
-          }}
-        />
+        <AppSidebar />
 
         <main className="flex-1 p-6 md:p-10 space-y-8 overflow-y-auto max-w-7xl mx-auto w-full">
           {/* Header Banner Card with Motion */}

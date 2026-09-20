@@ -2,17 +2,9 @@
 import { useState } from "react";
 import { Sidebar, WorkflowCanvas } from "@nexus/ui";
 import { AppNavbar } from "@/components/layout/AppNavbar";
+import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { generateWorkflow } from "@/lib/ai-client";
 import type { WorkflowNode, WorkflowEdge } from "@nexus/types";
-
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard",        href: "/dashboard", icon: "📊" },
-  { id: "chat",      label: "AI Agent Studio",  href: "/chat",      icon: "🤖" },
-  { id: "workflow",  label: "Workflow Builder", href: "/workflow",  icon: "⚡", active: true },
-  { id: "workspace", label: "Knowledge Engine", href: "/workspace", icon: "🧠" },
-  { id: "storage",   label: "Storage",          href: "/storage",   icon: "☁️" },
-  { id: "settings",  label: "Platform Settings",href: "/settings",  icon: "⚙️" },
-];
 
 const DEFAULT_NODES: WorkflowNode[] = [
   {
@@ -181,8 +173,7 @@ export default function WorkflowPage() {
       <AppNavbar brandName="NEXUS AI" />
 
       <div className="flex flex-1">
-        <Sidebar items={sidebarItems} currentPath="/workflow"
-          onNavigate={(href) => { window.location.href = href; }} />
+        <AppSidebar />
 
         <main className="flex-1 p-6 lg:p-8 flex flex-col space-y-6 overflow-y-auto max-w-7xl mx-auto w-full">
           {/* Header */}

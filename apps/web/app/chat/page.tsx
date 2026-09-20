@@ -1,22 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sidebar } from "@nexus/ui";
 import { AppNavbar } from "@/components/layout/AppNavbar";
+import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { streamChat } from "@/lib/chat-client";
 import { cn } from "@/lib/utils";
 import { MarkdownRenderer } from "@/components/markdown/MarkdownRenderer";
 import { ModelSelector } from "@/components/chat/ModelSelector";
 
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard",        href: "/dashboard", icon: "📊" },
-  { id: "chat",      label: "AI Chat",          href: "/chat",      icon: "🤖", active: true },
-  { id: "usage",     label: "AI Usage",         href: "/usage",     icon: "📈" },
-  { id: "workflow",  label: "Workflow Builder", href: "/workflow",  icon: "⚡" },
-  { id: "workspace", label: "Knowledge Engine", href: "/workspace", icon: "🧠" },
-  { id: "storage",   label: "Storage",          href: "/storage",   icon: "☁️" },
-  { id: "settings",  label: "Platform Settings",href: "/settings",  icon: "⚙️" },
-];
 
 interface Message {
   id:       string;
@@ -169,11 +160,7 @@ export default function ChatPage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          items={sidebarItems}
-          currentPath="/chat"
-          onNavigate={(href) => { window.location.href = href; }}
-        />
+        <AppSidebar activeNav="chat" />
 
         <main className="flex-1 flex flex-col overflow-hidden">
           {/* Top bar */}

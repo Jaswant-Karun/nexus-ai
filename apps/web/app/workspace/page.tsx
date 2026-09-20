@@ -3,17 +3,9 @@
 import { useEffect, useState } from "react";
 import { Sidebar, DataTable } from "@nexus/ui";
 import { AppNavbar } from "@/components/layout/AppNavbar";
+import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { summarizeText } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
-
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard",        href: "/dashboard", icon: "📊" },
-  { id: "chat",      label: "AI Agent Studio",  href: "/chat",      icon: "🤖" },
-  { id: "workflow",  label: "Workflow Builder", href: "/workflow",  icon: "⚡" },
-  { id: "workspace", label: "Knowledge Engine", href: "/workspace", icon: "🧠", active: true },
-  { id: "storage",   label: "Storage",          href: "/storage",   icon: "☁️" },
-  { id: "settings",  label: "Platform Settings",href: "/settings",  icon: "⚙️" },
-];
 
 interface KnowledgeDoc {
   id:         string;
@@ -119,8 +111,7 @@ export default function WorkspacePage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1">
-        <Sidebar items={sidebarItems} currentPath="/workspace"
-          onNavigate={(href) => { window.location.href = href; }} />
+        <AppSidebar />
 
         <main className="flex-1 p-8 space-y-8 overflow-y-auto">
           {/* Header */}

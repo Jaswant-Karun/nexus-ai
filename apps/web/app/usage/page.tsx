@@ -12,17 +12,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "@nexus/ui";
 import { AppNavbar } from "@/components/layout/AppNavbar";
+import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { cn } from "@/lib/utils";
-
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard",        href: "/dashboard", icon: "📊" },
-  { id: "chat",      label: "AI Chat",          href: "/chat",      icon: "🤖" },
-  { id: "usage",     label: "AI Usage",         href: "/usage",     icon: "📈", active: true },
-  { id: "workflow",  label: "Workflow Builder", href: "/workflow",  icon: "⚡" },
-  { id: "workspace", label: "Knowledge Engine", href: "/workspace", icon: "🧠" },
-  { id: "storage",   label: "Storage",          href: "/storage",   icon: "☁️" },
-  { id: "settings",  label: "Platform Settings",href: "/settings",  icon: "⚙️" },
-];
 
 interface ModelStat {
   model: string;
@@ -112,11 +103,7 @@ export default function UsagePage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          items={sidebarItems}
-          currentPath="/usage"
-          onNavigate={(href) => { window.location.href = href; }}
-        />
+        <AppSidebar />
 
         <main className="flex-1 overflow-y-auto">
           <div className="px-6 py-6 max-w-6xl mx-auto">

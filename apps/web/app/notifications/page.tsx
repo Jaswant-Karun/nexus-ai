@@ -3,15 +3,8 @@
 import { useState } from "react";
 import { Sidebar } from "@nexus/ui";
 import { AppNavbar } from "@/components/layout/AppNavbar";
+import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { StatusBadge } from "@/components/common/StatusBadge";
-
-const sidebarItems = [
-  { id: "dashboard", label: "Dashboard",        href: "/dashboard", icon: "📊" },
-  { id: "chat",      label: "AI Agent Studio",   href: "/chat",      icon: "🤖" },
-  { id: "workflow",  label: "Workflow Builder",  href: "/workflow",  icon: "⚡" },
-  { id: "workspace", label: "Knowledge Engine",  href: "/workspace", icon: "🧠" },
-  { id: "settings",  label: "Platform Settings", href: "/settings",  icon: "⚙️" },
-];
 
 type NKind = "agent" | "workflow" | "system" | "billing";
 
@@ -54,11 +47,7 @@ export default function NotificationsPage() {
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col">
       <AppNavbar brandName="NEXUS AI" />
       <div className="flex flex-1">
-        <Sidebar
-          items={sidebarItems}
-          currentPath="/notifications"
-          onNavigate={(href) => { window.location.href = href; }}
-        />
+        <AppSidebar />
 
         <main className="flex-1 p-8 space-y-6 overflow-y-auto">
           <div className="flex items-center justify-between">
