@@ -6,7 +6,6 @@ import '../notifications/notification_list.dart';
 import '../profile/profile_screen.dart';
 import '../projects/project_list_screen.dart';
 import '../settings/settings_screen.dart';
-import '../workflows/workflow_list.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
