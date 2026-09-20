@@ -1,33 +1,31 @@
 "use client";
 
-import React, { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
-export type UploadDropzoneProps = {
+export interface UploadDropzoneProps {
   onFiles: (files: File[]) => void;
   accept?: string;
   maxSizeMB?: number;
   multiple?: boolean;
   disabled?: boolean;
   className?: string;
-};
+}
 
-export function UploadDropzone(props: UploadDropzoneProps): React.JSX.Element {
-  const {
-    onFiles,
-    accept,
-    maxSizeMB = 500,
-    multiple = true,
-    disabled = false,
-    className,
-  } = props;
-
+export function UploadDropzone({
+  onFiles,
+  accept,
+  maxSizeMB = 500,
+  multiple = true,
+  disabled = false,
+  className,
+}: UploadDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
 
   const validate = useCallback(
-    (files: File[]): File[] => {
+    (files: File[]) => {
       setError("");
       const maxBytes = maxSizeMB * 1024 * 1024;
       const validFiles: File[] = [];
@@ -44,7 +42,7 @@ export function UploadDropzone(props: UploadDropzoneProps): React.JSX.Element {
   );
 
   const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>): void => {
+    (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       setDragging(false);
       if (disabled) return;
@@ -56,7 +54,7 @@ export function UploadDropzone(props: UploadDropzoneProps): React.JSX.Element {
     [disabled, validate, onFiles]
   );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = validate(Array.from(e.target.files ?? []));
     if (files.length > 0) {
       onFiles(files);
@@ -64,23 +62,23 @@ export function UploadDropzone(props: UploadDropzoneProps): React.JSX.Element {
     e.target.value = "";
   };
 
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>): void => {
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (!disabled) {
       setDragging(true);
     }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
   };
 
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>): void => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragging(false);
   };
 
-  const handleClick = (): void => {
+  const handleClick = () => {
     if (!disabled && inputRef.current) {
       inputRef.current.click();
     }
