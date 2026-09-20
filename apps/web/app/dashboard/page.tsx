@@ -1,7 +1,6 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import { NavBar, Sidebar } from "@nexus/ui";
+import { Sidebar } from "@nexus/ui";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import Link from "next/link";
 import { cn } from "@/lib/utils";

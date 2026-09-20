@@ -1,3 +1,7 @@
+/**
+ * NEXUS AI — Database Package Export
+ */
+
 export interface DatabaseClientConfig {
   connectionString: string;
 }
@@ -29,3 +33,8 @@ export class MockDatabaseClient {
 export function createDatabaseClient(connectionString: string): MockDatabaseClient {
   return new MockDatabaseClient({ connectionString });
 }
+
+// ── Export AI-Aware Intelligent Storage Engine Module ───────────────────────
+export * from "./types/storage-engine";
+export * from "./repositories/storage-repository";
+export * from "./seeds/storage_seed";

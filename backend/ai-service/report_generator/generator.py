@@ -12,7 +12,9 @@ from schemas.report import (
     ReportRequest, ReportResponse, ReportSection,
 )
 
-_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+def _get_client() -> OpenAI:
+    from config import settings
+    return OpenAI(api_key=settings.openai_api_key or os.getenv("OPENAI_API_KEY", ""))
 
 _REPORT_SYSTEM = """You are an expert business intelligence analyst for NEXUS AI.
 Generate a professional, data-driven report based on the provided data and instructions.
@@ -37,17 +39,30 @@ def generate_report(req: ReportRequest) -> ReportResponse:
         f"Data:\n{json.dumps(req.data, indent=2)[:4000]}"
     )
 
-    resp = _client.chat.completions.create(
-        model=req.model,
-        messages=[
-            {"role": "system", "content": _REPORT_SYSTEM},
-            {"role": "user",   "content": user_msg},
-        ],
-        temperature=0.3,
-        response_format={"type": "json_object"},
-    )
-    raw    = resp.choices[0].message.content or "{}"
-    tokens = resp.usage.total_tokens if resp.usage else 0
+    try:
+        resp = _get_client().chat.completions.create(
+            model=req.model,
+            messages=[
+                {"role": "system", "content": _REPORT_SYSTEM},
+                {"role": "user",   "content": user_msg},
+            ],
+            temperature=0.3,
+            response_format={"type": "json_object"},
+        )
+        raw    = resp.choices[0].message.content or "{}"
+        tokens = resp.usage.total_tokens if resp.usage else 0
+    except Exception as exc:
+        err_str = str(exc)
+        if "insufficient_quota" in err_str or "credit_balance_exhausted" in err_str or "invalid_api_key" in err_str:
+            raw = json.dumps({
+                "executive_summary": f"Executive summary for '{req.title}' [Generated in fallback mode]",
+                "sections": [
+                    {"title": "Overview", "content": f"Analysis of provided dataset for report '{req.title}'."},
+                    {"title": "Findings", "content": "Initial data patterns identified and synthesized."}
+                ]
+            })
+            tokens = 0
+            raise exc
     data   = json.loads(raw)
 
     sections: list[ReportSection] = [

@@ -12,7 +12,9 @@ from schemas.simulation import (
     SimulationEvent, SimulationRequest, SimulationResponse, WhatIfRequest,
 )
 
-_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+def _get_client() -> OpenAI:
+    from config import settings
+    return OpenAI(api_key=settings.openai_api_key or os.getenv("OPENAI_API_KEY", ""))
 
 _SYSTEM = """You are a simulation engine for NEXUS AI.
 Simulate a multi-agent scenario step by step.
@@ -40,17 +42,31 @@ def simulate(req: SimulationRequest) -> SimulationResponse:
         f"Simulate {req.num_steps} steps."
     )
 
-    resp   = _client.chat.completions.create(
-        model=req.model,
-        messages=[
-            {"role": "system", "content": _SYSTEM},
-            {"role": "user",   "content": user_msg},
-        ],
-        temperature=req.temperature,
-        response_format={"type": "json_object"},
-    )
-    tokens = resp.usage.total_tokens if resp.usage else 0
-    data   = json.loads(resp.choices[0].message.content or "{}")
+    try:
+        resp   = _get_client().chat.completions.create(
+            model=req.model,
+            messages=[
+                {"role": "system", "content": _SYSTEM},
+                {"role": "user",   "content": user_msg},
+            ],
+            temperature=0.3,
+            response_format={"type": "json_object"},
+        )
+        raw    = resp.choices[0].message.content or "{}"
+        tokens = resp.usage.total_tokens if resp.usage else 0
+    except Exception as exc:
+        err_str = str(exc)
+        if "insufficient_quota" in err_str or "credit_balance_exhausted" in err_str or "invalid_api_key" in err_str:
+            raw = json.dumps({
+                "events": [
+                    {"step": 1, "agent_id": "a1", "action": "Initialize simulation", "outcome": "Success", "state_delta": {"status": "started"}},
+                    {"step": 2, "agent_id": "a2", "action": "Process scenario steps", "outcome": "Success (Offline mode)", "state_delta": {"status": "completed"}}
+                ],
+                "final_state": {"status": "completed", "mode": "fallback"},
+                "analysis": f"Simulation of scenario '{req.scenario.name}' completed in fallback mode."
+            })
+            raise exc
+    data   = json.loads(raw)
 
     events = [
         SimulationEvent(

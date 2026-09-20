@@ -76,7 +76,6 @@ export default function UploadPage() {
   const queued  = tasks.filter((t) => t.status === "queued").length;
   const active  = tasks.filter((t) => t.status === "uploading").length;
   const done    = tasks.filter((t) => t.status === "done").length;
-  const totalBytes = tasks.reduce((a, t) => a + t.sizeBytes, 0);
   const usedBytes  = 13_250_000_000;
   const quotaBytes = 15_000_000_000;
   const usedPct    = (usedBytes / quotaBytes) * 100;

@@ -1,0 +1,662 @@
+// ============================================================================
+// NEXUS AI — AI-Aware Intelligent Storage Engine Prisma Schema
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// ENUMS
+// ----------------------------------------------------------------------------
+
+enum FileType {
+  DOCUMENT
+  IMAGE
+  VIDEO
+  AUDIO
+  CODE
+  ARCHIVE
+  UNKNOWN
+}
+
+enum PermissionRole {
+  VIEWER
+  EDITOR
+  ADMIN
+  OWNER
+}
+
+enum StorageClass {
+  STANDARD
+  NEARLINE
+  COLDLINE
+  ARCHIVE
+}
+
+enum UploadStatus {
+  INITIALIZED
+  IN_PROGRESS
+  COMPLETED
+  ABORTED
+  EXPIRED
+}
+
+enum ModerationStatus {
+  PASSED
+  FLAGGED
+  BLOCKED
+  REVIEW_REQUIRED
+}
+
+enum BackupType {
+  FULL
+  INCREMENTAL
+  DIFFERENTIAL
+}
+
+enum JobStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+// ----------------------------------------------------------------------------
+// 1. OBJECT STORAGE MODULE
+// ----------------------------------------------------------------------------
+
+model StorageBucket {
+  id                 String          @id @default(uuid())
+  name               String          @unique
+  description        String?
+  region             String          @default("us-east-1")
+  isPublic           Boolean         @default(false) @map("is_public")
+  versioningEnabled  Boolean         @default(true) @map("versioning_enabled")
+  encryptionAlg      String          @default("AES256") @map("encryption_algorithm")
+  quotaBytes         BigInt          @default(107374182400) @map("quota_bytes")
+  usedBytes          BigInt          @default(0) @map("used_bytes")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  objects            StorageObject[]
+  sessions           UploadSession[]
+
+  @@map("storage_buckets")
+}
+
+model StorageObject {
+  id           String        @id @default(uuid())
+  bucketId     String        @map("bucket_id")
+  objectKey    String        @map("object_key")
+  sizeBytes    BigInt        @map("size_bytes")
+  etag         String?
+  storageClass StorageClass  @default(STANDARD) @map("storage_class")
+  contentType  String        @default("application/octet-stream") @map("content_type")
+  isDeleted    Boolean       @default(false) @map("is_deleted")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  bucket       StorageBucket @relation(fields: [bucketId], references: [id], onDelete: Cascade)
+  files        File[]
+  versions     FileVersion[]
+
+  @@unique([bucketId, objectKey])
+  @@map("storage_objects")
+}
+
+model UploadSession {
+  id            String            @id @default(uuid())
+  bucketId      String            @map("bucket_id")
+  objectKey     String            @map("object_key")
+  userId        String            @map("user_id")
+  totalBytes    BigInt            @map("total_bytes")
+  uploadedBytes BigInt            @default(0) @map("uploaded_bytes")
+  status        UploadStatus      @default(INITIALIZED)
+  expiresAt     DateTime          @map("expires_at")
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  bucket        StorageBucket     @relation(fields: [bucketId], references: [id], onDelete: Cascade)
+  multiparts    MultipartUpload[]
+
+  @@map("upload_sessions")
+}
+
+model MultipartUpload {
+  id         String        @id @default(uuid())
+  sessionId  String        @map("session_id")
+  partNumber Int           @map("part_number")
+  etag       String
+  sizeBytes  BigInt        @map("size_bytes")
+  uploadedAt DateTime      @default(now()) @map("uploaded_at")
+
+  session    UploadSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, partNumber])
+  @@map("multipart_uploads")
+}
+
+// ----------------------------------------------------------------------------
+// 2. FILE MANAGEMENT MODULE
+// ----------------------------------------------------------------------------
+
+model Folder {
+  id          String           @id @default(uuid())
+  name        String
+  parentId    String?          @map("parent_id")
+  ownerId     String           @map("owner_id")
+  path        String
+  color       String           @default("#3B82F6")
+  isArchived  Boolean          @default(false) @map("is_archived")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  parent      Folder?          @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Folder[]         @relation("FolderHierarchy")
+  files       File[]
+  permissions FilePermission[]
+  snapshots   Snapshot[]
+  restores    RestoreJob[]
+
+  @@map("folders")
+}
+
+model File {
+  id              String            @id @default(uuid())
+  name            String
+  extension       String?
+  folderId        String?           @map("folder_id")
+  storageObjectId String?           @map("storage_object_id")
+  ownerId         String            @map("owner_id")
+  mimeType        String            @map("mime_type")
+  sizeBytes       BigInt            @map("size_bytes")
+  checksum        String
+  fileType        FileType          @map("file_type")
+  isFavorite      Boolean           @default(false) @map("is_favorite")
+  isTrashed       Boolean           @default(false) @map("is_trashed")
+  trashedAt       DateTime?         @map("trashed_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  folder          Folder?           @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  storageObject   StorageObject?    @relation(fields: [storageObjectId], references: [id], onDelete: SetNull)
+  permissions     FilePermission[]
+  shares          FileShare[]
+  tags            FileTag[]
+  versions        FileVersion[]
+  history         VersionHistory[]
+  rollbacks       RollbackLog[]
+  documentMeta    DocumentMetadata?
+  extractedText   ExtractedText?
+  thumbnails      Thumbnail[]
+  previews        Preview[]
+  mediaMeta       MediaMetadata?
+  imageVariants   ImageVariant[]
+  videoVariants   VideoVariant[]
+  audioMeta       AudioMetadata?
+  ocrResults      OcrResult[]
+  transcription   Transcription?
+  embeddings      Embedding[]
+  aiTags          AiTag[]
+  moderation      ModerationResult?
+  virusScan       VirusScanResult?
+  checksumDetails FileChecksum?
+  accessLogs      AccessLog[]
+
+  @@map("files")
+}
+
+model FilePermission {
+  id        String         @id @default(uuid())
+  fileId    String?        @map("file_id")
+  folderId  String?        @map("folder_id")
+  userId    String?        @map("user_id")
+  groupId   String?        @map("group_id")
+  role      PermissionRole
+  grantedBy String         @map("granted_by")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  file      File?          @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  folder    Folder?        @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@map("file_permissions")
+}
+
+model FileShare {
+  id            String    @id @default(uuid())
+  fileId        String    @map("file_id")
+  shareToken    String    @unique @map("share_token")
+  passwordHash  String?   @map("password_hash")
+  expiresAt     DateTime? @map("expires_at")
+  maxDownloads  Int?      @map("max_downloads")
+  downloadCount Int       @default(0) @map("download_count")
+  isPublic      Boolean   @default(true) @map("is_public")
+  createdBy     String    @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  file          File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("file_shares")
+}
+
+model FileTag {
+  id        String   @id @default(uuid())
+  fileId    String   @map("file_id")
+  tagName   String   @map("tag_name")
+  color     String   @default("#6B7280")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([fileId, tagName])
+  @@map("file_tags")
+}
+
+// ----------------------------------------------------------------------------
+// 3. VERSION CONTROL MODULE
+// ----------------------------------------------------------------------------
+
+model FileVersion {
+  id              String           @id @default(uuid())
+  fileId          String           @map("file_id")
+  versionNumber   Int              @map("version_number")
+  storageObjectId String           @map("storage_object_id")
+  sizeBytes       BigInt           @map("size_bytes")
+  checksum        String
+  comment         String?
+  createdBy       String           @map("created_by")
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  file            File             @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  storageObject   StorageObject    @relation(fields: [storageObjectId], references: [id], onDelete: Restrict)
+  histories       VersionHistory[]
+
+  @@unique([fileId, versionNumber])
+  @@map("file_versions")
+}
+
+model VersionHistory {
+  id          String      @id @default(uuid())
+  fileId      String      @map("file_id")
+  versionId   String      @map("version_id")
+  action      String
+  performedBy String      @map("performed_by")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  file        File        @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  version     FileVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@map("version_history")
+}
+
+model Snapshot {
+  id           String        @id @default(uuid())
+  name         String
+  description  String?
+  folderId     String        @map("folder_id")
+  treeManifest Json          @map("tree_manifest")
+  createdBy    String        @map("created_by")
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  folder       Folder        @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  rollbacks    RollbackLog[]
+
+  @@map("snapshots")
+}
+
+model RollbackLog {
+  id          String    @id @default(uuid())
+  fileId      String?   @map("file_id")
+  snapshotId  String?   @map("snapshot_id")
+  fromVersion Int       @map("from_version")
+  toVersion   Int       @map("to_version")
+  reason      String?
+  executedBy  String    @map("executed_by")
+  executedAt  DateTime  @default(now()) @map("executed_at")
+
+  file        File?     @relation(fields: [fileId], references: [id], onDelete: SetNull)
+  snapshot    Snapshot? @relation(fields: [snapshotId], references: [id], onDelete: SetNull)
+
+  @@map("rollback_logs")
+}
+
+// ----------------------------------------------------------------------------
+// 4. DOCUMENTS MODULE
+// ----------------------------------------------------------------------------
+
+model DocumentMetadata {
+  id           String    @id @default(uuid())
+  fileId       String    @unique @map("file_id")
+  title        String?
+  author       String?
+  pageCount    Int       @default(0) @map("page_count")
+  wordCount    Int       @default(0) @map("word_count")
+  language     String    @default("en")
+  createdDate  DateTime? @map("created_date")
+  modifiedDate DateTime? @map("modified_date")
+  application  String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  file         File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("document_metadata")
+}
+
+model ExtractedText {
+  id           String   @id @default(uuid())
+  fileId       String   @unique @map("file_id")
+  fullText     String   @map("full_text")
+  cleanText    String   @map("clean_text")
+  summary      String?
+  layoutBlocks Json?    @map("layout_blocks")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  file         File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("extracted_text")
+}
+
+model Thumbnail {
+  id          String   @id @default(uuid())
+  fileId      String   @map("file_id")
+  sizeLabel   String   @map("size_label")
+  width       Int
+  height      Int
+  storagePath String   @map("storage_path")
+  format      String   @default("webp")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  file        File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("thumbnails")
+}
+
+model Preview {
+  id         String   @id @default(uuid())
+  fileId     String   @map("file_id")
+  pageNumber Int      @map("page_number")
+  previewUrl String   @map("preview_url")
+  format     String   @default("png")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  file       File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([fileId, pageNumber])
+  @@map("previews")
+}
+
+// ----------------------------------------------------------------------------
+// 5. MEDIA MODULE
+// ----------------------------------------------------------------------------
+
+model MediaMetadata {
+  id              String   @id @default(uuid())
+  fileId          String   @unique @map("file_id")
+  durationSeconds Float?   @map("duration_seconds")
+  width           Int?
+  height          Int?
+  aspectRatio     String?  @map("aspect_ratio")
+  codec           String?
+  bitrateBps      BigInt?  @map("bitrate_bps")
+  frameRate       Float?   @map("frame_rate")
+  channels        Int?
+  sampleRate      Int?     @map("sample_rate")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  file            File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("media_metadata")
+}
+
+model ImageVariant {
+  id          String   @id @default(uuid())
+  fileId      String   @map("file_id")
+  variantName String   @map("variant_name")
+  width       Int
+  height      Int
+  format      String
+  sizeBytes   BigInt   @map("size_bytes")
+  storagePath String   @map("storage_path")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  file        File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("image_variants")
+}
+
+model VideoVariant {
+  id          String   @id @default(uuid())
+  fileId      String   @map("file_id")
+  resolution  String
+  bitrateBps  BigInt   @map("bitrate_bps")
+  format      String   @default("mp4")
+  storagePath String   @map("storage_path")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  file        File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("video_variants")
+}
+
+model AudioMetadata {
+  id              String   @id @default(uuid())
+  fileId          String   @unique @map("file_id")
+  artist          String?
+  album           String?
+  title           String?
+  genre           String?
+  trackNumber     Int?     @map("track_number")
+  durationSeconds Float    @map("duration_seconds")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  file            File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("audio_metadata")
+}
+
+// ----------------------------------------------------------------------------
+// 6. AI PROCESSING MODULE
+// ----------------------------------------------------------------------------
+
+model OcrResult {
+  id              String   @id @default(uuid())
+  fileId          String   @map("file_id")
+  pageNumber      Int      @default(1) @map("page_number")
+  detectedText    String   @map("detected_text")
+  confidenceScore Float    @default(0.0) @map("confidence_score")
+  boundingBoxes   Json?    @map("bounding_boxes")
+  engine          String   @default("Tesseract-v5")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  file            File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("ocr_results")
+}
+
+model Transcription {
+  id              String   @id @default(uuid())
+  fileId          String   @unique @map("file_id")
+  transcript      String
+  language        String   @default("en")
+  speakerSegments Json?    @map("speaker_segments")
+  modelUsed       String   @default("Whisper-v3") @map("model_used")
+  confidenceScore Float    @default(0.0) @map("confidence_score")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  file            File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("transcriptions")
+}
+
+model Embedding {
+  id         String   @id @default(uuid())
+  fileId     String   @map("file_id")
+  chunkIndex Int      @map("chunk_index")
+  chunkText  String   @map("chunk_text")
+  vector     Json     // Array of floats
+  model      String   @default("text-embedding-3-small")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  file       File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("embeddings")
+}
+
+model AiTag {
+  id         String   @id @default(uuid())
+  fileId     String   @map("file_id")
+  tag        String
+  category   String   @default("general")
+  confidence Float    @default(0.9)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  file       File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("ai_tags")
+}
+
+model ModerationResult {
+  id            String           @id @default(uuid())
+  fileId        String           @unique @map("file_id")
+  isFlagged     Boolean          @default(false) @map("is_flagged")
+  nsfwScore     Float            @default(0.0) @map("nsfw_score")
+  violenceScore Float            @default(0.0) @map("violence_score")
+  hateScore     Float            @default(0.0) @map("hate_score")
+  piiDetected   Json?            @map("pii_detected")
+  status        ModerationStatus @default(PASSED)
+  reviewedAt    DateTime         @default(now()) @map("reviewed_at")
+
+  file          File             @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("moderation_results")
+}
+
+model VirusScanResult {
+  id          String   @id @default(uuid())
+  fileId      String   @unique @map("file_id")
+  engine      String   @default("ClamAV-v1.2")
+  isClean     Boolean  @default(true) @map("is_clean")
+  threatFound String?  @map("threat_found")
+  scannedAt   DateTime @default(now()) @map("scanned_at")
+
+  file        File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("virus_scan_results")
+}
+
+// ----------------------------------------------------------------------------
+// 7. BACKUP MODULE
+// ----------------------------------------------------------------------------
+
+model Backup {
+  id          String       @id @default(uuid())
+  name        String
+  backupType  BackupType   @default(FULL) @map("backup_type")
+  sizeBytes   BigInt       @default(0) @map("size_bytes")
+  storagePath String       @map("storage_path")
+  checksum    String
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  jobs        BackupJob[]
+  restores    RestoreJob[]
+
+  @@map("backups")
+}
+
+model BackupJob {
+  id           String    @id @default(uuid())
+  backupId     String?   @map("backup_id")
+  status       JobStatus @default(PENDING)
+  startedAt    DateTime  @default(now()) @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  errorMessage String?   @map("error_message")
+
+  backup       Backup?   @relation(fields: [backupId], references: [id], onDelete: Cascade)
+
+  @@map("backup_jobs")
+}
+
+model RestoreJob {
+  id                 String    @id @default(uuid())
+  backupId           String    @map("backup_id")
+  targetFolderId     String?   @map("target_folder_id")
+  status             JobStatus @default(IN_PROGRESS")
+  restoredFilesCount Int       @default(0) @map("restored_files_count")
+  startedAt          DateTime  @default(now()) @map("started_at")
+  completedAt        DateTime? @map("completed_at")
+
+  backup             Backup    @relation(fields: [backupId], references: [id], onDelete: Restrict)
+  targetFolder       Folder?   @relation(fields: [targetFolderId], references: [id], onDelete: SetNull)
+
+  @@map("restore_jobs")
+}
+
+model RetentionPolicy {
+  id                String   @id @default(uuid())
+  name              String
+  retentionDays     Int      @default(90) @map("retention_days")
+  archiveAfterDays  Int?     @default(30) @map("archive_after_days")
+  deletePermanently Boolean  @default(false) @map("delete_permanently")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("retention_policies")
+}
+
+// ----------------------------------------------------------------------------
+// 8. SECURITY MODULE
+// ----------------------------------------------------------------------------
+
+model EncryptionKey {
+  id        String   @id @default(uuid())
+  keyArn    String   @map("key_arn")
+  algorithm String   @default("AES-256-GCM")
+  isActive  Boolean  @default(true) @map("is_active")
+  rotatedAt DateTime @default(now()) @map("rotated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("encryption_keys")
+}
+
+model FileChecksum {
+  id         String   @id @default(uuid())
+  fileId     String   @unique @map("file_id")
+  md5        String
+  sha256     String
+  sha512     String
+  verifiedAt DateTime @default(now()) @map("verified_at")
+
+  file       File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@map("file_checksums")
+}
+
+model AccessLog {
+  id        String   @id @default(uuid())
+  fileId    String?  @map("file_id")
+  userId    String?  @map("user_id")
+  action    String
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  file      File?    @relation(fields: [fileId], references: [id], onDelete: SetNull)
+
+  @@map("access_logs")
+}
+
+model SecureDeletionLog {
+  id               String   @id @default(uuid())
+  fileId           String   @map("file_id")
+  fileName         String   @map("file_name")
+  wipeMethod       String   @default("DoD 5220.22-M 7-pass") @map("wipe_method")
+  verificationHash String   @map("verification_hash")
+  deletedBy        String   @map("deleted_by")
+  deletedAt        DateTime @default(now()) @map("deleted_at")
+
+  @@map("secure_deletion_logs")
+}

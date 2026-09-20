@@ -152,7 +152,7 @@ function FilesContent() {
   );
 
   const files = useMemo(() => {
-    let list = MOCK_FILES.filter((f) =>
+    const list = MOCK_FILES.filter((f) =>
       !f.isTrashed &&
       (showStarred ? f.isStarred : true) &&
       (folderId ? f.folderId === folderId : true) &&
@@ -168,7 +168,11 @@ function FilesContent() {
   }, [folderId, showStarred, search, sort]);
 
   const toggleSelect = (id: string) =>
-    setSelected((prev) => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
+    setSelected((prev) => {
+      const s = new Set(prev);
+      if (s.has(id)) s.delete(id); else s.add(id);
+      return s;
+    });
   const selectAll = () =>
     setSelected(selected.size === files.length ? new Set() : new Set(files.map((f) => f.id)));
 

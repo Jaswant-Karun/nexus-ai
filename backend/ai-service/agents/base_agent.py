@@ -19,9 +19,11 @@ class BaseAgent(ABC):
     """Abstract base for every NEXUS AI agent."""
 
     def __init__(self, config: AgentConfig) -> None:
+        from config import settings
         self.config    = config
         self.agent_id  = config.agent_id or f"agent_{uuid.uuid4().hex[:8]}"
-        self._client   = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+        api_key        = settings.openai_api_key or os.getenv("OPENAI_API_KEY", "")
+        self._client   = OpenAI(api_key=api_key)
         self._history: list[AgentMessage] = []
         self._steps:   list[AgentStep]    = []
         self._tokens   = 0
@@ -33,16 +35,37 @@ class BaseAgent(ABC):
     # ── Shared utilities ───────────────────────────────────────
     def _call_llm(self, messages: list[dict], temperature: float | None = None) -> tuple[str, int]:
         """Call OpenAI and return (content, tokens_used)."""
-        resp = self._client.chat.completions.create(
-            model=self.config.model,
-            messages=messages,
-            temperature=temperature if temperature is not None else self.config.temperature,
-            max_tokens=2048,
-        )
-        content = resp.choices[0].message.content or ""
-        tokens  = resp.usage.total_tokens if resp.usage else 0
-        self._tokens += tokens
-        return content, tokens
+        try:
+            resp = self._client.chat.completions.create(
+                model=self.config.model,
+                messages=messages,
+                temperature=temperature if temperature is not None else self.config.temperature,
+                max_tokens=2048,
+            )
+            content = resp.choices[0].message.content or ""
+            tokens  = resp.usage.total_tokens if resp.usage else 0
+            self._tokens += tokens
+            return content, tokens
+        except Exception as exc:
+            err_str = str(exc)
+            if "insufficient_quota" in err_str or "credit_balance_exhausted" in err_str:
+                task_content = messages[-1]["content"] if messages else "task"
+                role_name = getattr(self.config.role, "value", str(self.config.role))
+                content = (
+                    f"Agent ({role_name}) processed input: '{task_content}'.\n\n"
+                    "[Note: OpenAI API quota is currently exhausted for the configured key. "
+                    "Please update OPENAI_API_KEY in .env to receive live OpenAI responses.]"
+                )
+                return content, 0
+            elif "invalid_api_key" in err_str or "AuthenticationError" in type(exc).__name__:
+                task_content = messages[-1]["content"] if messages else "task"
+                role_name = getattr(self.config.role, "value", str(self.config.role))
+                content = (
+                    f"Agent ({role_name}) processed input: '{task_content}'.\n\n"
+                    "[Note: Invalid OpenAI API key. Please configure a valid OPENAI_API_KEY in .env.]"
+                )
+                return content, 0
+            raise exc
 
     def _record_step(self, step: int, thought: str, action: str,
                      observation: str, tool: str | None = None) -> None:

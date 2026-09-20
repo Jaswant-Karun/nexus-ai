@@ -1,9 +1,7 @@
 "use client";
-
 import { useState } from "react";
 import { NavBar, Sidebar, WorkflowCanvas } from "@nexus/ui";
 import { generateWorkflow } from "@/lib/ai-client";
-import { cn } from "@/lib/utils";
 import type { WorkflowNode } from "@nexus/types";
 
 const sidebarItems = [

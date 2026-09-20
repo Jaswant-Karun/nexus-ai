@@ -59,7 +59,7 @@ function FolderTree({ nodes, depth = 0 }: { nodes: FolderTreeNode[]; depth?: num
           <div key={node.id}>
             <div className="flex items-center group">
               {hasChildren && (
-                <button type="button" onClick={() => setExpanded((s) => { const n = new Set(s); n.has(node.id) ? n.delete(node.id) : n.add(node.id); return n; })}
+                <button type="button" onClick={() => setExpanded((s) => { const n = new Set(s); if (n.has(node.id)) n.delete(node.id); else n.add(node.id); return n; })}
                   className="ml-1 mr-0.5 h-4 w-4 flex items-center justify-center text-dark-500 hover:text-white transition-colors shrink-0">
                   <svg width={8} height={8} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
                     {isExpanded ? <path d="m6 9 6 6 6-6"/> : <path d="m9 18 6-6-6-6"/>}

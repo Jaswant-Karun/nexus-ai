@@ -99,7 +99,7 @@ export default function NotificationsPage() {
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 bg-gray-900/40 py-16 text-center">
                 <p className="text-4xl mb-4">🔔</p>
                 <p className="text-white font-semibold">No unread notifications</p>
-                <p className="text-gray-400 text-sm mt-1">You're all up to date.</p>
+                <p className="text-gray-400 text-sm mt-1">You&apos;re all up to date.</p>
               </div>
             ) : (
               visible.map((n) => (

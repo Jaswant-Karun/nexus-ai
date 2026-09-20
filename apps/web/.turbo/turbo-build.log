@@ -1,47 +1,6 @@
 
 > @nexus-ai/web@0.1.0 build C:\Users\jaswant karun\nexus-ai\apps\web
-> next build
+> prisma generate --schema=prisma/schema.prisma && next build
 
-   ▲ Next.js 15.1.0
-   - Environments: .env.local
-
-   Creating an optimized production build ...
- ✓ Compiled successfully
-   Linting and checking validity of types ...
-
-./app/layout.tsx
-32:9  Warning: Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
-
-info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
-   Collecting page data ...
-   Generating static pages (0/14) ...
-   Generating static pages (3/14) 
-   Generating static pages (6/14) 
-   Generating static pages (10/14) 
- ✓ Generating static pages (14/14)
-   Finalizing page optimization ...
-   Collecting build traces ...
-
-Route (app)                              Size     First Load JS
-┌ ○ /                                    230 B           112 kB
-├ ○ /_not-found                          142 B           106 kB
-├ ○ /auth/forgot-password                178 B           109 kB
-├ ○ /auth/login                          178 B           109 kB
-├ ○ /auth/register                       178 B           109 kB
-├ ○ /chat                                1.13 kB         109 kB
-├ ○ /dashboard                           1.67 kB         110 kB
-├ ○ /manifest.json                       0 B                0 B
-├ ○ /robots.txt                          0 B                0 B
-├ ○ /sitemap.xml                         0 B                0 B
-├ ○ /workflow                            1.11 kB         109 kB
-└ ○ /workspace                           1.57 kB         110 kB
-+ First Load JS shared by all            105 kB
-  ├ chunks/1a3b18f5-21ccc664349aa135.js  52.9 kB
-  ├ chunks/299-0d4f58d587bfb904.js       50.5 kB
-  └ other shared chunks (total)          1.98 kB
-
-
-ƒ Middleware                             31.9 kB
-
-○  (Static)  prerendered as static content
-
+Failed to load config file "C:\Users\jaswant karun\nexus-ai\apps\web" as a TypeScript/JavaScript module. Error: PrismaConfigEnvError: Cannot resolve environment variable: DATABASE_URL.
+ ELIFECYCLE  Command failed with exit code 1.

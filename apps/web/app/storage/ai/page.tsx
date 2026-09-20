@@ -148,7 +148,7 @@ export default function AiAnalyzerPage() {
   const [question,    setQuestion]    = useState("");
   const [aiAnswer,    setAiAnswer]    = useState("");
   const [aiAnswering, setAiAnswering] = useState(false);
-  const [aiSummary,   setAiSummary]   = useState<string>(selectedDoc?.aiSummary ?? "");
+  const [,            setAiSummary]   = useState<string>(selectedDoc?.aiSummary ?? "");
   const [analyzing,   setAnalyzing]   = useState(false);
   const [docs,        setDocs]        = useState<AiDocument[]>(AI_DOCS);
 
@@ -179,7 +179,7 @@ export default function AiAnalyzerPage() {
       setDocs((prev) => prev.map((d) => d.id === doc.id ? updated : d));
       setSelectedDoc(updated);
       setAiSummary(res.summary);
-    } catch (err: unknown) {
+    } catch {
       setDocs((prev) => prev.map((d) => d.id === doc.id ? { ...d, analysisStatus: "failed" } : d));
       setSelectedDoc((prev) => prev ? { ...prev, analysisStatus: "failed" } : prev);
     } finally {

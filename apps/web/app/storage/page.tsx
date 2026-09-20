@@ -5,7 +5,7 @@ import Link from "next/link";
 import { NavBar } from "@nexus/ui";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { FileIcon } from "@/components/storage/FileIcon";
-import { formatBytes, MOCK_FILES, MOCK_FOLDERS, relativeTime } from "@/lib/storage";
+import { formatBytes, MOCK_FILES, MOCK_FOLDERS } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 /* ── Top bar ─────────────────────────────────────────────────────── */

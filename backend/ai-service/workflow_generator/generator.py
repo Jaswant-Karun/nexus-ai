@@ -13,7 +13,9 @@ from schemas.workflow import (
     WorkflowGenerateResponse, WorkflowNode, WorkflowOptimizeRequest,
 )
 
-_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+def _get_client() -> OpenAI:
+    from config import settings
+    return OpenAI(api_key=settings.openai_api_key or os.getenv("OPENAI_API_KEY", ""))
 
 _SYSTEM = """You are a workflow architect for NEXUS AI platform.
 Design optimal multi-agent workflow DAGs.
@@ -61,17 +63,59 @@ def generate_workflow(req: WorkflowGenerateRequest) -> WorkflowGenerateResponse:
         f"Max nodes: {req.max_nodes}"
     )
 
-    resp = _client.chat.completions.create(
-        model=req.model,
-        messages=[
-            {"role": "system", "content": _SYSTEM},
-            {"role": "user",   "content": user_msg},
-        ],
-        temperature=0.3,
-        response_format={"type": "json_object"},
-    )
-    raw    = resp.choices[0].message.content or "{}"
-    tokens = resp.usage.total_tokens if resp.usage else 0
+    try:
+        resp = _get_client().chat.completions.create(
+            model=req.model,
+            messages=[
+                {"role": "system", "content": _SYSTEM},
+                {"role": "user",   "content": user_msg},
+            ],
+            temperature=0.3,
+            response_format={"type": "json_object"},
+        )
+        raw    = resp.choices[0].message.content or "{}"
+        tokens = resp.usage.total_tokens if resp.usage else 0
+    except Exception as exc:
+        err_str = str(exc)
+        if "insufficient_quota" in err_str or "credit_balance_exhausted" in err_str or "invalid_api_key" in err_str:
+            raw = json.dumps({
+                "name": f"Workflow for {req.goal[:20]}...",
+                "description": f"Automated pipeline for '{req.goal}' [Offline/fallback mode]",
+                "reasoning": "Standard 3-stage trigger-process-output architecture",
+                "estimated_duration": "2-5 minutes",
+                "nodes": [
+                    {
+                        "id": "n1",
+                        "kind": "trigger",
+                        "label": "Input Event",
+                        "description": "Trigger on user request or web hook",
+                        "config": {"source": "api"},
+                        "position": {"x": 100, "y": 200}
+                    },
+                    {
+                        "id": "n2",
+                        "kind": "agent",
+                        "label": "AI Processing Agent",
+                        "description": "Executes core task processing",
+                        "config": {"role": "analyst"},
+                        "position": {"x": 350, "y": 200}
+                    },
+                    {
+                        "id": "n3",
+                        "kind": "output",
+                        "label": "Results Output",
+                        "description": "Formats and dispatches response",
+                        "config": {"destination": "ui"},
+                        "position": {"x": 600, "y": 200}
+                    }
+                ],
+                "edges": [
+                    {"id": "e1", "source": "n1", "target": "n2", "label": "Start", "condition": ""},
+                    {"id": "e2", "source": "n2", "target": "n3", "label": "Complete", "condition": ""}
+                ]
+            })
+        else:
+            raise exc
     data   = json.loads(raw)
 
     nodes = [

@@ -2,7 +2,6 @@
 
 import { useRef, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { formatBytes } from "@/lib/storage";
 
 interface UploadDropzoneProps {
   onFiles: (files: File[]) => void;

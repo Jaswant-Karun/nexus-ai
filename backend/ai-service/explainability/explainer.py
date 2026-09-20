@@ -12,7 +12,9 @@ from schemas.explainability import (
     ExplainRequest, ExplainResponse, FeatureImportance,
 )
 
-_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+def _get_client() -> OpenAI:
+    from config import settings
+    return OpenAI(api_key=settings.openai_api_key or os.getenv("OPENAI_API_KEY", ""))
 
 
 def _feature_importance_lime_style(
@@ -54,13 +56,21 @@ def explain(req: ExplainRequest) -> ExplainResponse:
             "Explain in plain English why the model made this prediction. "
             "Be concise (3-5 sentences), use simple language."
         )
-        resp = _client.chat.completions.create(
-            model=req.llm_model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.2,
-        )
-        llm_explanation = resp.choices[0].message.content or ""
-        tokens = resp.usage.total_tokens if resp.usage else 0
+        try:
+            resp = _get_client().chat.completions.create(
+                model=req.llm_model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+            )
+            llm_explanation = resp.choices[0].message.content or ""
+            tokens = resp.usage.total_tokens if resp.usage else 0
+        except Exception as exc:
+            err_str = str(exc)
+            if "insufficient_quota" in err_str or "credit_balance_exhausted" in err_str or "invalid_api_key" in err_str:
+                llm_explanation = f"Model predicted '{req.prediction}' based on primary features ({', '.join(f.feature for f in features[:3])}). [Offline explanation mode]"
+                tokens = 0
+            else:
+                raise exc
 
     confidence = round(max(f.importance for f in features) * 0.9, 3) if features else 0.5
     return ExplainResponse(

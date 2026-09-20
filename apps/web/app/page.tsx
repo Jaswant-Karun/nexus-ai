@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ZapIcon, BotIcon, BrainIcon, ZapIcon as WorkflowIcon, ShieldIcon, BarChart3Icon, SearchIcon } from "@/components/ui/Icons";
+import { ZapIcon, BotIcon, BrainIcon, ZapIcon as WorkflowIcon, ShieldIcon, BarChart3Icon } from "@/components/ui/Icons";
 
 /* ── Animated counter ─────────────────────────────────────────── */
 function Counter({ end, suffix = "" }: { end: number; suffix?: string }) {

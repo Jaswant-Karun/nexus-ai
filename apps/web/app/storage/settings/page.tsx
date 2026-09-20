@@ -1,9 +1,7 @@
 "use client";
-
 import { useState } from "react";
 import { NavBar } from "@nexus/ui";
 import { StorageLayout } from "@/components/storage/StorageLayout";
-import { formatBytes } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 const TABS = ["General", "AI Processing", "Lifecycle", "Integrations"];

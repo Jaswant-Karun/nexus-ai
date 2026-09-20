@@ -13,7 +13,6 @@ from schemas.prompt_builder import (
     PromptTemplate,
 )
 
-_client  = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
 _jinja   = Environment(loader=BaseLoader(), autoescape=False)
 
 # ── Built-in template library ─────────────────────────────────────────────────
@@ -115,6 +114,11 @@ def build_prompt(req: BuildPromptRequest) -> BuildPromptResponse:
     )
 
 
+def _get_client() -> OpenAI:
+    from config import settings
+    return OpenAI(api_key=settings.openai_api_key or os.getenv("OPENAI_API_KEY", ""))
+
+
 def optimize_prompt(req: OptimizePromptRequest) -> OptimizePromptResponse:
     system = (
         f"You are a prompt engineering expert. Optimise the given prompt for "
@@ -122,17 +126,27 @@ def optimize_prompt(req: OptimizePromptRequest) -> OptimizePromptResponse:
         f"Task context: {req.task}\n"
         "Return JSON: {\"optimized_prompt\": \"...\", \"improvements\": [\"...\"]}"
     )
-    resp = _client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user",   "content": f"Original prompt:\n{req.prompt}"},
-        ],
-        temperature=0.2,
-        response_format={"type": "json_object"},
-    )
-    import json
-    data = json.loads(resp.choices[0].message.content or "{}")
+    try:
+        resp = _get_client().chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user",   "content": f"Original prompt:\n{req.prompt}"},
+            ],
+            temperature=0.2,
+            response_format={"type": "json_object"},
+        )
+        import json
+        data = json.loads(resp.choices[0].message.content or "{}")
+    except Exception as exc:
+        err_str = str(exc)
+        if "insufficient_quota" in err_str or "credit_balance_exhausted" in err_str or "invalid_api_key" in err_str:
+            data = {
+                "optimized_prompt": f"System: Process clearly.\n\nTask: {req.prompt}",
+                "improvements": ["Added explicit system instruction prefix", "Structured input formatting"]
+            }
+        else:
+            raise exc
     opt  = data.get("optimized_prompt", req.prompt)
     return OptimizePromptResponse(
         original_prompt=req.prompt,

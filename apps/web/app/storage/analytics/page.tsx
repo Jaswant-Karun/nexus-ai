@@ -2,7 +2,7 @@
 
 import { NavBar } from "@nexus/ui";
 import { StorageLayout } from "@/components/storage/StorageLayout";
-import { formatBytes, MOCK_FILES, MOCK_FOLDERS } from "@/lib/storage";
+import { formatBytes, MOCK_FILES } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 const DAILY = [

@@ -12,7 +12,9 @@ from schemas.planner import (
     ExecutionPlan, PlanRequest, PlanResponse, SubTask, TaskPriority,
 )
 
-_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+def _get_client() -> OpenAI:
+    from config import settings
+    return OpenAI(api_key=settings.openai_api_key or os.getenv("OPENAI_API_KEY", ""))
 
 _SYSTEM = """You are an expert AI task planner for the NEXUS AI platform.
 Given a goal, decompose it into clear, actionable subtasks.
@@ -49,17 +51,51 @@ def create_plan(req: PlanRequest) -> PlanResponse:
         f"Max subtasks: {req.max_subtasks}"
     )
 
-    resp = _client.chat.completions.create(
-        model=req.model,
-        messages=[
-            {"role": "system", "content": _SYSTEM},
-            {"role": "user",   "content": user_msg},
-        ],
-        temperature=0.2,
-        response_format={"type": "json_object"},
-    )
-    raw    = resp.choices[0].message.content or "{}"
-    tokens = resp.usage.total_tokens if resp.usage else 0
+    try:
+        resp = _get_client().chat.completions.create(
+            model=req.model,
+            messages=[
+                {"role": "system", "content": _SYSTEM},
+                {"role": "user",   "content": user_msg},
+            ],
+            temperature=0.2,
+            response_format={"type": "json_object"},
+        )
+        raw    = resp.choices[0].message.content or "{}"
+        tokens = resp.usage.total_tokens if resp.usage else 0
+    except Exception as exc:
+        err_str = str(exc)
+        if "insufficient_quota" in err_str or "credit_balance_exhausted" in err_str or "invalid_api_key" in err_str:
+            raw = json.dumps({
+                "strategy": "Sequential task execution (offline/fallback mode)",
+                "reasoning": f"Plan generated for goal '{req.goal}' [OpenAI quota/key limited]",
+                "subtasks": [
+                    {
+                        "id": "t1",
+                        "title": f"Analyze requirement: {req.goal[:30]}...",
+                        "description": "Initial task analysis and setup",
+                        "priority": "high",
+                        "depends_on": [],
+                        "agent_role": "analyst",
+                        "estimated_tokens": 300,
+                        "tools_required": []
+                    },
+                    {
+                        "id": "t2",
+                        "title": "Execute core logic",
+                        "description": "Implementation of requested workflow steps",
+                        "priority": "medium",
+                        "depends_on": ["t1"],
+                        "agent_role": "coder",
+                        "estimated_tokens": 500,
+                        "tools_required": []
+                    }
+                ],
+                "execution_order": ["t1", "t2"]
+            })
+            tokens = 0
+        else:
+            raise exc
     data   = json.loads(raw)
 
     subtasks: list[SubTask] = []

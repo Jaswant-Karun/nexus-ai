@@ -13,17 +13,29 @@ from schemas.summarizer import (
     DocumentSummary, SummarizeRequest, SummarizeResponse, SummarizeStrategy,
 )
 
-_client  = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+def _get_client() -> OpenAI:
+    from config import settings
+    return OpenAI(api_key=settings.openai_api_key or os.getenv("OPENAI_API_KEY", ""))
+
+
 _CHUNK   = 6000   # characters per chunk for map-reduce
 
 
 def _call(prompt: str, model: str, temp: float = 0.3) -> tuple[str, int]:
-    resp = _client.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=temp,
-    )
-    return (resp.choices[0].message.content or ""), (resp.usage.total_tokens if resp.usage else 0)
+    try:
+        resp = _get_client().chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temp,
+        )
+        return (resp.choices[0].message.content or ""), (resp.usage.total_tokens if resp.usage else 0)
+    except Exception as exc:
+        err_str = str(exc)
+        if "insufficient_quota" in err_str or "credit_balance_exhausted" in err_str:
+            return "[Summary unavailable: OpenAI API quota exhausted. Update OPENAI_API_KEY in .env]", 0
+        elif "invalid_api_key" in err_str or "AuthenticationError" in type(exc).__name__:
+            return "[Summary unavailable: Invalid OpenAI API key. Update OPENAI_API_KEY in .env]", 0
+        raise exc
 
 
 def _stuff(text: str, req: SummarizeRequest) -> tuple[str, int]:

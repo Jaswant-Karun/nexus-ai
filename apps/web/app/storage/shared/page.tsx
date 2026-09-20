@@ -5,7 +5,6 @@ import { NavBar } from "@nexus/ui";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { FileIcon } from "@/components/storage/FileIcon";
 import { cn } from "@/lib/utils";
-import { formatBytes } from "@/lib/storage";
 
 const MOCK_SHARES = [
   { id: "s1", fileId: "file1", fileName: "Transformer_Architecture.pdf",  mimeType: "application/pdf", sizeBytes: 4_200_000, permission: "view",     isPublic: true,  expiresAt: "2026-08-15T00:00:00Z", downloadLimit: null, downloadCount: 8,  shareUrl: "https://nexus.ai/share/abc123", createdAt: "2026-07-25T10:00:00Z" },

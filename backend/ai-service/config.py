@@ -54,7 +54,17 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    st = Settings()
+    if st.openai_api_key:
+        os.environ["OPENAI_API_KEY"] = st.openai_api_key
+    if st.anthropic_api_key:
+        os.environ["ANTHROPIC_API_KEY"] = st.anthropic_api_key
+    if st.google_ai_api_key:
+        os.environ["GOOGLE_AI_API_KEY"] = st.google_ai_api_key
+    if st.cohere_api_key:
+        os.environ["COHERE_API_KEY"] = st.cohere_api_key
+    return st
 
 
 settings = get_settings()
+

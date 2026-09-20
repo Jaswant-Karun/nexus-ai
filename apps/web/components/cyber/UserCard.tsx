@@ -101,7 +101,7 @@ export function UserCard({
       </div>
 
       <p className="font-cyber text-[9px] tracking-widest text-cyber-text-dim">
-        {level} // {rank}
+        {level} {"//"} {rank}
       </p>
 
       {/* Polyhedron */}
