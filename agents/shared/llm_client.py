@@ -59,6 +59,7 @@ def _best_provider() -> str:
 def _gemini_chat(messages: list[dict], model: str = "models/gemini-2.5-flash",
                  temperature: float = 0.4, max_tokens: int = 4096) -> tuple[str, int]:
     import google.generativeai as genai
+    import time
     genai.configure(api_key=os.environ["GOOGLE_AI_API_KEY"])
 
     # Map OpenAI message format → Gemini format
@@ -73,7 +74,6 @@ def _gemini_chat(messages: list[dict], model: str = "models/gemini-2.5-flash",
             system_parts.append(content)
         elif role == "user":
             if history and history[-1]["role"] == "user":
-                # Merge consecutive user messages
                 history[-1]["parts"][0] += "\n" + content
             else:
                 history.append({"role": "user", "parts": [content]})
@@ -83,29 +83,47 @@ def _gemini_chat(messages: list[dict], model: str = "models/gemini-2.5-flash",
 
     system_instruction = "\n\n".join(system_parts) if system_parts else None
 
-    # Map temperature to Gemini scale (same 0-1 range)
     gen_config = genai.types.GenerationConfig(
         temperature=min(temperature, 1.0),
         max_output_tokens=max_tokens,
     )
 
-    gemini = genai.GenerativeModel(
-        model_name=model,
-        system_instruction=system_instruction,
-        generation_config=gen_config,
-    )
+    # Try models in order: flash → flash-lite → flash (retry after wait)
+    model_fallbacks = [model, "models/gemini-2.5-flash-lite", "models/gemini-flash-latest"]
+    last_exc = None
 
-    # Use chat if history > 1 turn, otherwise simple generate
-    if len(history) > 1:
-        chat = gemini.start_chat(history=history[:-1])
-        resp = chat.send_message(history[-1]["parts"][0])
-    else:
-        prompt = last_user or (history[0]["parts"][0] if history else "Hello")
-        resp   = gemini.generate_content(prompt)
+    for try_model in model_fallbacks:
+        try:
+            gemini = genai.GenerativeModel(
+                model_name=try_model,
+                system_instruction=system_instruction,
+                generation_config=gen_config,
+            )
+            if len(history) > 1:
+                chat = gemini.start_chat(history=history[:-1])
+                resp = chat.send_message(history[-1]["parts"][0])
+            else:
+                prompt = last_user or (history[0]["parts"][0] if history else "Hello")
+                resp   = gemini.generate_content(prompt)
 
-    text   = resp.text or ""
-    tokens = getattr(getattr(resp, "usage_metadata", None), "total_token_count", 0) or 0
-    return text, tokens
+            text   = resp.text or ""
+            tokens = getattr(getattr(resp, "usage_metadata", None), "total_token_count", 0) or 0
+            return text, tokens
+        except Exception as exc:
+            last_exc = exc
+            err_str  = str(exc)
+            # Extract retry delay from error message
+            import re
+            m = re.search(r"retry in (\d+(?:\.\d+)?)s", err_str)
+            wait = float(m.group(1)) + 1 if m else 0
+            if "RESOURCE_EXHAUSTED" in err_str or "429" in err_str:
+                if try_model != model_fallbacks[-1] and wait > 0 and wait < 30:
+                    time.sleep(wait)
+                    continue
+            # Not a rate-limit error — don't retry other models
+            raise
+
+    raise last_exc  # type: ignore[misc]
 
 
 # ── Anthropic backend ─────────────────────────────────────────────────────────
@@ -151,7 +169,6 @@ _GEMINI_MODELS = {
     "claude-3-5-haiku-20241022": "models/gemini-2.5-flash-lite",
     "gemini-1.5-pro":            "models/gemini-2.5-pro",
     "gemini-1.5-flash":          "models/gemini-2.5-flash",
-    # Pass-through for native Gemini model IDs
 }
 
 
