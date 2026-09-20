@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ModuleLayout from '@/components/layout/ModuleLayout';
 import { Palette, Moon, Sun, Monitor, Check, Eye } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 
 const settingsSubnav = [
   { label: 'All Settings', href: '/settings' },
@@ -17,10 +18,23 @@ const settingsSubnav = [
 ];
 
 export default function ThemeSettingsPage() {
-  const [themeMode, setThemeMode] = useState<'DARK' | 'LIGHT' | 'SYSTEM'>('DARK');
+  const { theme, setTheme } = useTheme();
+  const [themeMode, setThemeMode] = useState<'DARK' | 'LIGHT' | 'SYSTEM'>(() => 'DARK');
   const [accentColor, setAccentColor] = useState('indigo');
   const [reducedMotion, setReducedMotion] = useState(false);
   const [compactDensity, setCompactDensity] = useState(false);
+
+  useEffect(() => {
+    setThemeMode(theme.toUpperCase() as 'DARK' | 'LIGHT' | 'SYSTEM');
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem('nexus_accent', accentColor);
+    localStorage.setItem('nexus_reduced_motion', String(reducedMotion));
+    localStorage.setItem('nexus_compact_density', String(compactDensity));
+    document.documentElement.classList.toggle('reduce-motion', reducedMotion);
+    document.documentElement.classList.toggle('compact-density', compactDensity);
+  }, [accentColor, reducedMotion, compactDensity]);
 
   return (
     <ModuleLayout
@@ -30,8 +44,8 @@ export default function ThemeSettingsPage() {
     >
       <div className="max-w-3xl space-y-6">
         {/* Mode Selector */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+        <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 space-y-4 dark:border-slate-800 dark:bg-slate-900/60">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Palette className="w-4 h-4 text-indigo-400" /> Color Mode
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -45,7 +59,10 @@ export default function ThemeSettingsPage() {
               return (
                 <button
                   key={mode.id}
-                  onClick={() => setThemeMode(mode.id as any)}
+                  onClick={() => {
+                    setThemeMode(mode.id as 'DARK' | 'LIGHT' | 'SYSTEM');
+                    setTheme(mode.id.toLowerCase() as 'dark' | 'light' | 'system');
+                  }}
                   className={`p-4 rounded-xl border text-left transition-all ${
                     isSelected
                       ? 'border-indigo-500 bg-indigo-500/10 ring-1 ring-indigo-500/30'
@@ -56,7 +73,7 @@ export default function ThemeSettingsPage() {
                     <Icon className={`w-5 h-5 ${isSelected ? 'text-indigo-400' : 'text-slate-400'}`} />
                     {isSelected && <Check className="w-4 h-4 text-indigo-400" />}
                   </div>
-                  <div className="text-sm font-semibold text-white">{mode.label}</div>
+                        <div className="text-sm font-semibold text-slate-900 dark:text-white">{mode.label}</div>
                   <div className="text-[11px] text-slate-400 mt-0.5">{mode.desc}</div>
                 </button>
               );
@@ -65,8 +82,8 @@ export default function ThemeSettingsPage() {
         </div>
 
         {/* Accent Colors */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
-          <h3 className="text-sm font-bold text-white">Accent Brand Tint</h3>
+        <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 space-y-4 dark:border-slate-800 dark:bg-slate-900/60">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Accent Brand Tint</h3>
           <div className="flex items-center gap-3">
             {[
               { id: 'indigo', name: 'Electric Indigo', color: 'bg-indigo-600' },
@@ -90,12 +107,12 @@ export default function ThemeSettingsPage() {
         </div>
 
         {/* Accessibility & Layout Density */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4">
-          <h3 className="text-sm font-bold text-white">Interface Ergonomics</h3>
+        <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 space-y-4 dark:border-slate-800 dark:bg-slate-900/60">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Interface Ergonomics</h3>
           <div className="space-y-4 text-xs">
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <span className="font-semibold text-white block">Compact Canvas Density</span>
+                <span className="font-semibold text-slate-900 dark:text-white block">Compact Canvas Density</span>
                 <span className="text-slate-400">Reduce padding and spacing in tables and workflow graphs.</span>
               </div>
               <input
@@ -108,7 +125,7 @@ export default function ThemeSettingsPage() {
 
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <span className="font-semibold text-white block">Reduced Motion Mode</span>
+                <span className="font-semibold text-slate-900 dark:text-white block">Reduced Motion Mode</span>
                 <span className="text-slate-400">Disable heavy GPU transitions and floating glow effects.</span>
               </div>
               <input

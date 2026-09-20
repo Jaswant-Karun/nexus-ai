@@ -1,14 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { formatBytes, MOCK_FOLDERS, buildFolderTree, STORAGE_QUOTA_BYTES, STORAGE_USED_BYTES } from "@/lib/storage";
-import type { FolderTreeNode } from "@/types/storage";
-
-const USED_BYTES  = STORAGE_USED_BYTES; // 840 MB
-const QUOTA_BYTES = STORAGE_QUOTA_BYTES; // 2 GB Capacity
+import { formatBytes, buildFolderTree, STORAGE_QUOTA_BYTES } from "@/lib/storage";
+import type { FolderTreeNode, StorageFile, StorageFolder } from "@/types/storage";
 
 interface SidebarSection {
   id: string;
@@ -99,8 +96,31 @@ function FolderTree({ nodes, depth = 0 }: { nodes: FolderTreeNode[]; depth?: num
 
 export function StorageSidebar({ className }: { className?: string }) {
   const pathname = usePathname();
-  const folderTree = buildFolderTree(MOCK_FOLDERS);
-  const usedPct = (USED_BYTES / QUOTA_BYTES) * 100;
+  const [folders, setFolders] = useState<StorageFolder[]>([]);
+  const [files, setFiles] = useState<StorageFile[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/storage/folders", { credentials: "include" }),
+      fetch("/api/storage/files?pageSize=100", { credentials: "include" }),
+    ]).then(async ([foldersResponse, filesResponse]) => {
+      if (foldersResponse.ok) {
+        const payload = await foldersResponse.json() as { data?: StorageFolder[] };
+        setFolders(payload.data ?? []);
+      }
+      if (filesResponse.ok) {
+        const payload = await filesResponse.json() as { data?: StorageFile[] };
+        setFiles(payload.data ?? []);
+      }
+    }).catch(() => {
+      setFolders([]);
+      setFiles([]);
+    });
+  }, []);
+
+  const folderTree = buildFolderTree(folders);
+  const usedBytes = files.filter((file) => !file.isTrashed).reduce((total, file) => total + file.sizeBytes, 0);
+  const usedPct = Math.min(100, (usedBytes / STORAGE_QUOTA_BYTES) * 100);
 
   const isActive = (href: string) => {
     if (href === "/storage") return pathname === "/storage";
@@ -215,8 +235,8 @@ export function StorageSidebar({ className }: { className?: string }) {
               </div>
             </div>
             <div>
-              <p className="text-sm font-bold text-white">{formatBytes(USED_BYTES)}</p>
-              <p className="text-[10px] text-dark-400">of {formatBytes(QUOTA_BYTES)} capacity</p>
+              <p className="text-sm font-bold text-white">{formatBytes(usedBytes)}</p>
+              <p className="text-[10px] text-dark-400">of {formatBytes(STORAGE_QUOTA_BYTES)} capacity</p>
             </div>
           </div>
           <div className="space-y-1.5">

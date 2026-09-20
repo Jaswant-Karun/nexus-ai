@@ -8,7 +8,7 @@ import { StorageLayout } from "@/components/storage/StorageLayout";
 import { StorageBreadcrumb } from "@/components/storage/StorageBreadcrumb";
 import { FileIcon } from "@/components/storage/FileIcon";
 import { StorageEmptyState } from "@/components/storage/StorageEmptyState";
-import { formatBytes, relativeTime, MOCK_FILES, MOCK_FOLDERS, getFolderBreadcrumbs } from "@/lib/storage";
+import { formatBytes, relativeTime, getFolderBreadcrumbs } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import type { StorageFile, StorageFolder } from "@/types/storage";
 
@@ -205,8 +205,8 @@ function FilesContent() {
   const folderId      = searchParams.get("folder") ?? null;
   const showStarred   = searchParams.get("starred") === "true";
 
-  const [filesList, setFilesList]     = useState<StorageFile[]>(MOCK_FILES);
-  const [foldersList, setFoldersList] = useState<StorageFolder[]>(MOCK_FOLDERS);
+  const [filesList, setFilesList]     = useState<StorageFile[]>([]);
+  const [foldersList, setFoldersList] = useState<StorageFolder[]>([]);
   const [loading, setLoading]         = useState(true);
   const [view, setView]               = useState<ViewMode>("list");
   const [sort, setSort]               = useState<SortKey>("updated");
@@ -226,14 +226,14 @@ function FilesContent() {
 
         if (fRes && fRes.ok) {
           const json = await fRes.json();
-          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          if (json.success && Array.isArray(json.data)) {
             if (mounted) setFilesList(json.data);
           }
         }
 
         if (dRes && dRes.ok) {
           const dJson = await dRes.json();
-          if (dJson.success && Array.isArray(dJson.data) && dJson.data.length > 0) {
+          if (dJson.success && Array.isArray(dJson.data)) {
             if (mounted) setFoldersList(dJson.data);
           }
         }

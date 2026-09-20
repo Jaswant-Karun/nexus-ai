@@ -3,9 +3,9 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StorageLayout } from "@/components/storage/StorageLayout";
-import { formatBytes, getMimeCategory, MOCK_FOLDERS, STORAGE_QUOTA_BYTES, STORAGE_USED_BYTES } from "@/lib/storage";
+import { formatBytes, getMimeCategory, STORAGE_QUOTA_BYTES } from "@/lib/storage";
 import { cn } from "@/lib/utils";
-import type { UploadTask } from "@/types/storage";
+import type { StorageFile, StorageFolder, UploadTask } from "@/types/storage";
 import Link from "next/link";
 
 function getMimeIcon(mimeType: string) {
@@ -30,6 +30,31 @@ export default function UploadPage() {
   const [tasks, setTasks]       = useState<UploadTask[]>([]);
   const [uploading, setUploading] = useState(false);
   const [folderId, setFolderId]   = useState<string>("");
+  const [files, setFiles] = useState<StorageFile[]>([]);
+  const [folders, setFolders] = useState<StorageFolder[]>([]);
+  const [filesLoading, setFilesLoading] = useState(true);
+
+  const loadStorage = useCallback(async () => {
+    setFilesLoading(true);
+    try {
+      const [filesResponse, foldersResponse] = await Promise.all([
+        fetch("/api/storage/files", { credentials: "include" }),
+        fetch("/api/storage/folders", { credentials: "include" }),
+      ]);
+      if (filesResponse.ok) {
+        const payload = await filesResponse.json() as { data?: StorageFile[] };
+        setFiles(payload.data ?? []);
+      }
+      if (foldersResponse.ok) {
+        const payload = await foldersResponse.json() as { data?: StorageFolder[] };
+        setFolders(payload.data ?? []);
+      }
+    } finally {
+      setFilesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void loadStorage(); }, [loadStorage]);
 
   const addFiles = useCallback((files: File[]) => {
     const newTasks: UploadTask[] = files.map((f) => ({
@@ -86,6 +111,7 @@ export default function UploadPage() {
           progress: 100,
           uploadedFileId: payload?.data?.id,
         } : t));
+        await loadStorage();
       } catch (error) {
         const message = error instanceof Error ? error.message : "Upload failed";
         setTasks((p) => p.map((t) => t.id === task.id ? {
@@ -108,8 +134,8 @@ export default function UploadPage() {
   const queued  = tasks.filter((t) => t.status === "queued").length;
   const active  = tasks.filter((t) => t.status === "uploading").length;
   const done    = tasks.filter((t) => t.status === "done").length;
-  const usedBytes  = STORAGE_USED_BYTES; // 840 MB
-  const quotaBytes = STORAGE_QUOTA_BYTES; // 2 GB Capacity
+  const usedBytes  = files.filter((file) => !file.isTrashed).reduce((total, file) => total + file.sizeBytes, 0);
+  const quotaBytes = STORAGE_QUOTA_BYTES;
   const usedPct    = (usedBytes / quotaBytes) * 100;
 
   return (
@@ -193,7 +219,7 @@ export default function UploadPage() {
               <select value={folderId} onChange={(e) => setFolderId(e.target.value)}
                 className="rounded-xl border border-white/10 bg-dark-800/80 px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-500/60">
                 <option value="">Root (My Files)</option>
-                {MOCK_FOLDERS.map((f) => (
+                {folders.map((f) => (
                   <option key={f.id} value={f.id}>{f.name}</option>
                 ))}
               </select>
@@ -306,13 +332,12 @@ export default function UploadPage() {
                   <span>Owner</span>
                   <span />
                 </div>
-                {[
-                  { name: "Annual-report-Q4-023.pdf",  size: "1.3 MB", date: "Dec 2, 2023", owner: "Alex Turner",   avatar: "AT", mimeType: "application/pdf" },
-                  { name: "Q3-sales-summary.xlsx",      size: "420 KB", date: "Nov 28, 2023", owner: "Maria Santos",  avatar: "MS", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
-                  { name: "Brand-guidelines-v2.pdf",    size: "8.9 MB", date: "Nov 15, 2023", owner: "Jaswant Karun", avatar: "JK", mimeType: "application/pdf" },
-                  { name: "Product-roadmap-2024.pptx",  size: "3.1 MB", date: "Nov 10, 2023", owner: "Jaswant Karun", avatar: "JK", mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation" },
-                ].map((f) => (
-                  <Link key={f.name} href="/storage/files"
+                {filesLoading ? (
+                  <p className="px-5 py-8 text-center text-sm text-dark-400">Loading your files…</p>
+                ) : files.filter((file) => !file.isTrashed).length === 0 ? (
+                  <p className="px-5 py-8 text-center text-sm text-dark-400">No files uploaded yet.</p>
+                ) : files.filter((file) => !file.isTrashed).map((f) => (
+                  <Link key={f.id} href="/storage/files"
                     className="grid grid-cols-[auto_1fr_120px_140px_160px_40px] items-center gap-4 px-5 py-3.5 border-b border-white/[0.03] last:border-0 hover:bg-dark-800/40 transition-colors group">
                     <input type="checkbox" className="h-3.5 w-3.5 rounded border-dark-500 bg-dark-700 accent-brand-500" />
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -321,11 +346,11 @@ export default function UploadPage() {
                       </div>
                       <span className="text-sm text-white truncate group-hover:text-brand-300 transition-colors">{f.name}</span>
                     </div>
-                    <span className="text-xs text-dark-400">{f.size}</span>
-                    <span className="text-xs text-dark-400">{f.date}</span>
+                    <span className="text-xs text-dark-400">{formatBytes(f.sizeBytes)}</span>
+                    <span className="text-xs text-dark-400">{new Date(f.createdAt).toLocaleDateString()}</span>
                     <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-[9px] font-bold text-white">{f.avatar}</div>
-                      <span className="text-xs text-dark-300 truncate">{f.owner}</span>
+                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-[9px] font-bold text-white">ME</div>
+                      <span className="text-xs text-dark-300 truncate">You</span>
                     </div>
                     <button type="button" onClick={(e) => e.preventDefault()}
                       className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/10 text-dark-400 hover:text-white transition-all">

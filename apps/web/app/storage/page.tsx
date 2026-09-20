@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { FileIcon } from "@/components/storage/FileIcon";
-import { formatBytes, MOCK_FILES, MOCK_FOLDERS } from "@/lib/storage";
+import { formatBytes } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import type { StorageFile, StorageFolder } from "@/types/storage";
 
@@ -116,8 +116,8 @@ const QUICK_ACCESS = [
 /* ── Recent files table ──────────────────────────────────────────── */
 
 export default function StorageDashboardPage() {
-  const [files, setFiles] = useState<StorageFile[]>(MOCK_FILES);
-  const [folders, setFolders] = useState<StorageFolder[]>(MOCK_FOLDERS);
+  const [files, setFiles] = useState<StorageFile[]>([]);
+  const [folders, setFolders] = useState<StorageFolder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -132,14 +132,14 @@ export default function StorageDashboardPage() {
 
         if (filesRes && filesRes.ok) {
           const filesJson = await filesRes.json();
-          if (filesJson.success && Array.isArray(filesJson.data) && filesJson.data.length > 0) {
+          if (filesJson.success && Array.isArray(filesJson.data)) {
             if (mounted) setFiles(filesJson.data);
           }
         }
 
         if (foldersRes && foldersRes.ok) {
           const foldersJson = await foldersRes.json();
-          if (foldersJson.success && Array.isArray(foldersJson.data) && foldersJson.data.length > 0) {
+          if (foldersJson.success && Array.isArray(foldersJson.data)) {
             if (mounted) setFolders(foldersJson.data);
           }
         }
