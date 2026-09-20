@@ -54,6 +54,32 @@ export default function ProblemUnderstandingPage() {
     router.push("/projects/create?source=orchestration");
   }
 
+  function handleExportReport() {
+    if (!report) return;
+    const markdown = [
+      `# ${report.title}`,
+      "",
+      report.summary,
+      "",
+      "## Recommendation",
+      report.recommendation,
+      "",
+      "## Implementation Steps",
+      ...report.implementation_steps.map((step, index) => `${index + 1}. ${step}`),
+      "",
+      "## Cost Estimate",
+      report.cost_estimate,
+      "",
+      "## Risks",
+      ...report.risks.map((risk) => `- ${risk}`),
+    ].join("\n");
+    const download = document.createElement("a");
+    download.href = URL.createObjectURL(new Blob([markdown], { type: "text/markdown" }));
+    download.download = `${report.request_id}-solution-report.md`;
+    download.click();
+    URL.revokeObjectURL(download.href);
+  }
+
   async function handleExecution() {
     if (!result || executing) return;
     setExecuting(true);
@@ -136,7 +162,10 @@ export default function ProblemUnderstandingPage() {
           <div><p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Generated report</p><h2 className="mt-1 text-xl font-bold text-white">{report.title}</h2><p className="mt-2 text-sm text-dark-300">{report.summary}</p></div>
           <div><h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">Recommendation</h3><p className="mt-2 text-sm leading-6 text-white">{report.recommendation}</p></div>
           <div className="grid gap-5 md:grid-cols-2"><div><h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">Implementation</h3><ol className="mt-2 space-y-2 text-sm text-dark-200">{report.implementation_steps.map((step, index) => <li key={step}><span className="mr-2 text-emerald-400">{index + 1}.</span>{step}</li>)}</ol></div><div><h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">Cost and risks</h3><p className="mt-2 text-sm text-white">{report.cost_estimate}</p><ul className="mt-3 space-y-2 text-sm text-dark-300">{report.risks.map((risk) => <li key={risk}>• {risk}</li>)}</ul></div></div>
-          <button type="button" onClick={handleCreateProject} className="rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-500">Create project from this report</button>
+          <div className="flex flex-wrap gap-3">
+            <button type="button" onClick={handleCreateProject} className="rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-500">Create project from this report</button>
+            <button type="button" onClick={handleExportReport} className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-dark-200 transition hover:bg-white/[0.08] hover:text-white">Export Markdown</button>
+          </div>
         </section>
       )}
     </ModuleLayout>
