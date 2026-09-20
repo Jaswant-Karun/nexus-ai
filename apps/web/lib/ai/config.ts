@@ -91,10 +91,21 @@ export const PROVIDER_CONFIGS: ProviderConfig[] = [
     baseUrl: "https://api.openai.com/v1",
     models: [
       model(
+        "gpt-4o",
+        "GPT-4o",
+        "openai",
+        process.env.OPENAI_MODEL_GPT4O ?? "gpt-4o",
+        128_000,
+        0.0025,
+        0.01,
+        ["chat", "vision", "tools", "reasoning", "json"],
+        "flagship",
+      ),
+      model(
         "gpt-5",
         "GPT-5",
         "openai",
-        process.env.OPENAI_MODEL_GPT5 ?? "gpt-5",
+        process.env.OPENAI_MODEL_GPT5 ?? "gpt-4o",
         400_000,
         0.005,
         0.015,
@@ -102,10 +113,21 @@ export const PROVIDER_CONFIGS: ProviderConfig[] = [
         "flagship",
       ),
       model(
+        "gpt-4o-mini",
+        "GPT-4o mini",
+        "openai",
+        process.env.OPENAI_MODEL_GPT4O_MINI ?? "gpt-4o-mini",
+        128_000,
+        0.00015,
+        0.0006,
+        ["chat", "vision", "tools", "json"],
+        "fast",
+      ),
+      model(
         "gpt-5-mini",
         "GPT-5 mini",
         "openai",
-        process.env.OPENAI_MODEL_GPT5_MINI ?? "gpt-5-mini",
+        process.env.OPENAI_MODEL_GPT5_MINI ?? "gpt-4o-mini",
         400_000,
         0.0004,
         0.0016,
@@ -121,10 +143,21 @@ export const PROVIDER_CONFIGS: ProviderConfig[] = [
     baseUrl: "https://api.anthropic.com/v1",
     models: [
       model(
+        "claude-3-5-sonnet",
+        "Claude 3.5 Sonnet",
+        "anthropic",
+        process.env.ANTHROPIC_MODEL_SONNET ?? "claude-3-5-sonnet-20241022",
+        200_000,
+        0.003,
+        0.015,
+        ["chat", "vision", "tools", "long-context", "reasoning"],
+        "flagship",
+      ),
+      model(
         "claude-sonnet",
         "Claude Sonnet",
         "anthropic",
-        process.env.ANTHROPIC_MODEL_SONNET ?? "claude-sonnet-4-5-20250929",
+        process.env.ANTHROPIC_MODEL_SONNET ?? "claude-3-5-sonnet-20241022",
         1_000_000,
         0.003,
         0.015,
@@ -135,8 +168,8 @@ export const PROVIDER_CONFIGS: ProviderConfig[] = [
         "claude-opus",
         "Claude Opus",
         "anthropic",
-        process.env.ANTHROPIC_MODEL_OPUS ?? "claude-opus-4-1-20250805",
-        1_000_000,
+        process.env.ANTHROPIC_MODEL_OPUS ?? "claude-3-opus-20240229",
+        200_000,
         0.015,
         0.075,
         ["chat", "vision", "tools", "long-context", "reasoning"],
@@ -213,7 +246,13 @@ export function getAllModels(): ModelDef[] {
 }
 
 export function getModel(id: string): ModelDef | undefined {
-  return getAllModels().find((m) => m.id === id);
+  const all = getAllModels();
+  return (
+    all.find((m) => m.id === id) ??
+    all.find((m) => m.apiModel === id) ??
+    all.find((m) => m.id.toLowerCase() === id.toLowerCase()) ??
+    all.find((m) => m.apiModel.toLowerCase() === id.toLowerCase())
+  );
 }
 
 export function getProviderConfig(id: ProviderId): ProviderConfig | undefined {
