@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   const topK = Math.min(Math.max(body?.topK ?? 5, 1), 20);
   try {
-    const response = await fetch(`${AI_BASE}/v1/vector-search/search`, {
+    const response = await fetch(`${AI_BASE}/api/v1/vector-search/search`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({

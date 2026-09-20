@@ -117,7 +117,7 @@ async function processEmbedJob(job: {
       { length: chunkCount(text) },
       (_, index) => text.slice(index * (chunkSize - chunkOverlap), index * (chunkSize - chunkOverlap) + chunkSize),
     );
-    const response = await fetch(`${aiServiceUrl}/v1/vector-search/index`, {
+    const response = await fetch(`${aiServiceUrl}/api/v1/vector-search/index`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

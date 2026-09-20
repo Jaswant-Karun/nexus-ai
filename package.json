@@ -6,6 +6,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "ai:dev": "cd backend/ai-service && python -m uvicorn main:app --host 0.0.0.0 --port 8001 --reload",
+    "ai:start": "cd backend/ai-service && python -m uvicorn main:app --host 0.0.0.0 --port 8001",
     "lint": "turbo run lint",
     "test": "pnpm test:python",
     "test:python": "python -m unittest discover -s tests/api -p \"test_*.py\"",

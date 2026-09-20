@@ -6,6 +6,9 @@ install:
 dev:
 	pnpm dev
 
+ai-dev:
+	pnpm ai:dev
+
 build:
 	pnpm build
 
