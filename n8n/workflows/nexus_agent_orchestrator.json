@@ -1,0 +1,136 @@
+{
+  "name": "NEXUS AI - Master Agent Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nexus-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "webhook-trigger",
+      "name": "NEXUS Webhook Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract parameters from NEXUS AI request\nconst body = $json.body || $json;\nconst prompt = body.prompt || body.message || 'Hello Nexus';\nconst agentId = body.agentId || 'default';\nconst model = body.model || 'gpt-4o';\nconst systemPrompt = body.systemPrompt || 'You are an intelligent NEXUS AI agent. Provide accurate, structured, and actionable responses.';\n\nreturn {\n  prompt,\n  agentId,\n  model,\n  systemPrompt,\n  timestamp: new Date().toISOString()\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "id": "parse-request",
+      "name": "Parse & Validate Request"
+    },
+    {
+      "parameters": {
+        "model": "={{ $json.model }}",
+        "options": {
+          "systemMessage": "={{ $json.systemPrompt }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [460, 300],
+      "id": "ai-agent-engine",
+      "name": "NEXUS AI Agent Node"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [460, 520],
+      "id": "openai-chat-model",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [580, 520],
+      "id": "window-buffer-memory",
+      "name": "Window Buffer Memory"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"agentId\": \"{{ $('parse-request').item.json.agentId }}\",\n  \"model\": \"{{ $('parse-request').item.json.model }}\",\n  \"output\": {{ JSON.stringify($json.output || $json.text || $json) }},\n  \"executedAt\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [760, 300],
+      "id": "respond-webhook",
+      "name": "Return Execution to NEXUS"
+    }
+  ],
+  "connections": {
+    "NEXUS Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse & Validate Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Validate Request": {
+      "main": [
+        [
+          {
+            "node": "NEXUS AI Agent Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "NEXUS AI Agent Node",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "NEXUS AI Agent Node",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NEXUS AI Agent Node": {
+      "main": [
+        [
+          {
+            "node": "Return Execution to NEXUS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -28,7 +28,7 @@ export function ChatWindow({
       content: input,
       createdAt: new Date().toISOString(),
     };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev: Message[]) => [...prev, userMsg]);
     onSendMessage?.(input);
     setInput("");
   };
@@ -44,7 +44,7 @@ export function ChatWindow({
       </div>
 
       <div className="flex-1 p-6 overflow-y-auto space-y-4">
-        {messages.map((msg) => (
+        {messages.map((msg: Message) => (
           <div
             key={msg.id}
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}

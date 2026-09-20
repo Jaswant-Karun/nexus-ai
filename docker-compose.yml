@@ -1,8 +1,68 @@
 version: "3.9"
+
 services:
-  app:
-    image: node:20-alpine
-    working_dir: /workspace
+  # ─── NEXUS Web Application ──────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nexus_ai
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook
+    depends_on:
+      - postgres
+      - n8n
+    networks:
+      - nexus-network
+
+  # ─── PostgreSQL Database ────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: nexus-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: nexus_ai
+    ports:
+      - "5432:5432"
     volumes:
-      - ./:/workspace
-    command: sh -c "corepack enable && pnpm install"
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nexus-network
+
+  # ─── n8n Workflow & Agent Automation Engine ────────────────────────
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: nexus-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=false
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=Asia/Kolkata
+      # Allow n8n to communicate with external and local AI microservices
+      - NODE_FUNCTION_ALLOW_EXTERNAL=axios,crypto,lodash
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/data/workflows
+      - ./apps/web/uploads:/data/uploads
+    networks:
+      - nexus-network
+
+networks:
+  nexus-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  n8n_data:

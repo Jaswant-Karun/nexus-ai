@@ -11,6 +11,12 @@ importers:
       '@types/node':
         specifier: 22.10.2
         version: 22.10.2
+      '@types/react':
+        specifier: 19.0.2
+        version: 19.0.2
+      '@types/react-dom':
+        specifier: 19.0.2
+        version: 19.0.2(@types/react@19.0.2)
       typescript:
         specifier: 5.7.2
         version: 5.7.2
