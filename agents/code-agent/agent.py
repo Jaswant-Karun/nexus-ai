@@ -1,106 +1,52 @@
-"""
-NEXUS AI — Code Agent
-Expert software engineer agent for code generation, review,
-debugging, refactoring, documentation, and security analysis.
-"""
-
+"""NEXUS AI — Code Agent. Uses shared LLM client (Gemini/Claude/OpenAI)."""
 from __future__ import annotations
+import os, sys, re
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from shared.llm_client import chat as _llm, simple as _simple
 
-import os
-import re
-
-from openai import OpenAI
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
-
-SYSTEM_PROMPT = """You are the NEXUS AI Code Agent — a senior software engineer.
-Your expertise:
-- Python, TypeScript/JavaScript, Go, Rust, SQL, Bash
-- REST API design, microservices, databases
-- Security: OWASP Top-10, input validation, auth patterns
-- Testing: unit, integration, e2e
-- Clean code: SOLID principles, design patterns, refactoring
-- Performance optimisation and profiling
-
-Always write:
-- Type-annotated Python (PEP 8) and typed TypeScript
-- Comprehensive error handling
-- Inline documentation for complex logic
-- Test cases for critical paths"""
-
+SYSTEM = """You are the NEXUS AI Code Agent — a senior software engineer.
+Write clean, type-annotated, documented code with error handling.
+Support: Python, TypeScript, Go, SQL, Bash. Follow SOLID principles."""
 
 class CodeAgent:
     def __init__(self, model: str = "gpt-4o", temperature: float = 0.1):
-        self.model       = model
-        self.temperature = temperature
-        self.history: list[dict[str, str]] = []
+        self.model = model; self.temperature = temperature
+        self.history: list[dict] = []
 
-    def _call(self, user_msg: str, system: str | None = None) -> tuple[str, int]:
-        messages = [{"role": "system", "content": system or SYSTEM_PROMPT}]
-        messages += self.history[-8:]
-        messages.append({"role": "user", "content": user_msg})
-
-        resp = client.chat.completions.create(
-            model=self.model, messages=messages, temperature=self.temperature
-        )
-        answer = resp.choices[0].message.content or ""
-        tokens = resp.usage.total_tokens if resp.usage else 0
-        self.history += [{"role": "user", "content": user_msg},
-                         {"role": "assistant", "content": answer}]
-        return answer, tokens
+    def _call(self, prompt: str, sys_override: str | None = None) -> tuple[str, int]:
+        msgs = [{"role": "system", "content": sys_override or SYSTEM}]
+        msgs += self.history[-8:]
+        msgs.append({"role": "user", "content": prompt})
+        ans, tok = _llm(msgs, model=self.model, temperature=self.temperature)
+        self.history += [{"role": "user", "content": prompt}, {"role": "assistant", "content": ans}]
+        return ans, tok
 
     def generate(self, spec: str, language: str = "python") -> dict:
-        """Generate code from a specification."""
-        answer, tokens = self._call(
-            f"Write production-quality {language} code for:\n{spec}\n\n"
-            f"Include type hints, error handling, and docstrings."
-        )
-        code = self._extract_code(answer, language)
-        return {"agent": "code-agent", "language": language, "code": code,
-                "full_response": answer, "tokens_used": tokens}
+        ans, tok = self._call(f"Write production {language} code for:\n{spec}\nInclude type hints, error handling, docstrings.")
+        return {"agent": "code-agent", "language": language, "code": self._extract(ans, language), "full_response": ans, "tokens_used": tok}
 
     def review(self, code: str, language: str = "python") -> dict:
-        """Review code and return findings."""
-        answer, tokens = self._call(
-            f"Review this {language} code. Check: correctness, security, performance, "
-            f"readability, error handling. Rate each 1-10 with specific suggestions.\n\n"
-            f"```{language}\n{code}\n```"
-        )
-        return {"agent": "code-agent", "review": answer, "tokens_used": tokens}
+        ans, tok = self._call(f"Review this {language} code. Rate correctness/security/performance/readability 1-10 each.\n```{language}\n{code}\n```")
+        return {"agent": "code-agent", "review": ans, "tokens_used": tok}
 
     def debug(self, code: str, error: str, language: str = "python") -> dict:
-        """Debug code given an error message."""
-        answer, tokens = self._call(
-            f"Debug this {language} code. Error: {error}\n\n"
-            f"```{language}\n{code}\n```\n\n"
-            f"Explain the root cause and provide the fixed code."
-        )
-        return {"agent": "code-agent", "debug": answer, "tokens_used": tokens}
+        ans, tok = self._call(f"Debug {language} code. Error: {error}\n```{language}\n{code}\n```\nExplain root cause + fixed code.")
+        return {"agent": "code-agent", "debug": ans, "tokens_used": tok}
 
     def refactor(self, code: str, goal: str = "readability") -> dict:
-        """Refactor code for a given goal."""
-        answer, tokens = self._call(
-            f"Refactor this code to improve {goal}. Keep the same behaviour.\n\n{code}"
-        )
-        return {"agent": "code-agent", "refactored": answer, "tokens_used": tokens}
+        ans, tok = self._call(f"Refactor for {goal}, keep behaviour:\n{code}")
+        return {"agent": "code-agent", "refactored": ans, "tokens_used": tok}
 
     def write_tests(self, code: str, framework: str = "pytest") -> dict:
-        """Generate unit tests for the given code."""
-        answer, tokens = self._call(
-            f"Write comprehensive {framework} tests for:\n\n{code}\n\n"
-            f"Cover happy paths, edge cases, and error conditions."
-        )
-        return {"agent": "code-agent", "tests": answer, "tokens_used": tokens}
+        ans, tok = self._call(f"Write {framework} tests (happy path, edge cases, errors):\n{code}")
+        return {"agent": "code-agent", "tests": ans, "tokens_used": tok}
 
     @staticmethod
-    def _extract_code(text: str, language: str) -> str:
-        pattern = rf"```{language}\n(.*?)```"
-        match   = re.search(pattern, text, re.DOTALL)
-        return match.group(1).strip() if match else text.strip()
+    def _extract(text: str, lang: str) -> str:
+        m = re.search(rf"```{lang}\n(.*?)```", text, re.DOTALL)
+        return m.group(1).strip() if m else text.strip()
 
-    def reset(self) -> None:
-        self.history.clear()
-
+    def reset(self) -> None: self.history.clear()
 
 def run(task: str, language: str = "python") -> dict:
     return CodeAgent().generate(task, language)

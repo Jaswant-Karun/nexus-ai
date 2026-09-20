@@ -1,96 +1,53 @@
-"""
-NEXUS AI — Reasoning Agent
-Applies structured reasoning strategies: Chain-of-Thought, ReAct,
-Tree-of-Thought, Self-Consistency, and Socratic questioning.
-"""
-
+"""NEXUS AI — Reasoning Agent. Uses shared LLM client (Gemini/Claude/OpenAI)."""
 from __future__ import annotations
-
-import os
+import os, sys
 from enum import Enum
-
-from openai import OpenAI
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
-
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from shared.llm_client import chat as _llm
 
 class Strategy(str, Enum):
-    COT              = "chain_of_thought"
-    REACT            = "react"
-    SELF_CONSISTENCY = "self_consistency"
-    SOCRATIC         = "socratic"
-    TREE             = "tree_of_thought"
+    COT="chain_of_thought"; REACT="react"; SELF_CONSISTENCY="self_consistency"
+    SOCRATIC="socratic"; TREE="tree_of_thought"
 
-
-_PROMPTS = {
-    Strategy.COT: (
-        "Think through this step-by-step. "
-        "Label each step. End with a clear CONCLUSION."
-    ),
-    Strategy.REACT: (
-        "Use the ReAct pattern: Thought → Action → Observation, repeat. "
-        "End with Final Answer:"
-    ),
-    Strategy.SELF_CONSISTENCY: (
-        "Reason through this problem carefully, then give your answer."
-    ),
-    Strategy.SOCRATIC: (
-        "Use the Socratic method: ask clarifying questions, then reason to an answer."
-    ),
-    Strategy.TREE: (
-        "Explore multiple reasoning branches. For each branch evaluate pros/cons. "
-        "Pick the best branch and state the conclusion."
-    ),
+_SYS = {
+    Strategy.COT:    "Think step-by-step. Label each step. End with CONCLUSION:",
+    Strategy.REACT:  "Use Thought→Action→Observation pattern. End with Final Answer:",
+    Strategy.SOCRATIC:"Use Socratic questioning, then answer.",
+    Strategy.TREE:   "Explore 3 reasoning branches. Pick best. State conclusion.",
+    Strategy.SELF_CONSISTENCY: "Reason carefully then give your best answer.",
 }
-
 
 class ReasoningAgent:
     def __init__(self, model: str = "gpt-4o", temperature: float = 0.2):
-        self.model       = model
-        self.temperature = temperature
+        self.model = model; self.temperature = temperature
 
     def reason(self, question: str, context: list[str] | None = None,
-               strategy: Strategy = Strategy.COT,
-               n_paths: int = 3) -> dict:
-        """Apply a reasoning strategy to answer a question."""
-        sys_prompt = _PROMPTS.get(strategy, _PROMPTS[Strategy.COT])
-        ctx_block  = "\n".join(context or [])
-        messages   = [{"role": "system", "content": sys_prompt}]
-        if ctx_block:
-            messages.append({"role": "system", "content": f"Context:\n{ctx_block}"})
-        messages.append({"role": "user", "content": question})
+               strategy: Strategy = Strategy.COT, n_paths: int = 3) -> dict:
+        sys_p = _SYS.get(strategy, _SYS[Strategy.COT])
+        ctx   = "\n".join(context or [])
+        msgs  = [{"role":"system","content":sys_p}]
+        if ctx: msgs.append({"role":"system","content":f"Context:\n{ctx}"})
+        msgs.append({"role":"user","content":question})
 
         if strategy == Strategy.SELF_CONSISTENCY:
-            answers = []
-            total_t = 0
+            answers, total = [], 0
             for _ in range(n_paths):
-                r = client.chat.completions.create(
-                    model=self.model, messages=messages, temperature=0.7
-                )
-                answers.append(r.choices[0].message.content or "")
-                total_t += r.usage.total_tokens if r.usage else 0
-            # Majority-vote heuristic: pick longest (most detailed) answer
-            final  = max(answers, key=len)
-            return {"strategy": strategy, "question": question,
-                    "answer": final, "alternatives": answers,
-                    "tokens_used": total_t, "agent": "reasoning-agent"}
+                a, t = _llm(msgs, model=self.model, temperature=0.7)
+                answers.append(a); total += t
+            final = max(answers, key=len)
+            return {"agent":"reasoning-agent","strategy":strategy,"question":question,
+                    "answer":final,"alternatives":answers,"tokens_used":total}
 
-        resp   = client.chat.completions.create(
-            model=self.model, messages=messages, temperature=self.temperature
-        )
-        answer = resp.choices[0].message.content or ""
-        tokens = resp.usage.total_tokens if resp.usage else 0
+        ans, tok = _llm(msgs, model=self.model, temperature=self.temperature)
+        steps = [{"step":i+1,"content":l.strip()} for i,l in enumerate(ans.split("\n")) if l.strip().lower().startswith("step")]
+        conclusion = next((l for l in ans.split("\n") if "conclusion" in l.lower() or "final answer" in l.lower()), ans[-200:])
+        return {"agent":"reasoning-agent","strategy":strategy,"question":question,
+                "answer":ans,"steps":steps,"conclusion":conclusion,"confidence":0.85,"tokens_used":tok}
 
-        return {"agent": "reasoning-agent", "strategy": strategy,
-                "question": question, "answer": answer,
-                "confidence": 0.85, "tokens_used": tokens}
-
-    def chain_of_thought(self, question: str, context: list[str] | None = None) -> dict:
-        return self.reason(question, context, Strategy.COT)
-
-    def react(self, question: str, context: list[str] | None = None) -> dict:
-        return self.reason(question, context, Strategy.REACT)
-
+    def chain_of_thought(self, q: str, ctx: list[str] | None = None) -> dict:
+        return self.reason(q, ctx, Strategy.COT)
+    def react(self, q: str, ctx: list[str] | None = None) -> dict:
+        return self.reason(q, ctx, Strategy.REACT)
 
 def run(question: str, strategy: str = "chain_of_thought") -> dict:
     s = Strategy(strategy) if strategy in Strategy._value2member_map_ else Strategy.COT

@@ -1,91 +1,42 @@
-"""
-NEXUS AI — Knowledge Agent
-Retrieves, synthesises, and grounds answers in a knowledge base.
-Supports RAG pipelines, semantic search, and citation tracking.
-"""
-
+"""NEXUS AI — Knowledge Agent. Uses shared LLM client (Gemini/Claude/OpenAI)."""
 from __future__ import annotations
+import os, re, sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from shared.llm_client import chat as _llm, simple as _simple
 
-import os
-from typing import Any
-
-from openai import OpenAI
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
-
-SYSTEM_PROMPT = """You are the NEXUS AI Knowledge Agent.
-You answer questions strictly from the context documents provided.
-Rules:
-- Only use information from the provided context
-- Cite source document numbers inline, e.g. [Doc 1], [Doc 3]
-- If the answer is not in the context, say: "I cannot find this in the provided documents."
-- Be precise and concise
-- List key facts as bullet points when appropriate"""
-
+SYSTEM = """You are the NEXUS AI Knowledge Agent.
+Answer questions using ONLY the context documents provided.
+Cite sources inline [Doc 1], [Doc 3]. If not in context, say so."""
 
 class KnowledgeAgent:
     def __init__(self, model: str = "gpt-4o", temperature: float = 0.1):
-        self.model       = model
-        self.temperature = temperature
+        self.model = model; self.temperature = temperature
 
-    def answer(self, question: str, documents: list[str],
-               metadata: list[dict[str, Any]] | None = None) -> dict:
-        """Answer a question grounded in the provided documents."""
+    def answer(self, question: str, documents: list[str], metadata: list[dict] | None = None) -> dict:
         if not documents:
-            return {"answer": "No documents provided.", "sources": [],
-                    "agent": "knowledge-agent", "tokens_used": 0}
-
-        # Build context block
-        context_parts = []
-        for i, doc in enumerate(documents[:10]):   # max 10 docs
-            meta = metadata[i] if metadata and i < len(metadata) else {}
+            return {"answer": "No documents provided.", "sources": [], "agent": "knowledge-agent", "tokens_used": 0}
+        ctx_parts = []
+        for i, doc in enumerate(documents[:10]):
+            meta  = metadata[i] if metadata and i < len(metadata) else {}
             title = meta.get("title", f"Document {i+1}")
-            context_parts.append(f"[Doc {i+1}] {title}\n{doc[:1500]}")
-        context = "\n\n".join(context_parts)
+            ctx_parts.append(f"[Doc {i+1}] {title}\n{doc[:1500]}")
+        context = "\n\n".join(ctx_parts)
 
-        resp = client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system",  "content": SYSTEM_PROMPT},
-                {"role": "system",  "content": f"Context documents:\n\n{context}"},
-                {"role": "user",    "content": question},
-            ],
-            temperature=self.temperature,
-        )
-        answer = resp.choices[0].message.content or ""
-        tokens = resp.usage.total_tokens if resp.usage else 0
+        ans, tok = _llm([{"role":"system","content":SYSTEM},
+                         {"role":"system","content":f"Context:\n{context}"},
+                         {"role":"user","content":question}],
+                        model=self.model, temperature=self.temperature)
 
-        # Extract cited source numbers
-        import re
-        cited = sorted({int(m) for m in re.findall(r"\[Doc (\d+)\]", answer)})
-        sources = []
-        for n in cited:
-            idx = n - 1
-            if 0 <= idx < len(documents):
-                m = metadata[idx] if metadata and idx < len(metadata) else {}
-                sources.append({"doc_number": n, "title": m.get("title", f"Doc {n}"),
-                                 "url": m.get("url", "")})
+        cited   = sorted({int(m) for m in re.findall(r"\[Doc (\d+)\]", ans)})
+        sources = [{"doc_number": n, "title": (metadata[n-1].get("title","") if metadata and n-1<len(metadata) else f"Doc {n}")}
+                   for n in cited if 0 < n <= len(documents)]
+        return {"agent":"knowledge-agent","question":question,"answer":ans,"sources":sources,"tokens_used":tok}
 
-        return {"agent": "knowledge-agent", "question": question,
-                "answer": answer, "sources": sources, "tokens_used": tokens}
-
-    def summarise_knowledge_base(self, documents: list[str],
-                                  topic: str = "") -> dict:
-        """Generate a summary of all documents in a knowledge base."""
+    def summarise_knowledge_base(self, documents: list[str], topic: str = "") -> dict:
         combined = "\n\n---\n\n".join(doc[:800] for doc in documents[:8])
-        focus    = f" Focus on: {topic}." if topic else ""
-        resp = client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "Summarise the following knowledge base documents concisely." + focus},
-                {"role": "user",   "content": combined},
-            ],
-            temperature=0.2,
-        )
-        return {"agent": "knowledge-agent", "summary": resp.choices[0].message.content,
-                "doc_count": len(documents),
-                "tokens_used": resp.usage.total_tokens if resp.usage else 0}
-
+        focus = f" Focus on: {topic}." if topic else ""
+        ans, tok = _simple(f"Summarise these knowledge base documents concisely.{focus}\n\n{combined}")
+        return {"agent":"knowledge-agent","summary":ans,"doc_count":len(documents),"tokens_used":tok}
 
 def run(question: str, documents: list[str]) -> dict:
     return KnowledgeAgent().answer(question, documents)
