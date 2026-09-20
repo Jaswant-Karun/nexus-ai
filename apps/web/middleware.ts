@@ -19,7 +19,7 @@ const PROTECTED_PREFIXES = [
   "/storage",
 ];
 
-// Routes that are only for unauthenticated users (redirect to dashboard if logged in)
+// Routes only for unauthenticated users (redirect to /dashboard if already logged in)
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password"];
 
 function getSecret() {
@@ -77,13 +77,12 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths EXCEPT:
-     * - _next/static  (static files)
-     * - _next/image   (image optimisation)
-     * - favicon.ico
-     * - public assets
-     * - /api/auth/*   (auth API routes themselves)
+     * Run middleware on all paths EXCEPT:
+     * - / (landing page — always public)
+     * - _next/static, _next/image (Next.js internals)
+     * - favicon.ico and public assets
+     * - /api/auth/* (auth API routes handle their own logic)
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$|api/auth).*)",
+    "/((?!$|_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$|api/auth).*)",
   ],
 };
