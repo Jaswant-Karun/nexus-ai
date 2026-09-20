@@ -10,7 +10,9 @@
     "db:generate": "prisma generate --schema=prisma/schema.prisma",
     "db:push": "prisma db push --schema=prisma/schema.prisma",
     "db:migrate": "prisma migrate dev --schema=prisma/schema.prisma",
-    "db:studio": "prisma studio --schema=prisma/schema.prisma"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma db push --schema=prisma/schema.prisma --force-reset && tsx prisma/seed.ts"
   },
   "dependencies": {
     "@nexus/auth": "workspace:*",
@@ -44,6 +46,7 @@
     "postcss": "8.4.49",
     "prisma": "^7.9.1",
     "tailwindcss": "3.4.17",
+    "tsx": "^4.23.1",
     "typescript": "5.7.2"
   }
 }
