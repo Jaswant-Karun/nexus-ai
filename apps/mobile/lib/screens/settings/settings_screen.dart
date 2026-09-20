@@ -49,6 +49,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _sectionTitle('About'),
           _tile(Icons.info_outline, 'App version', '1.0.0'),
           _tile(Icons.support_agent_outlined, 'Support', 'Contact Nexus help'),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const WorkflowListScreen()),
+              );
+            },
+            icon: const Icon(Icons.account_tree_rounded),
+            label: const Text('View workflows'),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
         ],
       ),
     );

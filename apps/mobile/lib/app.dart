@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
 import 'config/routes.dart';
+import 'screens/analytics/analytics_dashboard.dart';
 import 'screens/authentication/login_screen.dart';
 import 'screens/dashboard/dashboard_screen.dart';
+import 'screens/notifications/notification_list.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/profile/profile_screen.dart';
+import 'screens/projects/project_details.dart';
 import 'screens/settings/settings_screen.dart';
 import 'screens/splash/splash_screen.dart';
+import 'screens/workflows/workflow_list.dart';
 
 class NexusApp extends StatelessWidget {
   const NexusApp({super.key});
@@ -32,6 +36,10 @@ class NexusApp extends StatelessWidget {
         AppRoutes.dashboard: (_) => const DashboardScreen(),
         AppRoutes.profile: (_) => const ProfileScreen(),
         AppRoutes.settings: (_) => const SettingsScreen(),
+        AppRoutes.notifications: (_) => const NotificationListScreen(),
+        AppRoutes.projectDetails: (_) => const ProjectDetailsScreen(),
+        AppRoutes.analytics: (_) => const AnalyticsDashboardScreen(),
+        AppRoutes.workflows: (_) => const WorkflowListScreen(),
       },
     );
   }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'project_details.dart';
+
 class ProjectListScreen extends StatefulWidget {
   const ProjectListScreen({super.key});
 
@@ -44,7 +46,11 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
       elevation: 0,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${project.name} opened'))),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ProjectDetailsScreen()),
+          );
+        },
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../analytics/analytics_dashboard.dart';
 import '../chatbot/chat_screen_page.dart';
+import '../notifications/notification_list.dart';
 import '../profile/profile_screen.dart';
 import '../projects/project_list_screen.dart';
 import '../settings/settings_screen.dart';
+import '../workflows/workflow_list.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -130,7 +133,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         IconButton(
           tooltip: 'Notifications',
-          onPressed: () => _showMessage(context, 'You are all caught up.'),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationListScreen()),
+            );
+          },
           icon: const Badge(label: Text('3'), child: Icon(Icons.notifications_none_rounded)),
         ),
       ],
@@ -257,6 +264,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ProjectListScreen()),
             );
+          } else if (label == 'Insights') {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AnalyticsDashboardScreen()),
+            );
           } else {
             _showMessage(context, '$label is ready to use.');
           }
@@ -287,7 +298,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle('Recent activity', 'See all'),
+        GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationListScreen()),
+            );
+          },
+          child: _sectionTitle('Recent activity', 'See all'),
+        ),
         const SizedBox(height: 12),
         _activityTile(
           Icons.check_circle_rounded,
@@ -364,7 +382,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           'Manage alerts',
           () {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              MaterialPageRoute(builder: (_) => const NotificationListScreen()),
             );
           },
         ),
