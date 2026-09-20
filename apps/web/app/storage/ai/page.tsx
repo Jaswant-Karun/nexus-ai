@@ -4,6 +4,7 @@ import { useState } from "react";
 import { NavBar } from "@nexus/ui";
 import { StorageLayout } from "@/components/storage/StorageLayout";
 import { formatBytes, MOCK_FILES } from "@/lib/storage";
+import { summarizeText, applyReasoning } from "@/lib/ai-client";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import type { StorageFile } from "@/types/storage";
@@ -41,10 +42,17 @@ const STATS = [
   { label: "Processing Time Saved", value: "45h", trend: "+8% from last month", icon: "⏱️", color: "bg-amber-500/10 border-amber-500/20" },
 ];
 
-/* ── Doc card ─────────────────────────────────────────────────── */
-function DocCard({ doc, selected, onSelect }: { doc: AiDocument; selected: boolean; onSelect: () => void }) {
-  const isComplete = doc.analysisStatus === "completed";
-  const isPending  = doc.analysisStatus === "pending";
+/* ── Doc card — receives onAnalyze as prop ─────────────────────── */
+function DocCard({ doc, selected, onSelect, onAnalyze, analyzing }: {
+  doc:        AiDocument;
+  selected:   boolean;
+  onSelect:   () => void;
+  onAnalyze:  (doc: AiDocument) => void;
+  analyzing:  boolean;
+}) {
+  const isComplete  = doc.analysisStatus === "completed";
+  const isPending   = doc.analysisStatus === "pending";
+  const isAnalyzing = doc.analysisStatus === "analyzing";
   return (
     <div
       onClick={onSelect}
@@ -92,18 +100,29 @@ function DocCard({ doc, selected, onSelect }: { doc: AiDocument; selected: boole
         </p>
       )}
 
+      {isAnalyzing && (
+        <p className="text-[11px] text-brand-400 flex items-center gap-1.5 mb-3 animate-pulse">
+          <span className="h-2.5 w-2.5 rounded-full bg-brand-400 animate-ping" />
+          Analysing with GPT-4o…
+        </p>
+      )}
+
       {isComplete && (
         <p className="text-[11px] text-emerald-400 flex items-center gap-1.5 mb-3">
           <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><polyline points="20 6 9 17 4 12"/></svg>
-          AI Analysis is ready and available. Click the icon to view.
+          AI Analysis is ready and available.
         </p>
       )}
 
       <div className="flex items-center gap-2">
         <button type="button"
-          className="flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 px-3.5 py-2 text-xs font-bold text-dark-950 transition-colors flex-1 justify-center">
-          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          Analyze
+          onClick={(e) => { e.stopPropagation(); onAnalyze(doc); }}
+          disabled={analyzing || isAnalyzing}
+          className="flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 px-3.5 py-2 text-xs font-bold text-dark-950 transition-colors flex-1 justify-center disabled:opacity-60">
+          {isAnalyzing || analyzing
+            ? <span className="h-3 w-3 animate-spin rounded-full border-2 border-dark-950 border-t-transparent" />
+            : <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>}
+          {isAnalyzing || analyzing ? "Analyzing…" : "Analyze"}
         </button>
         <button type="button" title="Preview"
           className={cn("p-2 rounded-xl border transition-colors",
@@ -123,11 +142,74 @@ function DocCard({ doc, selected, onSelect }: { doc: AiDocument; selected: boole
   );
 }
 
-/* ── Main Page ─────────────────────────────────────────────────── */
 export default function AiAnalyzerPage() {
   const [selectedDoc, setSelectedDoc] = useState<AiDocument | null>(AI_DOCS.find((d) => d.analysisStatus === "completed") ?? null);
   const [activeTab,   setActiveTab]   = useState("Summary");
   const [question,    setQuestion]    = useState("");
+  const [aiAnswer,    setAiAnswer]    = useState("");
+  const [aiAnswering, setAiAnswering] = useState(false);
+  const [aiSummary,   setAiSummary]   = useState<string>(selectedDoc?.aiSummary ?? "");
+  const [analyzing,   setAnalyzing]   = useState(false);
+  const [docs,        setDocs]        = useState<AiDocument[]>(AI_DOCS);
+
+  // Analyze a document — calls the real AI summarizer
+  const handleAnalyze = async (doc: AiDocument) => {
+    if (analyzing) return;
+    setAnalyzing(true);
+    setSelectedDoc({ ...doc, analysisStatus: "analyzing" });
+    try {
+      const text = doc.aiSummary
+        ? `Document: ${doc.name}\n\nExisting summary: ${doc.aiSummary}\n\nKeywords: ${doc.aiKeywords?.join(", ") ?? ""}`
+        : `Document: ${doc.name}\nType: ${doc.mimeType}\nSize: ${formatBytes(doc.sizeBytes)}\nTags: ${doc.tags.join(", ") || "none"}`;
+
+      const res = await summarizeText({
+        text,
+        strategy:      "abstractive",
+        max_length:    200,
+        bullet_points: true,
+        model:         "gpt-4o",
+      });
+
+      const updated: AiDocument = {
+        ...doc,
+        analysisStatus: "completed",
+        aiSummary:  res.summary,
+        aiKeywords: res.keywords,
+      };
+      setDocs((prev) => prev.map((d) => d.id === doc.id ? updated : d));
+      setSelectedDoc(updated);
+      setAiSummary(res.summary);
+    } catch (err: unknown) {
+      setDocs((prev) => prev.map((d) => d.id === doc.id ? { ...d, analysisStatus: "failed" } : d));
+      setSelectedDoc((prev) => prev ? { ...prev, analysisStatus: "failed" } : prev);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  // Ask AI a question about the selected document
+  const handleAskAI = async () => {
+    if (!question.trim() || aiAnswering || !selectedDoc) return;
+    setAiAnswering(true);
+    setAiAnswer("");
+    try {
+      const context = selectedDoc.aiSummary
+        ? [selectedDoc.aiSummary, ...(selectedDoc.aiKeywords ?? [])]
+        : [`Document: ${selectedDoc.name}`];
+
+      const res = await applyReasoning({
+        question: question.trim(),
+        context,
+        strategy: "chain_of_thought",
+        model:    "gpt-4o",
+      });
+      setAiAnswer(res.final_answer);
+    } catch {
+      setAiAnswer("⚠️ AI service unavailable — start it with: uvicorn main:app --port 8001 --reload");
+    } finally {
+      setAiAnswering(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-dark-950 text-white flex flex-col">
@@ -208,8 +290,15 @@ export default function AiAnalyzerPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {AI_DOCS.map((doc) => (
-                  <DocCard key={doc.id} doc={doc} selected={selectedDoc?.id === doc.id} onSelect={() => setSelectedDoc(doc)} />
+                {docs.map((doc) => (
+                  <DocCard
+                    key={doc.id}
+                    doc={doc}
+                    selected={selectedDoc?.id === doc.id}
+                    onSelect={() => setSelectedDoc(doc)}
+                    onAnalyze={handleAnalyze}
+                    analyzing={analyzing}
+                  />
                 ))}
               </div>
             </div>
@@ -309,16 +398,41 @@ export default function AiAnalyzerPage() {
                     <div className="space-y-4">
                       <h3 className="text-lg font-bold text-white">Ask AI About This Document</h3>
                       <div className="flex gap-3">
-                        <input value={question} onChange={(e) => setQuestion(e.target.value)}
+                        <input
+                          value={question}
+                          onChange={(e) => setQuestion(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && handleAskAI()}
                           placeholder="Ask anything about this document…"
-                          className="flex-1 rounded-xl border border-white/10 bg-dark-800/80 px-4 py-2.5 text-sm text-white placeholder:text-dark-400 focus:border-brand-500/60 focus:outline-none transition" />
-                        <button type="button" className="rounded-xl bg-brand-600 hover:bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors">
-                          Ask AI
+                          className="flex-1 rounded-xl border border-white/10 bg-dark-800/80 px-4 py-2.5 text-sm text-white placeholder:text-dark-400 focus:border-brand-500/60 focus:outline-none transition"
+                          disabled={aiAnswering}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAskAI}
+                          disabled={aiAnswering || !question.trim()}
+                          className="rounded-xl bg-brand-600 hover:bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {aiAnswering
+                            ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Thinking…</>
+                            : "Ask AI"
+                          }
                         </button>
                       </div>
-                      <div className="rounded-xl bg-dark-800/60 border border-white/[0.06] p-4">
-                        <p className="text-xs text-dark-400 italic">Ask a question to get an AI-generated answer based on the document content.</p>
-                      </div>
+                      {aiAnswer ? (
+                        <div className="rounded-xl bg-brand-500/5 border border-brand-500/20 p-4">
+                          <p className="text-xs font-semibold text-brand-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+                            GPT-4o Answer (via NEXUS AI Service)
+                          </p>
+                          <p className="text-sm text-dark-100 leading-relaxed whitespace-pre-wrap">{aiAnswer}</p>
+                        </div>
+                      ) : (
+                        <div className="rounded-xl bg-dark-800/60 border border-white/[0.06] p-4">
+                          <p className="text-xs text-dark-400 italic">
+                            Ask a question — GPT-4o will answer using the document context via the NEXUS AI Service at localhost:8001.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
 
