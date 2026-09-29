@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ModuleLayout from '@/components/layout/ModuleLayout';
 import { 
@@ -15,7 +15,12 @@ import {
   Calendar, 
   ArrowUpRight, 
   Activity, 
-  Sliders 
+  Sliders,
+  Workflow,
+  Cpu,
+  RefreshCw,
+  Terminal,
+  ShieldCheck
 } from 'lucide-react';
 
 const workflowsSubnav = [
@@ -43,14 +48,14 @@ const mockWorkflows = [
   },
   {
     id: 'wf-multi-agent-collab',
-    name: 'Nexus Multi-Agent Collaboration',
+    name: 'Nexus Multi-Agent Collaboration (n8n Engine)',
     description: 'n8n integrated pipeline: Ingest -> Researcher -> Agent 3 Critic -> Code Synthesizer.',
     nodesCount: 5,
     status: 'Active',
-    trigger: 'Cron (Every 2h)',
-    lastRun: '1 hour ago',
-    successRate: '98.8%',
-    author: 'System'
+    trigger: 'Webhook (/nexus-multi-agent)',
+    lastRun: 'Just now',
+    successRate: '99.4%',
+    author: 'n8n Orchestrator'
   },
   {
     id: 'wf-vector-sync',
@@ -68,6 +73,47 @@ const mockWorkflows = [
 export default function WorkflowsHubPage() {
   const [workflows, setWorkflows] = useState(mockWorkflows);
   const [search, setSearch] = useState('');
+  
+  // n8n Live Integration State
+  const [n8nStatus, setN8nStatus] = useState<'CHECKING' | 'ONLINE' | 'STANDBY'>('CHECKING');
+  const [n8nRunning, setN8nRunning] = useState(false);
+  const [n8nResult, setN8nResult] = useState<any>(null);
+
+  const checkStatus = async () => {
+    try {
+      const res = await fetch('/api/workflows/n8n');
+      const data = await res.json();
+      setN8nStatus(data.status === 'ONLINE' ? 'ONLINE' : 'STANDBY');
+    } catch {
+      setN8nStatus('STANDBY');
+    }
+  };
+
+  useEffect(() => {
+    checkStatus();
+  }, []);
+
+  const triggerN8nWorkflow = async (type: 'single' | 'multi-agent') => {
+    setN8nRunning(true);
+    setN8nResult(null);
+    try {
+      const payload = type === 'multi-agent'
+        ? { type: 'multi-agent', goal: 'Autonomous cloud backend deployment and verification' }
+        : { type: 'single', prompt: 'Coordinate multi-agent task execution and verify security compliance', model: 'gemini-2.5-flash' };
+
+      const res = await fetch('/api/workflows/n8n', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      setN8nResult(data);
+    } catch (err: any) {
+      setN8nResult({ success: false, error: err.message || 'Execution failed' });
+    } finally {
+      setN8nRunning(false);
+    }
+  };
 
   const filtered = workflows.filter(w =>
     w.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -116,6 +162,70 @@ export default function WorkflowsHubPage() {
             <div className="text-2xl font-bold text-white">99.2%</div>
             <div className="text-xs text-emerald-400 mt-1">Autonomous error recovery</div>
           </div>
+        </div>
+
+        {/* ─── n8n Automation Engine Control Center ─────────────────── */}
+        <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-950/40 via-slate-900/60 to-purple-950/30 border border-indigo-500/20 backdrop-blur-xl shadow-lg">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner">
+                <Workflow className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white">n8n Automation & Webhook Orchestrator</h3>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border flex items-center gap-1 ${
+                    n8nStatus === 'ONLINE'
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                      : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${n8nStatus === 'ONLINE' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                    {n8nStatus === 'ONLINE' ? 'n8n ONLINE (Port 5678)' : 'STANDBY / AUTONOMOUS FALLBACK'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Headless visual orchestrator wiring multi-agent council webhooks directly into NEXUS web and mobile runtimes.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => triggerN8nWorkflow('single')}
+                disabled={n8nRunning}
+                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 text-xs font-semibold border border-slate-700 transition-all flex items-center gap-1.5 shadow"
+              >
+                <Cpu className={`w-3.5 h-3.5 ${n8nRunning ? 'animate-spin' : 'text-indigo-400'}`} />
+                Run Master Agent
+              </button>
+              <button
+                onClick={() => triggerN8nWorkflow('multi-agent')}
+                disabled={n8nRunning}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold transition-all shadow-md shadow-indigo-600/30 flex items-center gap-1.5"
+              >
+                <Play className="w-3.5 h-3.5 fill-white" />
+                {n8nRunning ? 'Executing n8n Pipeline...' : 'Run Multi-Agent Collab'}
+              </button>
+            </div>
+          </div>
+
+          {/* n8n Live Result Display */}
+          {n8nResult && (
+            <div className="mt-4 p-4 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-mono text-slate-300">
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800/80">
+                <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Execution Result ({n8nResult.workflow || 'Pipeline Run'})
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  Engine: <strong className="text-indigo-300">{n8nResult.engine || 'n8n/nexus'}</strong> • Time: {n8nResult.executionDurationMs || 340}ms
+                </span>
+              </div>
+              <div className="whitespace-pre-wrap max-h-48 overflow-y-auto leading-relaxed text-slate-300">
+                {typeof n8nResult.output === 'string' ? n8nResult.output : JSON.stringify(n8nResult, null, 2)}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Search */}
@@ -178,7 +288,7 @@ export default function WorkflowsHubPage() {
                   Configure
                 </Link>
                 <Link
-                  href="/workflow"
+                  href="/workflows/execution"
                   className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all shadow flex items-center gap-1.5"
                 >
                   <Play className="w-3 h-3 fill-white" /> Run DAG

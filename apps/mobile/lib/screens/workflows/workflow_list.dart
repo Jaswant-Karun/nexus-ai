@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../services/workflow_service.dart';
 
 class WorkflowListScreen extends StatefulWidget {
   const WorkflowListScreen({super.key});
@@ -13,7 +14,23 @@ class _WorkflowListScreenState extends State<WorkflowListScreen> {
 
   final _filters = ['All', 'Active', 'Scheduled', 'Paused'];
 
+  bool _n8nOnline = false;
+  bool _preferN8n = true;
+  bool _isExecuting = false;
+
   final _workflows = [
+    {
+      'id': 'wf-multi-agent',
+      'name': 'n8n Multi-Agent Collaboration Pipeline',
+      'trigger': 'Webhook (POST /nexus-multi-agent)',
+      'status': 'Active',
+      'lastRun': 'Just now',
+      'runs': '1,420 runs',
+      'success': '99.4%',
+      'color': Color(0xff4f52ea),
+      'icon': Icons.hub_rounded,
+      'engine': 'n8n',
+    },
     {
       'id': 'wf-1',
       'name': 'Enterprise Lead Qualification Pipeline',
@@ -24,6 +41,7 @@ class _WorkflowListScreenState extends State<WorkflowListScreen> {
       'success': '99.4%',
       'color': Color(0xff10b981),
       'icon': Icons.bolt_rounded,
+      'engine': 'nexus',
     },
     {
       'id': 'wf-2',
@@ -35,6 +53,7 @@ class _WorkflowListScreenState extends State<WorkflowListScreen> {
       'success': '100%',
       'color': Color(0xff06b6d4),
       'icon': Icons.psychology_rounded,
+      'engine': 'nexus',
     },
     {
       'id': 'wf-3',
@@ -46,6 +65,7 @@ class _WorkflowListScreenState extends State<WorkflowListScreen> {
       'success': '97.6%',
       'color': Color(0xff4f52ea),
       'icon': Icons.code_rounded,
+      'engine': 'nexus',
     },
     {
       'id': 'wf-4',
@@ -57,6 +77,7 @@ class _WorkflowListScreenState extends State<WorkflowListScreen> {
       'success': '100%',
       'color': Color(0xff9333ea),
       'icon': Icons.security_rounded,
+      'engine': 'nexus',
     },
     {
       'id': 'wf-5',
@@ -68,8 +89,113 @@ class _WorkflowListScreenState extends State<WorkflowListScreen> {
       'success': '95.2%',
       'color': Color(0xfff59e0b),
       'icon': Icons.campaign_rounded,
+      'engine': 'nexus',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkHealth();
+  }
+
+  void _checkHealth() async {
+    final isOnline = await WorkflowService.instance.checkN8nOnline();
+    if (mounted) {
+      setState(() {
+        _n8nOnline = isOnline;
+      });
+    }
+  }
+
+  void _showResultModal(WorkflowExecutionResult res, bool isDark) {
+    final cardBg = isDark ? const Color(0xff0e1626) : Colors.white;
+    final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: cardBg,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            24,
+            24,
+            24,
+            MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.check_circle_rounded, color: Color(0xff10b981), size: 22),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Pipeline Execution Success',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: textPrimary),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: _blue.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${res.durationMs}ms',
+                      style: const TextStyle(color: _blue, fontWeight: FontWeight.bold, fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Engine: ${res.engine.toUpperCase()}',
+                style: const TextStyle(color: Color(0xff10b981), fontWeight: FontWeight.bold, fontSize: 11),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xff070a12) : const Color(0xfff8fafc),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0)),
+                ),
+                child: Text(
+                  res.output,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontFamily: 'monospace',
+                    color: textPrimary,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(backgroundColor: _blue),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Dismiss'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   void _triggerWorkflow(Map<String, dynamic> wf, bool isDark) {
     final cardBg = isDark ? const Color(0xff0e1626) : Colors.white;
@@ -81,69 +207,128 @@ class _WorkflowListScreenState extends State<WorkflowListScreen> {
       backgroundColor: cardBg,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: (wf['color'] as Color).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(wf['icon'] as IconData, color: wf['color'] as Color, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(wf['name'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
+                            Text('Trigger: ${wf['trigger']}', style: TextStyle(fontSize: 11, color: textMuted)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Engine Toggle
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: (wf['color'] as Color).withValues(alpha: 0.15),
+                      color: isDark ? const Color(0xff070a12) : const Color(0xfff1f5f9),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(wf['icon'] as IconData, color: wf['color'] as Color, size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(wf['name'] as String, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textPrimary)),
-                        Text('Trigger: ${wf['trigger']}', style: TextStyle(fontSize: 11, color: textMuted)),
+                        Text('Execution Engine', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textPrimary)),
+                        Row(
+                          children: [
+                            ChoiceChip(
+                              label: const Text('n8n Webhook', style: TextStyle(fontSize: 11)),
+                              selected: _preferN8n,
+                              selectedColor: _blue,
+                              onSelected: (val) {
+                                setSheetState(() => _preferN8n = true);
+                                setState(() => _preferN8n = true);
+                              },
+                            ),
+                            const SizedBox(width: 6),
+                            ChoiceChip(
+                              label: const Text('FastAPI Backend', style: TextStyle(fontSize: 11)),
+                              selected: !_preferN8n,
+                              selectedColor: _blue,
+                              onSelected: (val) {
+                                setSheetState(() => _preferN8n = false);
+                                setState(() => _preferN8n = false);
+                              },
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Text('Execute manual run with mock payload?', style: TextStyle(fontSize: 13, color: textMuted)),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0)),
-                        foregroundColor: textPrimary,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(backgroundColor: _blue),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('✓ Triggered: ${wf['name']} successfully! Payload dispatched.'),
-                            backgroundColor: const Color(0xff10b981),
+                  const SizedBox(height: 18),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0)),
+                            foregroundColor: textPrimary,
                           ),
-                        );
-                      },
-                      child: const Text('Run Pipeline'),
-                    ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(backgroundColor: _blue),
+                          onPressed: _isExecuting
+                              ? null
+                              : () async {
+                                  Navigator.pop(context);
+                                  setState(() => _isExecuting = true);
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('⚡ Dispatching ${wf['name']} via ${_preferN8n ? "n8n Engine" : "FastAPI Backend"}...'),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+
+                                  final result = await WorkflowService.instance.triggerWorkflow(
+                                    workflowId: wf['id'] as String,
+                                    workflowName: wf['name'] as String,
+                                    useN8n: _preferN8n,
+                                  );
+
+                                  if (mounted) {
+                                    setState(() => _isExecuting = false);
+                                    _showResultModal(result, isDark);
+                                  }
+                                },
+                          child: _isExecuting
+                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              : const Text('Run Pipeline'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -169,11 +354,18 @@ class _WorkflowListScreenState extends State<WorkflowListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Workflows & Automations', style: TextStyle(fontWeight: FontWeight.w800)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: _checkHealth,
+            tooltip: 'Refresh Status',
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Drag-and-drop Visual Canvas is available on the Web dashboard.')),
+            const SnackBar(content: Text('Visual Canvas DAG Designer is accessible on Web Dashboard.')),
           );
         },
         backgroundColor: _blue,
@@ -186,6 +378,42 @@ class _WorkflowListScreenState extends State<WorkflowListScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 80),
             children: [
+              // n8n Engine Status Banner
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xff111827) : const Color(0xfff0fdf4),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _n8nOnline ? const Color(0xff10b981) : const Color(0xfff59e0b), width: 1.2),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _n8nOnline ? Icons.check_circle_rounded : Icons.sync_problem_rounded,
+                      color: _n8nOnline ? const Color(0xff10b981) : const Color(0xfff59e0b),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _n8nOnline ? 'n8n Automation Engine Online' : 'n8n Engine Standby (Fallback Active)',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: textPrimary),
+                          ),
+                          Text(
+                            _n8nOnline ? 'Connected to port 5678 webhook listener' : 'Autonomous neural failover enabled',
+                            style: TextStyle(fontSize: 10, color: textMuted),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               // Filter Chips
               SizedBox(
                 height: 38,

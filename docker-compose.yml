@@ -1,25 +1,6 @@
 version: "3.9"
 
 services:
-  # ─── NEXUS Web Application ──────────────────────────────────────────
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: nexus-web
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nexus_ai
-      - N8N_WEBHOOK_URL=http://n8n:5678/webhook
-    depends_on:
-      - postgres
-      - n8n
-    networks:
-      - nexus-network
-
   # ─── PostgreSQL Database ────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
@@ -33,6 +14,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nexus_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - nexus-network
 
@@ -49,7 +35,7 @@ services:
     networks:
       - nexus-network
 
-  # ─── n8n Workflow & Agent Automation Engine ────────────────────────
+  # ─── n8n Automation Engine ──────────────────────────────────────────
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
     container_name: nexus-n8n
@@ -58,17 +44,71 @@ services:
       - "5678:5678"
     environment:
       - N8N_BASIC_AUTH_ACTIVE=false
-      - N8N_HOST=localhost
+      - N8N_HOST=0.0.0.0
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
       - WEBHOOK_URL=http://localhost:5678/
       - GENERIC_TIMEZONE=Asia/Kolkata
-      # Allow n8n to communicate with external and local AI microservices
       - NODE_FUNCTION_ALLOW_EXTERNAL=axios,crypto,lodash
+      - NEXUS_BACKEND_URL=http://backend:8000
+      - NEXUS_WEB_URL=http://web:3000
+    command: /bin/sh -c "n8n import:workflow --separate --input=/data/workflows 2>/dev/null || true; exec n8n start"
     volumes:
       - n8n_data:/home/node/.n8n
       - ./n8n/workflows:/data/workflows
       - ./apps/web/uploads:/data/uploads
+    networks:
+      - nexus-network
+
+  # ─── NEXUS Backend API (FastAPI) ───────────────────────────────────
+  backend:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    container_name: nexus-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nexus_ai
+      - QDRANT_URL=http://qdrant:6333
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      n8n:
+        condition: service_started
+    networks:
+      - nexus-network
+
+  # ─── NEXUS Web Application (Next.js 15) ────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/nexus_ai
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook
+      - NEXUS_BACKEND_URL=http://backend:8000
+      - JWT_SECRET=${JWT_SECRET:-nexus-enterprise-jwt-super-secret-key-2026}
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    depends_on:
+      - postgres
+      - backend
+      - n8n
     networks:
       - nexus-network
 
