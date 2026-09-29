@@ -221,6 +221,71 @@ export default function ChatPage() {
   const [nexusMessages, setNexusMessages] = useState<Message[]>(() => [makeWelcome("nexus")]);
   const [apiMessages,   setApiMessages]   = useState<Message[]>(() => [makeWelcome("api")]);
 
+  const hasLoadedHistory = useRef(false);
+
+  /* Restore previous chat history across navigation or refresh */
+  useEffect(() => {
+    try {
+      const savedNexus = localStorage.getItem("nexus_chat_history_v1");
+      if (savedNexus) {
+        const parsed = JSON.parse(savedNexus);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setNexusMessages(parsed.map((m: Message) => ({ ...m, streaming: false })));
+        }
+      }
+      const savedApi = localStorage.getItem("nexus_api_chat_history_v1");
+      if (savedApi) {
+        const parsed = JSON.parse(savedApi);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setApiMessages(parsed.map((m: Message) => ({ ...m, streaming: false })));
+        }
+      }
+      const savedMode = localStorage.getItem("nexus_chat_mode");
+      if (savedMode === "nexus" || savedMode === "api") {
+        setMode(savedMode);
+      }
+    } catch (e) {
+      console.error("Failed to load saved chat history", e);
+    } finally {
+      hasLoadedHistory.current = true;
+    }
+  }, []);
+
+  /* Save nexus chat history whenever it changes */
+  useEffect(() => {
+    if (!hasLoadedHistory.current) return;
+    try {
+      localStorage.setItem(
+        "nexus_chat_history_v1",
+        JSON.stringify(nexusMessages.map((m) => ({ ...m, streaming: false })))
+      );
+    } catch (e) {
+      console.error("Failed to save nexus chat history", e);
+    }
+  }, [nexusMessages]);
+
+  /* Save API chat history whenever it changes */
+  useEffect(() => {
+    if (!hasLoadedHistory.current) return;
+    try {
+      localStorage.setItem(
+        "nexus_api_chat_history_v1",
+        JSON.stringify(apiMessages.map((m) => ({ ...m, streaming: false })))
+      );
+    } catch (e) {
+      console.error("Failed to save api chat history", e);
+    }
+  }, [apiMessages]);
+
+  /* Save selected mode */
+  useEffect(() => {
+    try {
+      localStorage.setItem("nexus_chat_mode", mode);
+    } catch {
+      // ignore
+    }
+  }, [mode]);
+
   const messages    = mode === "nexus" ? nexusMessages : apiMessages;
   const setMessages = mode === "nexus" ? setNexusMessages : setApiMessages;
 
@@ -326,11 +391,19 @@ export default function ChatPage() {
 
   /* ── Clear conversation ─────────────────────────────────────────────────── */
   const clearChat = useCallback(() => {
-    setMessages([makeWelcome(mode)]);
-    if (mode === "nexus") {
-      fetch(`/api/ai/api/v1/nexus-agent/session?session_id=${sessionId}`, {
-        method: "DELETE",
-      }).catch(() => {});
+    const welcome = [makeWelcome(mode)];
+    setMessages(welcome);
+    try {
+      if (mode === "nexus") {
+        localStorage.setItem("nexus_chat_history_v1", JSON.stringify(welcome));
+        fetch(`/api/ai/api/v1/nexus-agent/session?session_id=${sessionId}`, {
+          method: "DELETE",
+        }).catch(() => {});
+      } else {
+        localStorage.setItem("nexus_api_chat_history_v1", JSON.stringify(welcome));
+      }
+    } catch (e) {
+      console.error("Failed to clear chat storage", e);
     }
   }, [mode, makeWelcome, sessionId, setMessages]);
 

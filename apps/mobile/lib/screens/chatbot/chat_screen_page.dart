@@ -11,7 +11,10 @@ class ChatScreenPage extends StatefulWidget {
   State<ChatScreenPage> createState() => _ChatScreenPageState();
 }
 
-class _ChatScreenPageState extends State<ChatScreenPage> {
+class _ChatScreenPageState extends State<ChatScreenPage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   final _inputController = TextEditingController();
   final _scrollController = ScrollController();
   final _chatService = ChatService();
@@ -34,7 +37,8 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
     'Design a REST API for a todo app',
   ];
 
-  final _messages = <_ChatMessage>[
+  /* Persistent across tab switches, screen rebuilds and route transitions */
+  static final List<_ChatMessage> _persistedMessages = [
     const _ChatMessage(
       '''## Welcome to NEXUS AI Mobile
 I am **NEXUS**, your offline autonomous intelligence assistant.
@@ -48,6 +52,8 @@ Ask anything or tap a prompt suggestion below to begin!''',
       model: 'Llama 3.2 (Offline)',
     ),
   ];
+
+  List<_ChatMessage> get _messages => _persistedMessages;
 
   bool _isSending = false;
   List<String> _currentReasoningSteps = [];
@@ -175,6 +181,7 @@ Ask anything or tap a prompt suggestion below to begin!''',
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? _darkBg : const Color(0xfff8fafc);
     final cardBg = isDark ? const Color(0xff0f172a) : Colors.white;

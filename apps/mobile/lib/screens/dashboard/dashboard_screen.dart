@@ -44,16 +44,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final pages = [
       _homePage(context),
-      const ChatScreenPage(),
-      const AgentListScreen(),
-      const WorkflowListScreen(),
-      const KnowledgeScreen(),
-      ProfileScreen(onThemeToggle: _toggleTheme, isDark: isDark),
+      const ChatScreenPage(key: PageStorageKey('ChatScreenPage')),
+      const AgentListScreen(key: PageStorageKey('AgentListScreen')),
+      const WorkflowListScreen(key: PageStorageKey('WorkflowListScreen')),
+      const KnowledgeScreen(key: PageStorageKey('KnowledgeScreen')),
+      ProfileScreen(key: const PageStorageKey('ProfileScreen'), onThemeToggle: _toggleTheme, isDark: isDark),
     ];
 
     return Scaffold(
       body: SafeArea(
-        child: pages[_selectedIndex],
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: pages,
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
