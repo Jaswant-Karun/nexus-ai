@@ -50,7 +50,6 @@ services:
       - NODE_FUNCTION_ALLOW_EXTERNAL=axios,crypto,lodash
       - NEXUS_BACKEND_URL=http://backend:8000
       - NEXUS_WEB_URL=http://web:3000
-    command: /bin/sh -c "n8n import:workflow --separate --input=/data/workflows 2>/dev/null || true; exec n8n start"
     volumes:
       - n8n_data:/home/node/.n8n
       - ./n8n/workflows:/data/workflows
