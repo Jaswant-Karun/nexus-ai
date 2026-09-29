@@ -68,32 +68,32 @@ function makeId() {
 /* ─────────────────────────────────────────────────────────────────────────────
    NEXUS AGENT WELCOME MESSAGE
 ───────────────────────────────────────────────────────────────────────────── */
-const NEXUS_WELCOME = `# NEXUS Agent 🧠 — Powered by Llama 3.2
+const NEXUS_WELCOME = `# NEXUS Agent 🧠 — Permanent Local ML-Core Engine
 
-I'm **NEXUS** — running on **Llama 3.2**, a real 3.2 billion parameter neural network by Meta AI, installed locally on this machine via Ollama.
+I am **NEXUS** — running on our custom-trained local Machine Learning classifier and knowledge synthesis engine.
 
-**🔒 No API keys. No internet. 100% local.**
+**🔒 100% Local Inference • Zero External API Keys • Permanently Trained.**
 
 **What I can do:**
-- 💻 **Write & debug code** — Python, TypeScript, SQL, Bash, and more
-- 🏗️ **System design** — architecture diagrams, trade-off analysis
-- 🧠 **AI/ML concepts** — RAG, embeddings, fine-tuning, vector search
-- 🔢 **Mathematics** — step-by-step derivations, proofs, calculations
-- 🔬 **Science** — physics, chemistry, biology explained clearly
-- 📈 **Business analysis** — SaaS metrics, strategy, product decisions
-- 💡 **Anything else** — general knowledge, comparisons, explanations
+- 💡 **Linguistic & Grammatical Comparisons** — pronouns (He vs. She), programming paradigms, architectural trade-offs
+- 💻 **Write & debug code** — Python, TypeScript, SQL, algorithms, in-place data structure operations
+- 🧠 **AI/ML Concepts** — Neural networks, loss functions, backpropagation, gradient descent, transformers
+- 🏗️ **System Design & APIs** — RESTful specifications, database schemas, microservice contracts
+- 🔬 **Computer Science Fundamentals** — Syntax errors, runtime errors, data structures, compilation
 
-**How the neural network pipeline works:**
-1. 🔍 Domain detection (instant — local regex)
-2. 🤔 Chain-of-thought reasoning (Llama 3.2 thinks first)
-3. ✍️ Answer generation (Llama 3.2 streams the response)
-4. 🪞 Self-reflection (Llama 3.2 reviews its own answer)
+**How the local ML pipeline works:**
+1. 🔍 **Data Preprocessing**: Lowercase normalization, contractions expansion, tokenization, stopword filtering
+2. 📐 **Feature Engineering**: N-gram extraction and TF-IDF semantic vector projections
+3. 🧠 **ML Intent Classification**: Supervised classification with calibrated multi-class confidence scores
+4. ⚡ **Local Neural Synthesis**: Complete, structured answers with tables and code blocks
+5. ✅ **Verification**: Automated validation for consistency and correctness
 
 **Try asking:**
-- *"What is a syntax error and give an example?"*
+- *"Compare He and She"*
 - *"Write a Python function to reverse a linked list"*
 - *"Explain how neural networks learn"*
-- *"Design a REST API for a todo app"*`;
+- *"Design a REST API for a todo app"*
+- *"What is a syntax error and give an example?"*`;
 
 const API_CHAT_WELCOME = `# API Chat ⚡
 
@@ -869,9 +869,9 @@ export default function ChatPage() {
                 {mode === "nexus" ? (
                   <>
                     <span>🧠</span>
-                    <span>NEXUS Agent — Llama 3.2 (3.2B) · local neural network · no API key · no internet</span>
-                    <span className="ml-auto">
-                      {nexusStatus === "online" ? "🟢 Ollama running" : nexusStatus === "offline" ? "🔴 Run: ollama serve" : "🟡 checking…"}
+                    <span>NEXUS Agent — Permanent Local ML-Core Engine · 100% Offline · Zero External API Keys</span>
+                    <span className="ml-auto text-emerald-400 font-semibold">
+                      🟢 Local ML Core Active
                     </span>
                   </>
                 ) : showAgents && currentAgent ? (

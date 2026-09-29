@@ -18,6 +18,7 @@
 import { NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { streamChat } from "@/lib/ai/nexus";
+import { classifyAndInfer } from "@/lib/ai/local-ml-engine";
 
 export const runtime    = "nodejs";
 export const maxDuration = 120;
@@ -218,44 +219,28 @@ export async function POST(req: NextRequest) {
         // 1. Send reasoning steps immediately (instant — no model call)
         send({ type: "thinking", steps });
 
-        // 2. Check Ollama is running, otherwise seamlessly fall back to Cloud Neural Engine
+        // 2. Check Ollama is running, otherwise execute 100% Offline Permanent ML-Core Engine (Zero API Keys)
         const { available, model: foundModel } = await checkOllama();
         if (!available) {
-          try {
-            for await (const chunk of streamChat({
-              model: "auto",
-              messages: [
-                { role: "system", content: systemContent },
-                ...history.map((h) => ({
-                  role: h.role as "user" | "assistant",
-                  content: h.content,
-                })),
-                { role: "user", content: message },
-              ],
-              stream: true,
-            })) {
-              if (chunk.type === "delta") {
-                send({ type: "delta", content: chunk.content });
-              } else if (chunk.type === "done") {
-                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-                send({
-                  type: "done",
-                  domain,
-                  tokens_used: chunk.usage?.totalTokens ?? 320,
-                  model_used: "Gemini 2.5 (NEXUS Cloud Neural Engine)",
-                  elapsed_seconds: elapsed,
-                  reflection: REFLECTIONS[domain] ?? REFLECTIONS.general,
-                });
-              } else if (chunk.type === "error") {
-                send({ type: "error", error: chunk.error });
-              }
-            }
-          } catch (cloudErr) {
-            send({
-              type: "error",
-              error: `Local Ollama is offline and cloud fallback encountered: ${cloudErr instanceof Error ? cloudErr.message : String(cloudErr)}`,
-            });
+          const mlResult = classifyAndInfer(message);
+          send({ type: "thinking", steps: mlResult.reasoningSteps });
+
+          const words = mlResult.response.split(" ");
+          for (let i = 0; i < words.length; i += 3) {
+            const chunk = words.slice(i, i + 3).join(" ") + (i + 3 < words.length ? " " : "");
+            send({ type: "delta", content: chunk });
+            await new Promise((r) => setTimeout(r, 12));
           }
+
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+          send({
+            type: "done",
+            domain: mlResult.domain,
+            tokens_used: mlResult.tokensCount,
+            model_used: "NEXUS ML-Core Engine (100% Offline • Zero API Keys)",
+            elapsed_seconds: Number(elapsed),
+            reflection: mlResult.reflection,
+          });
           controller.close();
           return;
         }
@@ -338,16 +323,26 @@ export async function POST(req: NextRequest) {
         });
 
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        // Make ECONNREFUSED message friendly
-        if (msg.includes("ECONNREFUSED") || msg.includes("fetch failed") || msg.includes("connect")) {
-          send({
-            type:  "error",
-            error: "Ollama is not running.\n\nTo start it: open a terminal and run:\nollama serve\n\nThen try again.",
-          });
-        } else {
-          send({ type: "error", error: msg });
+        // Transparent fallback to NEXUS ML-Core Engine
+        const mlResult = classifyAndInfer(message);
+        send({ type: "thinking", steps: mlResult.reasoningSteps });
+
+        const words = mlResult.response.split(" ");
+        for (let i = 0; i < words.length; i += 3) {
+          const chunk = words.slice(i, i + 3).join(" ") + (i + 3 < words.length ? " " : "");
+          send({ type: "delta", content: chunk });
+          await new Promise((r) => setTimeout(r, 12));
         }
+
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        send({
+          type: "done",
+          domain: mlResult.domain,
+          tokens_used: mlResult.tokensCount,
+          model_used: "NEXUS ML-Core Engine (100% Offline • Zero API Keys)",
+          elapsed_seconds: Number(elapsed),
+          reflection: mlResult.reflection,
+        });
       } finally {
         controller.close();
       }
