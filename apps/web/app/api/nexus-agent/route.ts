@@ -120,17 +120,29 @@ const DOMAIN_INSTR: Record<string, string> = {
 };
 
 // ─── Ollama availability check ────────────────────────────────────────────────
-async function checkOllama(): Promise<{ available: boolean; model: string }> {
-  try {
-    const res = await fetch(`${OLLAMA_BASE}/api/tags`, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return { available: false, model: "" };
-    const data = await res.json() as { models?: { name: string }[] };
-    const models = (data.models ?? []).map(m => m.name);
-    const found  = models.find(m => m.startsWith(OLLAMA_MODEL));
-    return { available: !!found, model: found ?? OLLAMA_MODEL };
-  } catch {
-    return { available: false, model: "" };
+async function checkOllama(): Promise<{ available: boolean; model: string; baseUrl: string }> {
+  const candidates = Array.from(new Set([
+    process.env.OLLAMA_BASE_URL,
+    "http://host.docker.internal:11434",
+    "http://localhost:11434",
+    "http://127.0.0.1:11434",
+  ].filter(Boolean) as string[]));
+
+  for (const url of candidates) {
+    try {
+      const res = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(2000) });
+      if (!res.ok) continue;
+      const data = await res.json() as { models?: { name: string }[] };
+      const models = (data.models ?? []).map((m: { name: string }) => m.name);
+      if (models.length > 0) {
+        const found = models.find((m: string) => m.startsWith(OLLAMA_MODEL)) ?? models[0];
+        return { available: true, model: found, baseUrl: url };
+      }
+    } catch {
+      // try next candidate host
+    }
   }
+  return { available: false, model: "", baseUrl: "" };
 }
 
 // ─── Static reflection note (no extra model call — saves time) ───────────────
@@ -220,7 +232,7 @@ export async function POST(req: NextRequest) {
         send({ type: "thinking", steps });
 
         // 2. Check Ollama is running, otherwise execute 100% Offline Permanent ML-Core Engine (Zero API Keys)
-        const { available, model: foundModel } = await checkOllama();
+        const { available, model: foundModel, baseUrl: activeBaseUrl } = await checkOllama();
         if (!available) {
           const mlResult = classifyAndInfer(message);
           send({ type: "thinking", steps: mlResult.reasoningSteps });
@@ -246,11 +258,11 @@ export async function POST(req: NextRequest) {
         }
 
         // 3. Stream Ollama response
-        const ollamaRes = await fetch(`${OLLAMA_BASE}/api/chat`, {
+        const ollamaRes = await fetch(`${activeBaseUrl}/api/chat`, {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model:    OLLAMA_MODEL,
+            model:    foundModel || OLLAMA_MODEL,
             messages: ollamaMessages,
             stream:   true,
             options: {
@@ -370,7 +382,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const { available, model } = await checkOllama();
+  const { available, model, baseUrl } = await checkOllama();
 
   return Response.json({
     status:      available ? "online" : "offline",
@@ -378,7 +390,7 @@ export async function GET(req: NextRequest) {
     version:     "3.0.0",
     engine:      "Llama 3.2 (local)",
     model:       model || OLLAMA_MODEL,
-    ollama_url:  OLLAMA_BASE,
+    ollama_url:  baseUrl || OLLAMA_BASE,
     no_api_key:  true,
     description: "Llama 3.2 (3.2B parameters, Meta AI) — runs 100% locally via Ollama. No API keys or internet required.",
     capabilities: [
