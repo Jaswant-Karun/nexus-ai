@@ -3,6 +3,10 @@ Test all 13 NEXUS AI agents with real Gemini API.
 Run: python test_agents.py
 """
 import importlib.util, sys, os
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
 
 # Load .env
 with open(os.path.join(os.path.dirname(__file__), ".env")) as f:
