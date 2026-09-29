@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
+import '../agents/agent_list.dart';
 import '../analytics/analytics_dashboard.dart';
 import '../chatbot/chat_screen_page.dart';
 import '../guide/how_to_use_screen.dart';
 import '../knowledge/knowledge_screen.dart';
 import '../notifications/notification_list.dart';
 import '../profile/profile_screen.dart';
+import '../projects/project_list_screen.dart';
 import '../settings/settings_screen.dart';
+import '../tokens/token_screen.dart';
 import '../workflows/workflow_list.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -42,6 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final pages = [
       _homePage(context),
       const ChatScreenPage(),
+      const AgentListScreen(),
       const WorkflowListScreen(),
       const KnowledgeScreen(),
       ProfileScreen(onThemeToggle: _toggleTheme, isDark: isDark),
@@ -49,46 +53,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: pages[_selectedIndex],
-          ),
-        ),
+        child: pages[_selectedIndex],
       ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: _selectedIndex,
-          onDestinationSelected: (index) => setState(() => _selectedIndex = index),
-          elevation: 4,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded, color: _blue),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.smart_toy_outlined),
-              selectedIcon: Icon(Icons.smart_toy_rounded, color: _blue),
-              label: 'AI Chat',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.account_tree_outlined),
-              selectedIcon: Icon(Icons.account_tree_rounded, color: _blue),
-              label: 'Workflows',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.psychology_outlined),
-              selectedIcon: Icon(Icons.psychology_rounded, color: _blue),
-              label: 'Knowledge',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline_rounded),
-              selectedIcon: Icon(Icons.person_rounded, color: _blue),
-              label: 'Profile',
-            ),
-          ],
-        ),
-      );
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+        elevation: 4,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded, color: _blue),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.smart_toy_outlined),
+            selectedIcon: Icon(Icons.smart_toy_rounded, color: _blue),
+            label: 'AI Chat',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.groups_outlined),
+            selectedIcon: Icon(Icons.groups_rounded, color: _blue),
+            label: '14 Agents',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.account_tree_outlined),
+            selectedIcon: Icon(Icons.account_tree_rounded, color: _blue),
+            label: 'Workflows',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.psychology_outlined),
+            selectedIcon: Icon(Icons.psychology_rounded, color: _blue),
+            label: 'Knowledge',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline_rounded),
+            selectedIcon: Icon(Icons.person_rounded, color: _blue),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
     }
 
   Widget _homePage(BuildContext context) {
@@ -392,7 +396,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               setState(() => _selectedIndex = 1);
             }),
             const SizedBox(width: 10),
-            _actionBtn(context, Icons.account_tree_rounded, 'Workflows', const Color(0xff9333ea), () {
+            _actionBtn(context, Icons.groups_rounded, '14 AI Agents', const Color(0xff8b5cf6), () {
               setState(() => _selectedIndex = 2);
             }),
           ],
@@ -400,13 +404,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 10),
         Row(
           children: [
-            _actionBtn(context, Icons.psychology_rounded, 'Knowledge RAG', const Color(0xff06b6d4), () {
+            _actionBtn(context, Icons.account_tree_rounded, 'Workflows', const Color(0xff9333ea), () {
               setState(() => _selectedIndex = 3);
             }),
             const SizedBox(width: 10),
+            _actionBtn(context, Icons.psychology_rounded, 'Knowledge RAG', const Color(0xff06b6d4), () {
+              setState(() => _selectedIndex = 4);
+            }),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            _actionBtn(context, Icons.folder_special_rounded, 'Projects & Tasks', const Color(0xff10b981), () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ProjectListScreen()),
+              );
+            }),
+            const SizedBox(width: 10),
+            _actionBtn(context, Icons.generating_tokens_rounded, 'Tokens & Quotas', const Color(0xffec4899), () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const TokenScreen()),
+              );
+            }),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
             _actionBtn(context, Icons.insights_rounded, 'Live Analytics', const Color(0xfff59e0b), () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const AnalyticsDashboardScreen()),
+              );
+            }),
+            const SizedBox(width: 10),
+            _actionBtn(context, Icons.settings_rounded, 'Platform Config', const Color(0xff64748b), () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
             }),
           ],
