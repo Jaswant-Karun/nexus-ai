@@ -66,6 +66,8 @@ def test(agent_name: str, fn):
     except Exception as e:
         print(f"  ❌ {agent_name:<28} ERROR: {str(e)[:100]}")
         results.append((agent_name, False, 0))
+    import time
+    time.sleep(1.2)
     print()
 
 print("Running all 13 agents with real Gemini 2.5 Flash API...\n")

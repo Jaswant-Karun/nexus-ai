@@ -23,9 +23,15 @@ export class ProviderError extends Error {
     this.status = status;
 
     // Classify whether the fallback engine should try the next model.
+    const isCreditOrAuthIssue =
+      status === 401 ||
+      status === 403 ||
+      status === 429 ||
+      /credit|balance|quota|billing|unauthorized|api[_-]?key/i.test(message);
+
     if (reason) {
       this.reason = reason;
-    } else if (status === 429) {
+    } else if (status === 429 || /rate|quota/i.test(message)) {
       this.reason = "rate_limit";
     } else if (status >= 500) {
       this.reason = "server_error";
@@ -35,13 +41,13 @@ export class ProviderError extends Error {
       this.reason = "unknown";
     }
 
-    // Retry on rate-limit, 5xx, timeout, and connection issues.
-    // Don't retry on auth (401/403) or bad-request (400) — those are config errors.
+    // Retry on rate-limit, 5xx, timeout, connection issues, and provider credit/quota exhaustion
     this.retryable =
       this.reason === "rate_limit" ||
       this.reason === "server_error" ||
       this.reason === "timeout" ||
-      this.reason === "connection";
+      this.reason === "connection" ||
+      isCreditOrAuthIssue;
   }
 }
 

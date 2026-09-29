@@ -192,13 +192,11 @@ export async function chat(req: ChatRequest): Promise<ChatResponse> {
         category,
       );
 
-      // Non-retryable (auth / bad request) — don't bother with fallback.
-      if (err instanceof ProviderError && !err.retryable) {
-        throw err;
+      // In a resilient multi-model system, continue trying remaining models in the chain
+      if (i < chain.length - 1) {
+        continue;
       }
-
-      // Retryable — try the next model in the chain.
-      continue;
+      throw lastError;
     }
   }
 

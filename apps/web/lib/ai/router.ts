@@ -24,35 +24,35 @@ import { getAvailableModels, getModel } from "./config";
 // primary first, then fallbacks.  The router filters this to available models.
 
 const ROUTE_MAP: Record<TaskCategory, { primary: string; fallbacks: string[] }> = {
-  // Strong coding models first.
+  // Ultra-capable code synthesis with multi-model fallbacks
   coding: {
-    primary: "claude-sonnet",
-    fallbacks: ["gpt-5", "deepseek-reasoner", "gemini-2.5-pro"],
+    primary: "gemini-2.5-pro",
+    fallbacks: ["claude-sonnet", "gpt-5", "deepseek-reasoner"],
   },
-  // Web-enabled / real-time model first (Grok has live web access).
+  // Real-time & fast web information
   realtime: {
-    primary: "grok",
-    fallbacks: ["gemini-2.5-pro", "gpt-5", "claude-sonnet"],
+    primary: "gemini-2.5-flash",
+    fallbacks: ["gemini-2.5-pro", "grok", "gpt-5"],
   },
-  // Largest context windows first.
+  // Massive 1M+ context window
   longcontext: {
     primary: "gemini-2.5-pro",
     fallbacks: ["claude-sonnet", "claude-opus", "gpt-5"],
   },
-  // Dedicated reasoning model first.
+  // Deep multi-step analytical reasoning
   reasoning: {
-    primary: "deepseek-reasoner",
-    fallbacks: ["claude-sonnet", "gpt-5", "gemini-2.5-pro"],
+    primary: "gemini-2.5-pro",
+    fallbacks: ["deepseek-reasoner", "claude-sonnet", "gpt-5"],
   },
-  // Most capable creative model first.
+  // Creative writing & synthesis
   creative: {
-    primary: "claude-opus",
-    fallbacks: ["gpt-5", "gemini-2.5-pro", "claude-sonnet"],
+    primary: "gemini-2.5-pro",
+    fallbacks: ["claude-opus", "gpt-5", "claude-sonnet"],
   },
-  // Fast, cost-efficient default.
+  // Ultra-fast, cost-efficient default
   general: {
-    primary: "gpt-5-mini",
-    fallbacks: ["gemini-2.5-flash", "deepseek-chat", "claude-sonnet"],
+    primary: "gemini-2.5-flash",
+    fallbacks: ["gpt-5-mini", "deepseek-chat", "claude-sonnet"],
   },
 };
 

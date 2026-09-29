@@ -88,8 +88,8 @@ def _gemini_chat(messages: list[dict], model: str = "models/gemini-2.5-flash",
         max_output_tokens=max_tokens,
     )
 
-    # Try models in order: flash → flash-lite → flash (retry after wait)
-    model_fallbacks = [model, "models/gemini-2.5-flash-lite", "models/gemini-flash-latest"]
+    # Try models in order: flash → flash-latest → pro
+    model_fallbacks = [model, "models/gemini-flash-latest", "models/gemini-2.5-pro"]
     last_exc = None
 
     for try_model in model_fallbacks:
@@ -115,9 +115,9 @@ def _gemini_chat(messages: list[dict], model: str = "models/gemini-2.5-flash",
             # Extract retry delay from error message
             import re
             m = re.search(r"retry in (\d+(?:\.\d+)?)s", err_str)
-            wait = float(m.group(1)) + 1 if m else 0
+            wait = float(m.group(1)) + 1 if m else 3.0
             if "RESOURCE_EXHAUSTED" in err_str or "429" in err_str:
-                if try_model != model_fallbacks[-1] and wait > 0 and wait < 30:
+                if try_model != model_fallbacks[-1] and wait <= 30:
                     time.sleep(wait)
                     continue
             # Not a rate-limit error — don't retry other models
@@ -163,12 +163,14 @@ def _openai_chat(messages: list[dict], model: str = "gpt-4o",
 
 # ── MODEL NAME MAPPING ─────────────────────────────────────────────────────────
 _GEMINI_MODELS = {
-    "gpt-4o":                    "models/gemini-2.5-flash",
-    "gpt-4o-mini":               "models/gemini-2.5-flash-lite",
-    "claude-3-5-sonnet-20241022":"models/gemini-2.5-flash",
-    "claude-3-5-haiku-20241022": "models/gemini-2.5-flash-lite",
-    "gemini-1.5-pro":            "models/gemini-2.5-pro-preview-06-05",
-    "gemini-1.5-flash":          "models/gemini-2.5-flash",
+    "gpt-4o":                     "models/gemini-2.5-flash",
+    "gpt-4o-mini":                "models/gemini-flash-latest",
+    "claude-3-5-sonnet-20241022": "models/gemini-2.5-flash",
+    "claude-3-5-haiku-20241022":  "models/gemini-flash-latest",
+    "gemini-1.5-pro":             "models/gemini-2.5-pro",
+    "gemini-2.5-pro":             "models/gemini-2.5-pro",
+    "gemini-1.5-flash":           "models/gemini-2.5-flash",
+    "gemini-2.5-flash":           "models/gemini-2.5-flash",
 }
 
 
