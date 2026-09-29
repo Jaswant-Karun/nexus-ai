@@ -6,17 +6,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from shared.llm_client import simple as _simple
 
 def _embed(texts: list[str]) -> list[list[float]]:
-    """Use Gemini/Google embedding if available, else simulate with TF-IDF-like approach."""
-    try:
-        import google.generativeai as genai
-        key = os.getenv("GOOGLE_AI_API_KEY","")
-        if key:
-            genai.configure(api_key=key)
-            result = genai.embed_content(model="models/text-embedding-004", content=texts)
-            return result["embedding"] if isinstance(texts, str) else [result["embedding"]] if len(texts)==1 else result
-    except Exception:
-        pass
-    # Fallback: simple bag-of-words similarity (no API needed)
+    """Generate normalized bag-of-words term-frequency vectors for cosine matching."""
     all_words = list({w for t in texts for w in t.lower().split()})
     word_idx  = {w: i for i, w in enumerate(all_words)}
     vecs = []
