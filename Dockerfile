@@ -7,11 +7,11 @@ RUN corepack enable
 FROM base AS builder
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache libc6-compat python3 make g++
+# Install standard Alpine compatibility library
+RUN apk add --no-cache libc6-compat
 
-# Copy workspace configuration and packages
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
+# Copy workspace configuration and shared tsconfig
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json tsconfig.base.json global.d.ts* ./
 COPY packages ./packages
 COPY apps/web ./apps/web
 

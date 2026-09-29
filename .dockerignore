@@ -1,7 +1,17 @@
 node_modules
 .git
 .env
+.env.local
+.env.*.local
 logs
 temp
 backups
 coverage
+.next
+.turbo
+apps/web/.next
+apps/admin/.next
+apps/mobile
+.venv
+dist
+.pnpm-store
