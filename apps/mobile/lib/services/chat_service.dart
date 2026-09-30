@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
+import '../core/local_ml_engine.dart';
 
 class ChatService {
   ChatService({http.Client? client}) : _client = client ?? http.Client();
@@ -26,7 +27,7 @@ class ChatService {
         'model': 'llama3.2',
       });
 
-    final response = await _client.send(request);
+    final response = await _client.send(request).timeout(const Duration(seconds: 15));
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final body = await response.stream.bytesToString();
       throw Exception('NEXUS Agent HTTP ${response.statusCode}: $body');
@@ -66,17 +67,19 @@ class ChatService {
     }
   }
 
-  /// Send message with live thinking steps, token deltas, and zero API keys
+  /// Send message with live thinking steps, token deltas, and zero API keys.
+  /// Falls back smoothly to on-device LocalMlEngine if server is unreachable.
   Future<String> sendMessage({
     required String message,
     required String sessionId,
     List<Map<String, String>> history = const [],
     void Function(List<String> steps)? onThinking,
     void Function(String delta)? onDelta,
+    void Function(String source)? onSourceResolved,
   }) async {
     final StringBuffer fullResponse = StringBuffer();
 
-    // 1. Primary Next.js NEXUS Agent local stream
+    // 1. Primary: Next.js NEXUS Agent local stream over LAN/Host
     try {
       await streamNexusMessage(
         message: message,
@@ -93,16 +96,19 @@ class ChatService {
             final delta = event['content'] as String;
             fullResponse.write(delta);
             onDelta?.call(delta);
-          } else if (type == 'done' && fullResponse.isEmpty && event['reflection'] is String) {
-            final refl = event['reflection'] as String;
-            fullResponse.write(refl);
-            onDelta?.call(refl);
+          } else if (type == 'done') {
+            if (fullResponse.isEmpty && event['reflection'] is String) {
+              final refl = event['reflection'] as String;
+              fullResponse.write(refl);
+              onDelta?.call(refl);
+            }
           }
         },
       );
 
       final result = fullResponse.toString().trim();
       if (result.isNotEmpty) {
+        onSourceResolved?.call('Llama 3.2 (Server Live)');
         return result;
       }
     } catch (_) {
@@ -126,7 +132,7 @@ class ChatService {
           ],
           'stream': false,
         }),
-      ).timeout(const Duration(seconds: 25));
+      ).timeout(const Duration(seconds: 15));
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -134,28 +140,31 @@ class ChatService {
         if (content != null && content.trim().isNotEmpty) {
           final text = content.trim();
           onDelta?.call(text);
+          onSourceResolved?.call('Ollama Llama 3.2');
           return text;
         }
       }
     } catch (_) {
-      // Fall through to offline knowledge synthesis
+      // Fall through to on-device ML engine
     }
 
-    // 3. Fallback to local synthesis
-    final fallback = [
-      '## NEXUS AI Offline Response',
-      '',
-      '**Query**: $message',
-      '',
-      '### Analysis & Synthesis',
-      'The local neural network and ML engine have successfully received your query.',
-      'Ensure the local NEXUS backend server is running on port 3000 to stream live responses with zero external API keys.',
-      '',
-      '💡 **Status**: Offline ML-Core & Local Llama 3.2 engine operational.'
-    ].join('\n');
+    // 3. Robust On-Device Machine Learning Engine (100% Offline • Zero Network Required)
+    onSourceResolved?.call('On-Device ML-Core (Offline)');
+    final mlResult = LocalMlEngine.infer(message);
 
-    onDelta?.call(fallback);
-    return fallback;
+    // Emit real reasoning steps
+    onThinking?.call(mlResult.reasoningSteps);
+
+    // Simulate smooth neural token delivery
+    final words = mlResult.response.split(' ');
+    for (var i = 0; i < words.length; i += 3) {
+      final chunkEnd = (i + 3 < words.length) ? i + 3 : words.length;
+      final chunk = words.sublist(i, chunkEnd).join(' ') + (chunkEnd < words.length ? ' ' : '');
+      onDelta?.call(chunk);
+      await Future.delayed(const Duration(milliseconds: 14));
+    }
+
+    return mlResult.response;
   }
 
   void dispose() => _client.close();

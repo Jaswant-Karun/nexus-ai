@@ -1,32 +1,76 @@
+import 'dart:convert';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiConfig {
   const ApiConfig._();
 
-  // Central Backend API (FastAPI) on port 8000
-  static const String _rawBackendUrl = String.fromEnvironment(
-    'NEXUS_BACKEND_URL',
-    defaultValue: 'http://localhost:8000',
-  );
+  static const String _prefKeyHost = 'nexus_custom_server_host';
 
-  // Full-Stack Web API Gateway (Next.js) on port 3000
-  static const String _rawWebApiUrl = String.fromEnvironment(
-    'NEXUS_WEB_API_URL',
-    defaultValue: 'http://localhost:3000',
-  );
+  /// Default LAN IP for mobile on the local development network
+  static const String defaultLanIp = '172.168.68.146';
+  static const String defaultEmulatorIp = '10.0.2.2';
+  static const String defaultLocalhost = 'localhost';
 
-  /// Resolves `localhost` to `10.0.2.2` when running inside the Android Emulator.
-  static String _resolveHost(String url) {
-    if (!kIsWeb && Platform.isAndroid) {
-      return url.replaceAll('http://localhost', 'http://10.0.2.2')
-                .replaceAll('http://127.0.0.1', 'http://10.0.2.2');
+  static String _activeHost = defaultLanIp;
+  static bool _initialized = false;
+
+  /// Initialize config from SharedPreferences if available
+  static Future<void> init() async {
+    if (_initialized) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_prefKeyHost);
+      if (saved != null && saved.trim().isNotEmpty) {
+        _activeHost = _cleanHost(saved);
+      } else {
+        // Sensible default based on platform
+        if (!kIsWeb && Platform.isAndroid) {
+          _activeHost = defaultLanIp;
+        } else {
+          _activeHost = defaultLocalhost;
+        }
+      }
+    } catch (_) {
+      // Fallback to LAN IP on Android
+      _activeHost = defaultLanIp;
+    } finally {
+      _initialized = true;
     }
-    return url;
   }
 
-  static String get backendBaseUrl => _resolveHost(_rawBackendUrl);
-  static String get webApiBaseUrl => _resolveHost(_rawWebApiUrl);
+  static String get currentHost => _activeHost;
+
+  /// Sets and persists a custom server host / IP (e.g. "172.168.68.146", "10.0.2.2", or "http://...")
+  static Future<void> setHost(String host) async {
+    final cleaned = _cleanHost(host);
+    if (cleaned.isEmpty) return;
+    _activeHost = cleaned;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_prefKeyHost, cleaned);
+    } catch (_) {}
+  }
+
+  static String _cleanHost(String raw) {
+    var h = raw.trim();
+    h = h.replaceAll('http://', '').replaceAll('https://', '');
+    if (h.contains('/')) {
+      h = h.split('/').first;
+    }
+    // Remove port if present, as different services use different ports (3000, 8000, 11434)
+    if (h.contains(':')) {
+      h = h.split(':').first;
+    }
+    return h.trim().isEmpty ? defaultLanIp : h.trim();
+  }
+
+  // Base URLs
+  static String get webApiBaseUrl => 'http://$_activeHost:3000';
+  static String get backendBaseUrl => 'http://$_activeHost:8000';
+  static String get ollamaBaseUrl => 'http://$_activeHost:11434';
 
   // Auth & Token endpoints
   static String get loginUrl => '$webApiBaseUrl/api/auth/login';
@@ -36,11 +80,64 @@ class ApiConfig {
 
   // AI & Workflows endpoints
   static String get nexusAgentStreamUrl => '$webApiBaseUrl/api/nexus-agent';
-  static const ollamaChatUrl = 'http://localhost:11434/api/chat';
+  static String get ollamaChatUrl => '$ollamaBaseUrl/api/chat';
   static String get workflowsUrl => '$webApiBaseUrl/api/workflows';
   static String get n8nWorkflowsUrl => '$webApiBaseUrl/api/workflows/n8n';
   static String get backendOrchestrationUrl => '$backendBaseUrl/v1/orchestration/execute';
   static String get knowledgeUrl => '$webApiBaseUrl/api/knowledge';
   static String get profileUrl => '$webApiBaseUrl/api/profile';
   static String get backendHealthUrl => '$backendBaseUrl/v1/health';
+
+  /// Probe connection to test server reachability and latency
+  static Future<Map<String, dynamic>> testConnection([String? candidateHost]) async {
+    final host = _cleanHost(candidateHost ?? _activeHost);
+    final stopwatch = Stopwatch()..start();
+
+    // 1. Try Next.js NEXUS Agent endpoint first (port 3000)
+    try {
+      final uri = Uri.parse('http://$host:3000/api/nexus-agent');
+      final res = await http.get(uri).timeout(const Duration(seconds: 4));
+      stopwatch.stop();
+
+      if (res.statusCode == 200) {
+        String model = 'Llama 3.2';
+        try {
+          final data = jsonDecode(res.body);
+          if (data['model'] != null) model = data['model'].toString();
+        } catch (_) {}
+
+        return {
+          'success': true,
+          'type': 'nextjs_agent',
+          'model': model,
+          'latencyMs': stopwatch.elapsedMilliseconds,
+          'message': 'Connected to NEXUS Agent ($model) on $host:3000',
+        };
+      }
+    } catch (_) {}
+
+    // 2. Try FastAPI Backend (port 8000)
+    try {
+      final uri = Uri.parse('http://$host:8000/v1/health');
+      final res = await http.get(uri).timeout(const Duration(seconds: 3));
+      stopwatch.stop();
+
+      if (res.statusCode == 200) {
+        return {
+          'success': true,
+          'type': 'fastapi_backend',
+          'model': 'FastAPI Gateway',
+          'latencyMs': stopwatch.elapsedMilliseconds,
+          'message': 'Connected to FastAPI Backend on $host:8000',
+        };
+      }
+    } catch (_) {}
+
+    stopwatch.stop();
+    return {
+      'success': false,
+      'latencyMs': stopwatch.elapsedMilliseconds,
+      'message': 'Cannot reach server at $host. (On-Device ML engine will run offline)',
+    };
+  }
 }

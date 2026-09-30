@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
+import '../../config/api_config.dart';
+import '../../core/local_ml_engine.dart';
 import '../../services/chat_service.dart';
 
 class ChatScreenPage extends StatefulWidget {
@@ -20,11 +22,14 @@ class _ChatScreenPageState extends State<ChatScreenPage> with AutomaticKeepAlive
   final _chatService = ChatService();
   final _sessionId = 'mobile-${DateTime.now().millisecondsSinceEpoch}';
 
-  String _selectedModel = 'Llama 3.2 (Offline)';
+  String _selectedModel = 'Llama 3.2';
   bool _showReasoning = true;
+  bool _serverOnline = false;
+  String _serverStatusText = 'Checking server...';
+  int? _serverLatencyMs;
 
   final _models = [
-    'Llama 3.2 (Offline)',
+    'Llama 3.2',
     'NEXUS ML-Core',
     'Code Architect',
     'Reasoning Agent',
@@ -41,15 +46,16 @@ class _ChatScreenPageState extends State<ChatScreenPage> with AutomaticKeepAlive
   static final List<_ChatMessage> _persistedMessages = [
     const _ChatMessage(
       '''## Welcome to NEXUS AI Mobile
-I am **NEXUS**, your offline autonomous intelligence assistant.
+I am **NEXUS**, your autonomous intelligence assistant.
 
-- **Engine**: Llama 3.2 (3.2B parameters) & Local ML-Core
-- **Privacy**: 100% Offline • Zero API Keys Required
+- **Engine**: Llama 3.2 (3.2B parameters) & On-Device ML-Core
+- **Privacy**: 100% Local • Zero External API Keys Required
 - **Capabilities**: Full-stack code generation, linguistic comparisons, system design, and AI/ML explanations.
+- **Mobility**: Works both connected to your PC server over Wi-Fi and 100% standalone offline!
 
 Ask anything or tap a prompt suggestion below to begin!''',
       false,
-      model: 'Llama 3.2 (Offline)',
+      model: 'NEXUS Agent',
     ),
   ];
 
@@ -60,6 +66,27 @@ Ask anything or tap a prompt suggestion below to begin!''',
 
   static const _blue = Color(0xff4f52ea);
   static const _darkBg = Color(0xff090d16);
+
+  @override
+  void initState() {
+    super.initState();
+    _checkServerStatus();
+  }
+
+  Future<void> _checkServerStatus() async {
+    final res = await ApiConfig.testConnection();
+    if (!mounted) return;
+    setState(() {
+      _serverOnline = res['success'] == true;
+      _serverLatencyMs = res['latencyMs'] as int?;
+      if (_serverOnline) {
+        final model = res['model'] ?? 'Llama 3.2';
+        _serverStatusText = 'Server Online (${_serverLatencyMs}ms • $model)';
+      } else {
+        _serverStatusText = 'On-Device ML (Offline Mode)';
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -85,8 +112,9 @@ Ask anything or tap a prompt suggestion below to begin!''',
     final text = customText ?? _inputController.text.trim();
     if (text.isEmpty || _isSending) return;
 
+    final initialModelLabel = _serverOnline ? 'Llama 3.2 (Live)' : 'NEXUS ML-Core (On-Device)';
     final userMsg = _ChatMessage(text, true);
-    final assistantMsg = _ChatMessage('', false, model: _selectedModel);
+    final assistantMsg = _ChatMessage('', false, model: initialModelLabel);
 
     setState(() {
       _messages.add(userMsg);
@@ -96,7 +124,7 @@ Ask anything or tap a prompt suggestion below to begin!''',
       _currentReasoningSteps = [
         'Analyzing query: "$text"',
         'Extracting domain features & intent profile',
-        'Synthesizing offline neural response...',
+        'Synthesizing neural response...',
       ];
     });
 
@@ -110,10 +138,26 @@ Ask anything or tap a prompt suggestion below to begin!''',
             })
         .toList();
 
+    String resolvedModel = initialModelLabel;
+
     _chatService.sendMessage(
       message: text,
       sessionId: _sessionId,
       history: history,
+      onSourceResolved: (source) {
+        resolvedModel = source;
+        if (mounted) {
+          setState(() {
+            final last = _messages.last;
+            _messages[_messages.length - 1] = _ChatMessage(
+              last.text,
+              false,
+              model: resolvedModel,
+              reasoningSteps: List.from(_currentReasoningSteps),
+            );
+          });
+        }
+      },
       onThinking: (steps) {
         if (mounted) {
           setState(() {
@@ -128,7 +172,7 @@ Ask anything or tap a prompt suggestion below to begin!''',
             _messages[_messages.length - 1] = _ChatMessage(
               last.text + delta,
               false,
-              model: _selectedModel,
+              model: resolvedModel,
               reasoningSteps: List.from(_currentReasoningSteps),
             );
           });
@@ -143,7 +187,7 @@ Ask anything or tap a prompt suggestion below to begin!''',
             _messages[_messages.length - 1] = _ChatMessage(
               finalText,
               false,
-              model: _selectedModel,
+              model: resolvedModel,
               reasoningSteps: List.from(_currentReasoningSteps),
             );
           }
@@ -151,14 +195,16 @@ Ask anything or tap a prompt suggestion below to begin!''',
         });
         _scrollToBottom();
       }
-    }).catchError((err) {
+    }).catchError((_) {
+      // In the extremely rare event that an unhandled exception occurred, fallback to on-device engine
+      final fallback = LocalMlEngine.infer(text);
       if (mounted) {
         setState(() {
           _messages[_messages.length - 1] = _ChatMessage(
-            '⚠️ Failed to generate response: $err\n\nPlease ensure your local server or Ollama is running.',
+            fallback.response,
             false,
-            isError: true,
-            model: _selectedModel,
+            model: 'On-Device ML-Core',
+            reasoningSteps: fallback.reasoningSteps,
           );
           _isSending = false;
         });
@@ -173,10 +219,270 @@ Ask anything or tap a prompt suggestion below to begin!''',
       _messages.add(const _ChatMessage(
         'Chat context cleared. Ready for a new topic.',
         false,
-        model: 'Llama 3.2 (Offline)',
+        model: 'NEXUS Agent',
       ));
       _currentReasoningSteps = [];
     });
+  }
+
+  void _openServerConfigDialog() {
+    final hostController = TextEditingController(text: ApiConfig.currentHost);
+    bool testing = false;
+    String? testResult;
+    bool? testSuccess;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final sheetBg = isDark ? const Color(0xff0f172a) : Colors.white;
+          final cardBorder = isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0);
+          final textPrimary = isDark ? Colors.white : const Color(0xff0f172a);
+          final textMuted = isDark ? const Color(0xff94a3b8) : const Color(0xff64748b);
+
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: sheetBg,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border.all(color: cardBorder),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: _blue.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.settings_ethernet_rounded, color: _blue, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Server Connection Settings',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textPrimary),
+                            ),
+                            Text(
+                              'Connect to your PC or run on-device offline',
+                              style: TextStyle(fontSize: 12, color: textMuted),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 20),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  Text(
+                    'Quick Presets:',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textMuted),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _presetChip(
+                        label: 'Wi-Fi LAN (${ApiConfig.defaultLanIp})',
+                        onTap: () {
+                          setModalState(() {
+                            hostController.text = ApiConfig.defaultLanIp;
+                            testResult = null;
+                          });
+                        },
+                        isSelected: hostController.text.trim() == ApiConfig.defaultLanIp,
+                      ),
+                      _presetChip(
+                        label: 'USB Cable (localhost)',
+                        onTap: () {
+                          setModalState(() {
+                            hostController.text = ApiConfig.defaultLocalhost;
+                            testResult = null;
+                          });
+                        },
+                        isSelected: hostController.text.trim() == ApiConfig.defaultLocalhost,
+                      ),
+                      _presetChip(
+                        label: 'Emulator (10.0.2.2)',
+                        onTap: () {
+                          setModalState(() {
+                            hostController.text = ApiConfig.defaultEmulatorIp;
+                            testResult = null;
+                          });
+                        },
+                        isSelected: hostController.text.trim() == ApiConfig.defaultEmulatorIp,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  Text(
+                    'Server Host IP or Domain:',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textMuted),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: hostController,
+                    style: TextStyle(color: textPrimary, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'e.g. 172.168.68.146 or 192.168.1.X',
+                      hintStyle: TextStyle(color: textMuted),
+                      prefixIcon: const Icon(Icons.dns_rounded, size: 18, color: _blue),
+                      filled: true,
+                      fillColor: isDark ? const Color(0xff131c2e) : const Color(0xfff8fafc),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: cardBorder)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: _blue, width: 1.5)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  if (testResult != null)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: testSuccess == true ? const Color(0xff10b981).withValues(alpha: 0.15) : const Color(0xffef4444).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: testSuccess == true ? const Color(0xff10b981) : const Color(0xffef4444),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            testSuccess == true ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+                            size: 18,
+                            color: testSuccess == true ? const Color(0xff10b981) : const Color(0xffef4444),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              testResult!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: testSuccess == true ? const Color(0xff10b981) : const Color(0xffef4444),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: testing
+                              ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: _blue))
+                              : const Icon(Icons.bolt_rounded, size: 16, color: _blue),
+                          label: Text(testing ? 'Testing...' : 'Test Connection'),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: _blue),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onPressed: testing
+                              ? null
+                              : () async {
+                                  setModalState(() {
+                                    testing = true;
+                                    testResult = null;
+                                  });
+                                  final probe = await ApiConfig.testConnection(hostController.text);
+                                  setModalState(() {
+                                    testing = false;
+                                    testSuccess = probe['success'] == true;
+                                    testResult = probe['message'] as String?;
+                                  });
+                                },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.save_rounded, size: 16, color: Colors.white),
+                          label: const Text('Save & Apply', style: TextStyle(color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _blue,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onPressed: () async {
+                            final targetHost = hostController.text.trim();
+                            await ApiConfig.setHost(targetHost);
+                            Navigator.pop(ctx);
+                            await _checkServerStatus();
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Server host updated to: ${ApiConfig.currentHost}'),
+                                  backgroundColor: _blue,
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '💡 Tip: For USB debugging, run `adb reverse tcp:3000 tcp:3000` on your PC. For Wi-Fi, ensure your phone is connected to the same network.',
+                    style: TextStyle(fontSize: 11, color: textMuted, height: 1.3),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _presetChip({required String label, required VoidCallback onTap, required bool isSelected}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? _blue : _blue.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: isSelected ? Colors.white : _blue,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -194,53 +500,76 @@ Ask anything or tap a prompt suggestion below to begin!''',
       appBar: AppBar(
         backgroundColor: cardBg,
         elevation: 0.5,
-        title: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [_blue, Color(0xff818cf8)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'NEXUS Mobile AI',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        title: InkWell(
+          onTap: _openServerConfigDialog,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [_blue, Color(0xff818cf8)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  Row(
+                  child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Color(0xff10b981),
-                          shape: BoxShape.circle,
-                        ),
+                      const Text(
+                        'NEXUS Mobile AI',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
                       ),
-                      const SizedBox(width: 5),
-                      Text(
-                        '100% Offline • Zero API Keys',
-                        style: TextStyle(fontSize: 10, color: textMuted, fontWeight: FontWeight.w600),
+                      Row(
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              color: _serverOnline ? const Color(0xff10b981) : const Color(0xffa855f7),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Flexible(
+                            child: Text(
+                              _serverStatusText,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                color: _serverOnline ? const Color(0xff10b981) : textMuted,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
         actions: [
+          IconButton(
+            tooltip: 'Server Connection Settings',
+            onPressed: _openServerConfigDialog,
+            icon: Icon(
+              Icons.settings_ethernet_rounded,
+              size: 20,
+              color: _serverOnline ? const Color(0xff10b981) : _blue,
+            ),
+          ),
           IconButton(
             tooltip: 'Clear conversation',
             onPressed: _isSending ? null : _clearChat,
@@ -516,7 +845,7 @@ Ask anything or tap a prompt suggestion below to begin!''',
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'Streaming response from local neural network...',
+                      'Synthesizing response...',
                       style: TextStyle(fontSize: 12, color: textMuted),
                     ),
                   ],
@@ -572,7 +901,9 @@ Ask anything or tap a prompt suggestion below to begin!''',
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => _send(),
               decoration: InputDecoration(
-                hintText: 'Ask NEXUS anything (100% Offline)...',
+                hintText: _serverOnline
+                    ? 'Ask NEXUS (Streaming Llama 3.2)...'
+                    : 'Ask NEXUS (100% Offline ML Mode)...',
                 hintStyle: TextStyle(fontSize: 13, color: textMuted),
                 filled: true,
                 fillColor: isDark ? const Color(0xff131c2e) : const Color(0xfff8fafc),
@@ -611,14 +942,12 @@ Ask anything or tap a prompt suggestion below to begin!''',
 class _ChatMessage {
   final String text;
   final bool fromUser;
-  final bool isError;
   final String? model;
   final List<String> reasoningSteps;
 
   const _ChatMessage(
     this.text,
     this.fromUser, {
-    this.isError = false,
     this.model,
     this.reasoningSteps = const [],
   });

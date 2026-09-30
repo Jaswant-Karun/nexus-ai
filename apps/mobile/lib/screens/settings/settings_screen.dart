@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../guide/how_to_use_screen.dart';
 import '../tokens/token_screen.dart';
+import 'api_settings.dart';
+import '../../config/api_config.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback? onThemeToggle;
@@ -552,6 +554,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   );
                 },
                 child: const Text('Open', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Server & Backend Host Configuration Card
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: cardBorder, width: 1.2),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: _blue.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.dns_rounded, color: _blue, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Server & API Connection', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textPrimary)),
+                    Text('Host: ${ApiConfig.currentHost} (Port 3000 & 8000)', style: TextStyle(color: textMuted, fontSize: 11)),
+                  ],
+                ),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: _blue,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ApiSettingsScreen()),
+                  ).then((_) => setState(() {}));
+                },
+                child: const Text('Configure', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
