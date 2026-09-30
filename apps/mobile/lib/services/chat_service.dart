@@ -14,7 +14,7 @@ class ChatService {
     required String sessionId,
     required List<Map<String, String>> history,
     required void Function(Map<String, dynamic> event) onEvent,
-    Duration timeout = const Duration(milliseconds: 2800),
+    Duration timeout = const Duration(seconds: 8),
   }) async {
     final uri = Uri.parse(ApiConfig.nexusAgentStreamUrl);
     final request = http.Request('POST', uri)
@@ -79,6 +79,7 @@ class ChatService {
     void Function(List<String> steps)? onThinking,
     void Function(String delta)? onDelta,
     void Function(String source)? onSourceResolved,
+    void Function(String sampleId)? onSampleIdResolved,
   }) async {
     // 1. If user selected On-Device ML or requested offline mode, run ML engine immediately
     if (forceOffline || selectedModel == 'NEXUS ML-Core') {
@@ -92,6 +93,7 @@ class ChatService {
     }
 
     final StringBuffer fullResponse = StringBuffer();
+    String? capturedModel;
 
     // 2. Primary: Next.js NEXUS Agent local stream over LAN/Host with lean 2.8s timeout
     try {
@@ -99,7 +101,7 @@ class ChatService {
         message: message,
         sessionId: sessionId,
         history: history,
-        timeout: const Duration(milliseconds: 2800),
+        timeout: const Duration(seconds: 8),
         onEvent: (event) {
           final type = event['type'];
           if (type == 'thinking' && event['steps'] is List) {
@@ -112,6 +114,12 @@ class ChatService {
             fullResponse.write(delta);
             onDelta?.call(delta);
           } else if (type == 'done') {
+            if (event['sample_id'] is String) {
+              onSampleIdResolved?.call(event['sample_id'] as String);
+            }
+            if (event['model_used'] is String) {
+              capturedModel = event['model_used'] as String;
+            }
             if (fullResponse.isEmpty && event['reflection'] is String) {
               final refl = event['reflection'] as String;
               fullResponse.write(refl);
@@ -123,7 +131,7 @@ class ChatService {
 
       final result = fullResponse.toString().trim();
       if (result.isNotEmpty) {
-        onSourceResolved?.call('Llama 3.2 (Server Live)');
+        onSourceResolved?.call(capturedModel ?? 'Llama 3.2 (Server Live)');
         return result;
       }
     } catch (_) {
@@ -196,6 +204,29 @@ class ChatService {
     }
 
     return mlResult.response;
+  }
+
+  /// Sends user feedback (thumbs up/down) to the server for model training and dataset collection
+  Future<bool> sendFeedback({
+    required String sampleId,
+    required int rating, // 1 for thumbs up, -1 for thumbs down
+    String? feedback,
+  }) async {
+    try {
+      final uri = Uri.parse(ApiConfig.feedbackUrl);
+      final res = await _client.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'sample_id': sampleId,
+          'rating': rating,
+          if (feedback != null) 'feedback': feedback,
+        }),
+      ).timeout(const Duration(seconds: 4));
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
   }
 
   void dispose() => _client.close();

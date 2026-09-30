@@ -374,6 +374,158 @@ How may I assist you today?''';
       );
     }
 
+    // ── Intent 6: Databases & SQL (PostgreSQL, Queries, Schema, Indexing)
+    final isDb = RegExp(r'\b(database|sql|postgres|postgresql|query|join|table|index|indexes|prisma|schema|migration|sqlite|crud)\b', caseSensitive: false).hasMatch(rawQuery);
+    if (isDb) {
+      final response = '''## Database Architecture & Query Optimization: PostgreSQL & Schema Design
+
+### 1. Architectural Foundation
+Relational databases rely on ACID compliance, normalized entity-relationship structures, and B-Tree indexing to guarantee fast retrieval and transactional durability.
+
+### 2. High-Performance SQL Implementation
+
+```sql
+-- Optimized User Activity Index & Query Pattern
+CREATE INDEX IF NOT EXISTS idx_chat_samples_created 
+  ON "ChatTrainingSample" ("createdAt" DESC, "rating");
+
+-- High-throughput aggregation query with index scan
+SELECT 
+    domain,
+    COUNT(*) AS total_samples,
+    COUNT(*) FILTER (WHERE rating = 1) AS positive_feedback,
+    ROUND(AVG("elapsedSec")::numeric, 2) AS avg_latency_sec
+FROM "ChatTrainingSample"
+GROUP BY domain
+ORDER BY total_samples DESC
+LIMIT 10;
+```
+
+### 3. Optimization Rules
+1. **Index Coverage**: Index columns present in `WHERE`, `ORDER BY`, and foreign key `JOIN` clauses.
+2. **Prevent N+1 Queries**: Use Prisma `include`/`select` or SQL `JOIN` rather than querying relationships in iterative loops.
+3. **Connection Pooling**: Use PgBouncer or `pg.Pool` to maintain persistent reuse and prevent socket saturation.
+
+💡 **Key Takeaway**: Normalize schemas for data integrity, index high-frequency query paths, and measure execution plans with `EXPLAIN ANALYZE`.''';
+
+      stopwatch.stop();
+      return _buildResult(
+        intent: 'database_engineering',
+        domain: 'architecture',
+        confidence: 0.981,
+        query: rawQuery,
+        response: response,
+        elapsedSeconds: stopwatch.elapsedMilliseconds / 1000.0,
+      );
+    }
+
+    // ── Intent 7: Flutter & Mobile Architecture
+    final isFlutter = RegExp(r'\b(flutter|dart|widget|stateful|stateless|buildcontext|apk|android|ios|state management)\b', caseSensitive: false).hasMatch(rawQuery);
+    if (isFlutter) {
+      final response = '''## Flutter Mobile Architecture & Reactive State Engineering
+
+### 1. Component Lifecycle & Widget Hierarchy
+Flutter applications compose immutable `Widget` trees rebuilt reactively when underlying state changes occur:
+
+- **StatelessWidget**: Pure UI view derived strictly from constructor parameters.
+- **StatefulWidget**: Encapsulates mutable `State` persisted across framework reconciliation passes.
+- **InheritedWidget / ValueListenable**: Propagates targeted notifications down the element tree without rebuilding parent hierarchies.
+
+### 2. Best-Practice Implementation Example
+
+```dart
+import 'package:flutter/material.dart';
+
+class ReactiveStatusBadge extends StatelessWidget {
+  final ValueNotifier<bool> isLiveNotifier;
+  final VoidCallback onRefresh;
+
+  const ReactiveStatusBadge({
+    super.key,
+    required this.isLiveNotifier,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isLiveNotifier,
+      builder: (context, isLive, _) {
+        return GestureDetector(
+          onTap: onRefresh,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: isLive ? const Color(0xff10b981) : const Color(0xfff59e0b),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              isLive ? '🟢 System Live' : '⚡ Offline ML Mode',
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+```
+
+### 3. Production Guidelines
+1. **Keep `build()` Pure**: Never initiate async network calls, timers, or heavy allocations inside `build()`.
+2. **Keyed Lists**: Always provide unique `ValueKey` or `ObjectKey` for dynamic lists to preserve scroll position and animation states.
+
+💡 **Key Takeaway**: Isolate mutable state with `ValueNotifier` or scoped providers to prevent full-screen rebuilds and maintain 60/120 FPS render performance.''';
+
+      stopwatch.stop();
+      return _buildResult(
+        intent: 'flutter_mobile_architecture',
+        domain: 'code',
+        confidence: 0.988,
+        query: rawQuery,
+        response: response,
+        elapsedSeconds: stopwatch.elapsedMilliseconds / 1000.0,
+      );
+    }
+
+    // ── Intent 8: Mathematics, Calculus & Logic
+    final isMath = RegExp(r'\b(math|calculus|derivative|integral|matrix|probability|algebra|linear algebra|statistic|formula|equation)\b', caseSensitive: false).hasMatch(rawQuery);
+    if (isMath) {
+      final response = '''## Mathematical Foundations: Analytical Formulation & Derivation
+
+### 1. Mathematical Statement & Formulation
+For your query regarding **"$rawQuery"**, we formalize the underlying analytical framework:
+
+- **Domain**: Multidimensional real space \$\\mathbb{R}^n\$
+- **Objective Operator**: \$\\mathcal{L}(x): \\mathbb{R}^n \\to \\mathbb{R}\$
+- **Gradient Vector**: \$\\nabla \\mathcal{L} = \\left[ \\frac{\\partial \\mathcal{L}}{\\partial x_1}, \\dots, \\frac{\\partial \\mathcal{L}}{\\partial x_n} \\right]^T\$
+
+### 2. Step-by-Step Derivation
+1. **First-Order Necessary Condition**: Stationary points occur where the gradient vanishes:
+   \$\$\\nabla \\mathcal{L}(x^*) = \\mathbf{0}\$\$
+2. **Second-Order Curvature (Hessian Matrix)**:
+   \$\$\\mathbf{H}_{ij} = \\frac{\\partial^2 \\mathcal{L}}{\\partial x_i \\partial x_j}\$\$
+   - If \$\\mathbf{H} \\succ 0\$ (positive-definite), \$x^*\$ is a strict local minimum.
+3. **Iterative Approximation**:
+   \$\$x_{t+1} = x_t - \\eta \\cdot \\nabla \\mathcal{L}(x_t)\$\$
+
+### 3. Numerical Verification
+- **Convergence Rate**: Lipschitz continuous gradients guarantee \$\\mathcal{O}(1/t)\$ convergence with constant step size \$\\eta < 1/L\$.
+
+💡 **Key Takeaway**: Continuous optimization combines convex analytical bounds with gradient vector projections to find globally stable solutions.''';
+
+      stopwatch.stop();
+      return _buildResult(
+        intent: 'mathematics_logic',
+        domain: 'math',
+        confidence: 0.979,
+        query: rawQuery,
+        response: response,
+        elapsedSeconds: stopwatch.elapsedMilliseconds / 1000.0,
+      );
+    }
+
     // ── Default: Open-domain Dynamic Synthesis
     final title = rawQuery.trim().replaceAll(RegExp(r'[?!.]+$'), '');
     final capitalized = title.isNotEmpty ? '${title[0].toUpperCase()}${title.substring(1)}' : 'Inquiry';
@@ -382,22 +534,23 @@ How may I assist you today?''';
 
     final response = '''## Detailed Analysis: $capitalized
 
-### 1. Core Principles & Definition
-Regarding **"$rawQuery"**, this subject pertains directly to understanding $termsDisplay within modern computational and analytical systems.
+### 1. Direct Overview
+Regarding **"$rawQuery"**, this concept centers on $termsDisplay within intelligent software and system engineering.
 
-### 2. Analytical Breakdown
-| Dimension | Focus Area | Impact & Implementation |
+### 2. Systematic Evaluation Matrix
+
+| Core Attribute | Principle | Practical Application |
 | :--- | :--- | :--- |
-| **Core Objective** | Fundamental Goal | Solves key functional requirements and establishes deterministic behavior. |
-| **Architecture** | System Design | Ensures maintainability, loose coupling, and robust error handling. |
-| **Efficiency** | Performance & Scale | Optimizes algorithmic complexity and system resource utilization. |
+| **Primary Purpose** | Solves core functional requirements | Ensures reliable, predictable execution |
+| **System Reliability** | Graceful degradation & failover | Works seamlessly both online & 100% offline |
+| **Data Integrity** | Continuous state synchronization | Captures and persists user data for continuous learning |
 
-### 3. Practical Recommendations
-1. **Structural Clarity**: Clearly delineate inputs, transformations, and output contracts.
-2. **Defensive Design**: Validate boundaries, handle exceptional states, and maintain predictability.
-3. **Iterative Verification**: Test against standard benchmarks and real-world edge cases.
+### 3. Actionable Next Steps
+1. **Verification**: Confirm operational prerequisites and verify network endpoint status.
+2. **Data Tracking**: Record metrics, latency, and user feedback into your training dataset.
+3. **Continuous Deployment**: Validate changes against automated test suites before live rollouts.
 
-💡 **Key Takeaway**: **$capitalized** requires balancing precise structural definitions with scalable, practical execution.''';
+💡 **Key Takeaway**: Successful execution of **$capitalized** depends on structured architecture, fast failover, and active verification of live endpoints.''';
 
     stopwatch.stop();
     return _buildResult(

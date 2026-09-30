@@ -147,14 +147,42 @@ Ask anything or tap a prompt suggestion below to begin!''',
     });
   }
 
+  Future<void> _submitFeedback(_ChatMessage message, int rating) async {
+    final idx = _messages.indexOf(message);
+    if (idx == -1) return;
+
+    setState(() {
+      _messages[idx] = message.copyWith(rating: rating);
+    });
+    _saveChatHistory();
+
+    if (message.sampleId != null) {
+      final ok = await _chatService.sendFeedback(
+        sampleId: message.sampleId!,
+        rating: rating,
+      );
+      if (mounted && ok) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(rating == 1
+                ? '👍 Thanks! Feedback recorded for training NEXUS AI.'
+                : '👎 Feedback recorded. We will improve this response.'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: const Color(0xff1e293b),
+          ),
+        );
+      }
+    }
+  }
+
   void _send([String? customText]) {
     final text = customText ?? _inputController.text.trim();
     if (text.isEmpty || _isSending) return;
 
-    final forceOffline = _forceOfflineMode || _selectedModel == 'NEXUS ML-Core' || !_serverOnline;
+    final forceOffline = _forceOfflineMode || _selectedModel == 'NEXUS ML-Core';
     final initialModelLabel = forceOffline
         ? 'NEXUS ML-Core (On-Device)'
-        : (_serverOnline ? 'Llama 3.2 (Live)' : 'NEXUS ML-Core (On-Device)');
+        : (_serverOnline ? 'Llama 3.2 (Live)' : 'NEXUS Agent (Connecting...)');
     final userMsg = _ChatMessage(text, true);
     final assistantMsg = _ChatMessage('', false, model: initialModelLabel);
 
@@ -181,6 +209,7 @@ Ask anything or tap a prompt suggestion below to begin!''',
         .toList();
 
     String resolvedModel = initialModelLabel;
+    String? resolvedSampleId;
 
     _chatService.sendMessage(
       message: text,
@@ -193,12 +222,23 @@ Ask anything or tap a prompt suggestion below to begin!''',
         if (mounted) {
           setState(() {
             final last = _messages.last;
-            _messages[_messages.length - 1] = _ChatMessage(
-              last.text,
-              false,
+            _messages[_messages.length - 1] = last.copyWith(
               model: resolvedModel,
               reasoningSteps: List.from(_currentReasoningSteps),
             );
+            if (source.contains('Live') || source.contains('Llama') || source.contains('Cloud')) {
+              _serverOnline = true;
+              _serverStatusText = 'Server Online • $source';
+            }
+          });
+        }
+      },
+      onSampleIdResolved: (sampleId) {
+        resolvedSampleId = sampleId;
+        if (mounted) {
+          setState(() {
+            final last = _messages.last;
+            _messages[_messages.length - 1] = last.copyWith(sampleId: sampleId);
           });
         }
       },
@@ -213,11 +253,11 @@ Ask anything or tap a prompt suggestion below to begin!''',
         if (mounted) {
           setState(() {
             final last = _messages.last;
-            _messages[_messages.length - 1] = _ChatMessage(
-              last.text + delta,
-              false,
+            _messages[_messages.length - 1] = last.copyWith(
+              text: last.text + delta,
               model: resolvedModel,
               reasoningSteps: List.from(_currentReasoningSteps),
+              sampleId: resolvedSampleId,
             );
           });
           _scrollToBottom();
@@ -228,11 +268,11 @@ Ask anything or tap a prompt suggestion below to begin!''',
         setState(() {
           final last = _messages.last;
           if (last.text.trim().isEmpty) {
-            _messages[_messages.length - 1] = _ChatMessage(
-              finalText,
-              false,
+            _messages[_messages.length - 1] = last.copyWith(
+              text: finalText,
               model: resolvedModel,
               reasoningSteps: List.from(_currentReasoningSteps),
+              sampleId: resolvedSampleId,
             );
           }
           _isSending = false;
@@ -242,7 +282,7 @@ Ask anything or tap a prompt suggestion below to begin!''',
         StreakService.incrementActivityCount();
       }
     }).catchError((_) {
-      // In the extremely rare event that an unhandled exception occurred, fallback to on-device engine
+      // Safety fallback to on-device engine
       final fallback = LocalMlEngine.infer(text);
       if (mounted) {
         setState(() {
@@ -963,6 +1003,89 @@ Ask anything or tap a prompt suggestion below to begin!''',
                   tableBody: TextStyle(color: textPrimary, fontSize: 12),
                 ),
               ),
+
+            // User Feedback for AI Model Training
+            if (!isGenerating && message.text.isNotEmpty && !message.fromUser) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Text(
+                    'Train AI:',
+                    style: TextStyle(fontSize: 10.5, color: textMuted, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () => _submitFeedback(message, 1),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: message.rating == 1
+                            ? const Color(0xff10b981).withValues(alpha: 0.2)
+                            : Colors.transparent,
+                        border: Border.all(
+                          color: message.rating == 1 ? const Color(0xff10b981) : cardBorder,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.thumb_up_rounded,
+                            size: 12,
+                            color: message.rating == 1 ? const Color(0xff10b981) : textMuted,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Good',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: message.rating == 1 ? const Color(0xff10b981) : textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: () => _submitFeedback(message, -1),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: message.rating == -1
+                            ? const Color(0xffef4444).withValues(alpha: 0.2)
+                            : Colors.transparent,
+                        border: Border.all(
+                          color: message.rating == -1 ? const Color(0xffef4444) : cardBorder,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.thumb_down_rounded,
+                            size: 12,
+                            color: message.rating == -1 ? const Color(0xffef4444) : textMuted,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Needs Work',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: message.rating == -1 ? const Color(0xffef4444) : textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -1029,19 +1152,42 @@ class _ChatMessage {
   final bool fromUser;
   final String? model;
   final List<String> reasoningSteps;
+  final String? sampleId;
+  final int? rating;
 
   const _ChatMessage(
     this.text,
     this.fromUser, {
     this.model,
     this.reasoningSteps = const [],
+    this.sampleId,
+    this.rating,
   });
+
+  _ChatMessage copyWith({
+    String? text,
+    bool? fromUser,
+    String? model,
+    List<String>? reasoningSteps,
+    String? sampleId,
+    int? rating,
+  }) =>
+      _ChatMessage(
+        text ?? this.text,
+        fromUser ?? this.fromUser,
+        model: model ?? this.model,
+        reasoningSteps: reasoningSteps ?? this.reasoningSteps,
+        sampleId: sampleId ?? this.sampleId,
+        rating: rating ?? this.rating,
+      );
 
   Map<String, dynamic> toJson() => {
         'text': text,
         'fromUser': fromUser,
         'model': model,
         'reasoningSteps': reasoningSteps,
+        'sampleId': sampleId,
+        'rating': rating,
       };
 
   factory _ChatMessage.fromJson(Map<String, dynamic> json) => _ChatMessage(
@@ -1052,5 +1198,7 @@ class _ChatMessage {
                 ?.map((e) => e.toString())
                 .toList() ??
             const [],
+        sampleId: json['sampleId'] as String?,
+        rating: json['rating'] as int?,
       );
 }

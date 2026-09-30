@@ -106,3 +106,8 @@ export type AiProcessingJob = Prisma.AiProcessingJobModel
  * 
  */
 export type AccessLog = Prisma.AccessLogModel
+/**
+ * Model ChatTrainingSample
+ * 
+ */
+export type ChatTrainingSample = Prisma.ChatTrainingSampleModel

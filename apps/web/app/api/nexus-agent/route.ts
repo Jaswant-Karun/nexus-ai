@@ -17,8 +17,9 @@
 
 import { NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { streamChat } from "@/lib/ai/nexus";
+import { streamChat, anyProvidersConfigured } from "@/lib/ai/nexus";
 import { classifyAndInfer } from "@/lib/ai/local-ml-engine";
+import { prisma } from "@/lib/prisma";
 
 export const runtime    = "nodejs";
 export const maxDuration = 120;
@@ -157,6 +158,53 @@ const REFLECTIONS: Record<string, string> = {
   general:      "Verified: comprehensive and well-structured response.",
 };
 
+// ─── Training Data Collector (Database Persistence) ──────────────────────────
+async function recordTrainingSample({
+  prompt,
+  response,
+  systemPrompt,
+  model,
+  domain,
+  source = "mobile",
+  tokensUsed,
+  elapsedSec,
+  sessionId,
+  userId,
+}: {
+  prompt: string;
+  response: string;
+  systemPrompt?: string;
+  model: string;
+  domain: string;
+  source?: string;
+  tokensUsed?: number;
+  elapsedSec?: number;
+  sessionId?: string;
+  userId?: string;
+}): Promise<string | null> {
+  try {
+    const created = await prisma.chatTrainingSample.create({
+      data: {
+        prompt,
+        response,
+        systemPrompt: systemPrompt ?? null,
+        model,
+        domain,
+        source,
+        tokensUsed: tokensUsed ?? Math.max(1, Math.round(response.length / 4)),
+        elapsedSec: elapsedSec ?? 0.5,
+        sessionId: sessionId ?? null,
+        userId: userId ?? null,
+      },
+      select: { id: true },
+    });
+    return created.id;
+  } catch (err) {
+    console.error("[TrainingDataCollector] Non-fatal DB recording notice:", err);
+    return null;
+  }
+}
+
 export async function OPTIONS() {
   return new Response(null, {
     status: 204,
@@ -184,6 +232,7 @@ export async function POST(req: NextRequest) {
     message?:    string;
     history?:    { role: string; content: string }[];
     session_id?: string;
+    source?:     string;
   };
   try {
     body = await req.json() as typeof body;
@@ -204,7 +253,7 @@ export async function POST(req: NextRequest) {
   const domain = detectDomain(message);
   const steps  = getSteps(message, domain);
 
-  // Build message history for Ollama
+  // Build message history for Ollama & Providers
   const systemContent = NEXUS_SYSTEM + (DOMAIN_INSTR[domain] ?? DOMAIN_INSTR.general);
   const history = (body.history ?? [])
     .filter(m => m.role === "user" || m.role === "assistant")
@@ -218,138 +267,185 @@ export async function POST(req: NextRequest) {
 
   const startTime = Date.now();
   const encoder   = new TextEncoder();
+  const clientSource = body.source ?? (req.headers.get("user-agent")?.toLowerCase().includes("dart") ? "mobile" : "web");
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const send = (data: Record<string, unknown>) =>
         controller.enqueue(encoder.encode(sse(data)));
 
+      let fullResponse = "";
+      let modelUsed = "Llama 3.2";
+      let totalTokens = 0;
+
       try {
-        // 1. Send reasoning steps immediately (instant — no model call)
+        // 1. Send reasoning steps immediately
         send({ type: "thinking", steps });
 
-        // 2. Check Ollama is running, otherwise execute 100% Offline Permanent ML-Core Engine (Zero API Keys)
+        // 2. Check if Ollama is running locally
         const { available, model: foundModel, baseUrl: activeBaseUrl } = await checkOllama();
-        if (!available) {
+
+        if (available) {
+          // Stream Ollama response
+          const ollamaRes = await fetch(`${activeBaseUrl}/api/chat`, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model:    foundModel || OLLAMA_MODEL,
+              messages: ollamaMessages,
+              stream:   true,
+              options: {
+                temperature:    0.7,
+                num_predict:    2048,
+                top_p:          0.9,
+                repeat_penalty: 1.1,
+                num_ctx:        4096,
+              },
+            }),
+            signal: AbortSignal.timeout(120_000),
+          });
+
+          if (ollamaRes.ok && ollamaRes.body) {
+            modelUsed = foundModel || OLLAMA_MODEL;
+            const reader  = ollamaRes.body.getReader();
+            const decoder = new TextDecoder();
+            let   buffer  = "";
+
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() ?? "";
+
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed) continue;
+                try {
+                  const chunk = JSON.parse(trimmed) as {
+                    message?:          { content?: string };
+                    done?:             boolean;
+                    prompt_eval_count?: number;
+                    eval_count?:       number;
+                  };
+
+                  const text = chunk.message?.content ?? "";
+                  if (text) {
+                    fullResponse += text;
+                    send({ type: "delta", content: text });
+                  }
+
+                  if (chunk.done) {
+                    totalTokens = (chunk.prompt_eval_count ?? 0) + (chunk.eval_count ?? 0);
+                  }
+                } catch { /* skip malformed line */ }
+              }
+            }
+          }
+        }
+
+        // 3. Fallback: If Ollama produced no text, check configured cloud providers (Gemini, Claude, GPT)
+        if (!fullResponse && anyProvidersConfigured()) {
+          modelUsed = "NEXUS Cloud Intelligence";
+          const chatReqMessages = [
+            { role: "system" as const, content: systemContent },
+            ...history.map(h => ({ role: (h.role === "assistant" ? "assistant" : "user") as "user" | "assistant", content: h.content })),
+            { role: "user" as const, content: message },
+          ];
+
+          for await (const chunk of streamChat({ model: "auto", messages: chatReqMessages })) {
+            if (chunk.type === "delta" && chunk.content) {
+              fullResponse += chunk.content;
+              send({ type: "delta", content: chunk.content });
+            } else if (chunk.type === "done") {
+              if (chunk.model) modelUsed = chunk.model;
+              if (chunk.usage) totalTokens = chunk.usage.totalTokens;
+            }
+          }
+        }
+
+        // 4. Final Fallback: Autonomous On-Device ML-Core Engine
+        if (!fullResponse) {
+          modelUsed = "NEXUS ML-Core Engine (Autonomous)";
           const mlResult = classifyAndInfer(message);
           send({ type: "thinking", steps: mlResult.reasoningSteps });
 
           const words = mlResult.response.split(" ");
           for (let i = 0; i < words.length; i += 3) {
             const chunk = words.slice(i, i + 3).join(" ") + (i + 3 < words.length ? " " : "");
+            fullResponse += chunk;
             send({ type: "delta", content: chunk });
             await new Promise((r) => setTimeout(r, 12));
           }
-
-          const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-          send({
-            type: "done",
-            domain: mlResult.domain,
-            tokens_used: mlResult.tokensCount,
-            model_used: "NEXUS ML-Core Engine (100% Offline • Zero API Keys)",
-            elapsed_seconds: Number(elapsed),
-            reflection: mlResult.reflection,
-          });
-          controller.close();
-          return;
+          totalTokens = mlResult.tokensCount;
         }
 
-        // 3. Stream Ollama response
-        const ollamaRes = await fetch(`${activeBaseUrl}/api/chat`, {
-          method:  "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model:    foundModel || OLLAMA_MODEL,
-            messages: ollamaMessages,
-            stream:   true,
-            options: {
-              temperature:    0.7,
-              num_predict:    2048,
-              top_p:          0.9,
-              repeat_penalty: 1.1,
-              num_ctx:        4096,
-            },
-          }),
-          signal: AbortSignal.timeout(120_000),
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+        const elapsedSec = parseFloat(elapsed);
+
+        // 5. Collect User Data & Save to Database for Training / Feedback
+        const sampleId = await recordTrainingSample({
+          prompt: message,
+          response: fullResponse,
+          systemPrompt: systemContent,
+          model: modelUsed,
+          domain,
+          source: clientSource,
+          tokensUsed: totalTokens || Math.max(1, Math.round(fullResponse.length / 4)),
+          elapsedSec,
+          sessionId: body.session_id,
+          userId: user.sub,
         });
 
-        if (!ollamaRes.ok || !ollamaRes.body) {
-          send({ type: "error", error: `Ollama returned HTTP ${ollamaRes.status}` });
-          controller.close();
-          return;
-        }
-
-        // 4. Stream token chunks from Ollama NDJSON
-        const reader  = ollamaRes.body.getReader();
-        const decoder = new TextDecoder();
-        let   buffer  = "";
-        let   totalTokens   = 0;
-        let   fullResponse  = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() ?? "";
-
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed) continue;
-            try {
-              const chunk = JSON.parse(trimmed) as {
-                message?:          { content?: string };
-                done?:             boolean;
-                prompt_eval_count?: number;
-                eval_count?:       number;
-              };
-
-              const text = chunk.message?.content ?? "";
-              if (text) {
-                fullResponse += text;
-                send({ type: "delta", content: text });
-              }
-
-              if (chunk.done) {
-                totalTokens = (chunk.prompt_eval_count ?? 0) + (chunk.eval_count ?? 0);
-              }
-            } catch { /* skip malformed line */ }
-          }
-        }
-
-        // 5. Send done event with metadata
-        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+        // 6. Send done event with metadata and sample ID for feedback
         send({
           type:             "done",
+          sample_id:        sampleId,
           domain,
-          tokens_used:      totalTokens || Math.round(fullResponse.length / 4),
-          model_used:       foundModel || OLLAMA_MODEL,
-          provider:         "ollama",
-          elapsed_seconds:  parseFloat(elapsed),
+          tokens_used:      totalTokens || Math.max(1, Math.round(fullResponse.length / 4)),
+          model_used:       modelUsed,
+          provider:         modelUsed.includes("Llama") ? "ollama" : "nexus_multi_model",
+          elapsed_seconds:  elapsedSec,
           reflection:       REFLECTIONS[domain] ?? REFLECTIONS.general,
           from_knowledge_base: false,
         });
 
       } catch (err) {
-        // Transparent fallback to NEXUS ML-Core Engine
+        // Transparent safety fallback
         const mlResult = classifyAndInfer(message);
         send({ type: "thinking", steps: mlResult.reasoningSteps });
 
         const words = mlResult.response.split(" ");
         for (let i = 0; i < words.length; i += 3) {
           const chunk = words.slice(i, i + 3).join(" ") + (i + 3 < words.length ? " " : "");
+          fullResponse += chunk;
           send({ type: "delta", content: chunk });
           await new Promise((r) => setTimeout(r, 12));
         }
 
         const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        const elapsedSec = Number(elapsed);
+
+        const sampleId = await recordTrainingSample({
+          prompt: message,
+          response: fullResponse,
+          model: "NEXUS ML-Core Engine (Safety Fallback)",
+          domain,
+          source: clientSource,
+          tokensUsed: mlResult.tokensCount,
+          elapsedSec,
+          sessionId: body.session_id,
+          userId: user.sub,
+        });
+
         send({
           type: "done",
+          sample_id: sampleId,
           domain: mlResult.domain,
           tokens_used: mlResult.tokensCount,
           model_used: "NEXUS ML-Core Engine (100% Offline • Zero API Keys)",
-          elapsed_seconds: Number(elapsed),
+          elapsed_seconds: elapsedSec,
           reflection: mlResult.reflection,
         });
       } finally {

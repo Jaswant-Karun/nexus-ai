@@ -63,7 +63,8 @@ export const ModelName = {
   FileVersion: 'FileVersion',
   FileShare: 'FileShare',
   AiProcessingJob: 'AiProcessingJob',
-  AccessLog: 'AccessLog'
+  AccessLog: 'AccessLog',
+  ChatTrainingSample: 'ChatTrainingSample'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -288,6 +289,26 @@ export const AccessLogScalarFieldEnum = {
 } as const
 
 export type AccessLogScalarFieldEnum = (typeof AccessLogScalarFieldEnum)[keyof typeof AccessLogScalarFieldEnum]
+
+
+export const ChatTrainingSampleScalarFieldEnum = {
+  id: 'id',
+  prompt: 'prompt',
+  response: 'response',
+  systemPrompt: 'systemPrompt',
+  model: 'model',
+  domain: 'domain',
+  source: 'source',
+  rating: 'rating',
+  feedback: 'feedback',
+  tokensUsed: 'tokensUsed',
+  elapsedSec: 'elapsedSec',
+  sessionId: 'sessionId',
+  userId: 'userId',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatTrainingSampleScalarFieldEnum = (typeof ChatTrainingSampleScalarFieldEnum)[keyof typeof ChatTrainingSampleScalarFieldEnum]
 
 
 export const SortOrder = {

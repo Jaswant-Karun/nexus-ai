@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "dev:clean": "rimraf .next .turbo && next dev",
+    "dev": "next dev -H 0.0.0.0 -p 3000",
+    "dev:clean": "rimraf .next .turbo && next dev -H 0.0.0.0 -p 3000",
     "build": "prisma generate --schema=prisma/schema.prisma && next build",
     "start": "next start",
     "lint": "next lint",

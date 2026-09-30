@@ -279,3 +279,27 @@ model AccessLog {
   userAgent  String?
   createdAt  DateTime    @default(now())
 }
+
+// ─── AI Chat Training & User Feedback Collection ─────────────────────────────
+
+model ChatTrainingSample {
+  id           String    @id @default(cuid())
+  prompt       String    @db.Text
+  response     String    @db.Text
+  systemPrompt String?   @db.Text
+  model        String?
+  domain       String?
+  source       String?   @default("mobile") // "mobile", "web", "api"
+  rating       Int?      // 1 = thumbs up, -1 = thumbs down
+  feedback     String?
+  tokensUsed   Int?
+  elapsedSec   Float?
+  sessionId    String?
+  userId       String?
+  createdAt    DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([domain])
+  @@index([source])
+}
+

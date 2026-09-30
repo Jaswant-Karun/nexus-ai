@@ -409,7 +409,8 @@ export const ModelName = {
   FileVersion: 'FileVersion',
   FileShare: 'FileShare',
   AiProcessingJob: 'AiProcessingJob',
-  AccessLog: 'AccessLog'
+  AccessLog: 'AccessLog',
+  ChatTrainingSample: 'ChatTrainingSample'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -425,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "user" | "agent" | "conversation" | "message" | "workflow" | "knowledgeDocument" | "storageFolder" | "storageFile" | "fileVersion" | "fileShare" | "aiProcessingJob" | "accessLog"
+    modelProps: "organization" | "user" | "agent" | "conversation" | "message" | "workflow" | "knowledgeDocument" | "storageFolder" | "storageFile" | "fileVersion" | "fileShare" | "aiProcessingJob" | "accessLog" | "chatTrainingSample"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1391,6 +1392,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ChatTrainingSample: {
+      payload: Prisma.$ChatTrainingSamplePayload<ExtArgs>
+      fields: Prisma.ChatTrainingSampleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChatTrainingSampleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatTrainingSamplePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChatTrainingSampleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatTrainingSamplePayload>
+        }
+        findFirst: {
+          args: Prisma.ChatTrainingSampleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatTrainingSamplePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChatTrainingSampleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatTrainingSamplePayload>
+        }
+        findMany: {
+          args: Prisma.ChatTrainingSampleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatTrainingSamplePayload>[]
+        }
+        create: {
+          args: Prisma.ChatTrainingSampleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatTrainingSamplePayload>
+        }
+        createMany: {
+          args: Prisma.ChatTrainingSampleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChatTrainingSampleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatTrainingSamplePayload>[]
+        }
+        delete: {
+          args: Prisma.ChatTrainingSampleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatTrainingSamplePayload>
+        }
+        update: {
+          args: Prisma.ChatTrainingSampleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatTrainingSamplePayload>
+        }
+        deleteMany: {
+          args: Prisma.ChatTrainingSampleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChatTrainingSampleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChatTrainingSampleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatTrainingSamplePayload>[]
+        }
+        upsert: {
+          args: Prisma.ChatTrainingSampleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatTrainingSamplePayload>
+        }
+        aggregate: {
+          args: Prisma.ChatTrainingSampleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChatTrainingSample>
+        }
+        groupBy: {
+          args: Prisma.ChatTrainingSampleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatTrainingSampleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChatTrainingSampleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatTrainingSampleCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1636,6 +1711,26 @@ export const AccessLogScalarFieldEnum = {
 } as const
 
 export type AccessLogScalarFieldEnum = (typeof AccessLogScalarFieldEnum)[keyof typeof AccessLogScalarFieldEnum]
+
+
+export const ChatTrainingSampleScalarFieldEnum = {
+  id: 'id',
+  prompt: 'prompt',
+  response: 'response',
+  systemPrompt: 'systemPrompt',
+  model: 'model',
+  domain: 'domain',
+  source: 'source',
+  rating: 'rating',
+  feedback: 'feedback',
+  tokensUsed: 'tokensUsed',
+  elapsedSec: 'elapsedSec',
+  sessionId: 'sessionId',
+  userId: 'userId',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatTrainingSampleScalarFieldEnum = (typeof ChatTrainingSampleScalarFieldEnum)[keyof typeof ChatTrainingSampleScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2044,6 +2139,7 @@ export type GlobalOmitConfig = {
   fileShare?: Prisma.FileShareOmit
   aiProcessingJob?: Prisma.AiProcessingJobOmit
   accessLog?: Prisma.AccessLogOmit
+  chatTrainingSample?: Prisma.ChatTrainingSampleOmit
 }
 
 /* Types for Logging */
