@@ -17,6 +17,7 @@
     "@types/node": "22.10.2",
     "@types/react": "19.0.2",
     "@types/react-dom": "19.0.2",
+    "turbo": "2.10.7",
     "typescript": "5.7.2"
   }
 }
