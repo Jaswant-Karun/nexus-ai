@@ -4,6 +4,7 @@ import '../guide/how_to_use_screen.dart';
 import '../tokens/token_screen.dart';
 import 'api_settings.dart';
 import '../../config/api_config.dart';
+import '../../services/biometric_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback? onThemeToggle;
@@ -23,6 +24,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _hardwareAccel = true;
   bool _mfa = true;
   bool _rbac = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricSettings();
+  }
+
+  Future<void> _loadBiometricSettings() async {
+    final enabled = await BiometricService.isBiometricsEnabled();
+    if (mounted) {
+      setState(() => _biometric = enabled);
+    }
+  }
+
+  Future<void> _onBiometricChanged(bool enable) async {
+    if (enable) {
+      final res = await BiometricService.authenticate(
+        reason: 'Authenticate to enable Biometric Protection',
+      );
+      if (!mounted) return;
+      if (res.success) {
+        setState(() => _biometric = true);
+        await BiometricService.setBiometricsEnabled(true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Biometric authentication enabled successfully.'),
+            backgroundColor: Color(0xff10b981),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        setState(() => _biometric = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res.message),
+            backgroundColor: const Color(0xffef4444),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      setState(() => _biometric = false);
+      await BiometricService.setBiometricsEnabled(false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Biometric authentication disabled.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 
   final Map<String, bool> _integrations = {
     'Slack': true,
@@ -646,7 +698,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: Text('Secure access using Face ID or device fingerprint.', style: TextStyle(fontSize: 11, color: textMuted)),
                 value: _biometric,
                 activeThumbColor: _blue,
-                onChanged: (v) => setState(() => _biometric = v),
+                onChanged: _onBiometricChanged,
               ),
               Divider(height: 16, color: cardBorder),
               SwitchListTile(

@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../config/api_config.dart';
 import '../../core/local_ml_engine.dart';
 import '../../services/chat_service.dart';
+import '../../services/streak_service.dart';
 
 class ChatScreenPage extends StatefulWidget {
   const ChatScreenPage({super.key});
@@ -25,6 +28,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> with AutomaticKeepAlive
   String _selectedModel = 'Llama 3.2';
   bool _showReasoning = true;
   bool _serverOnline = false;
+  bool _forceOfflineMode = false;
   String _serverStatusText = 'Checking server...';
   int? _serverLatencyMs;
 
@@ -41,6 +45,8 @@ class _ChatScreenPageState extends State<ChatScreenPage> with AutomaticKeepAlive
     'Explain how neural networks learn',
     'Design a REST API for a todo app',
   ];
+
+  static const String _prefChatHistoryKey = 'nexus_mobile_chat_history_v2';
 
   /* Persistent across tab switches, screen rebuilds and route transitions */
   static final List<_ChatMessage> _persistedMessages = [
@@ -70,7 +76,37 @@ Ask anything or tap a prompt suggestion below to begin!''',
   @override
   void initState() {
     super.initState();
+    _loadChatHistory();
     _checkServerStatus();
+  }
+
+  Future<void> _loadChatHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedJson = prefs.getString(_prefChatHistoryKey);
+      if (savedJson != null && savedJson.trim().isNotEmpty) {
+        final decoded = jsonDecode(savedJson);
+        if (decoded is List && decoded.isNotEmpty) {
+          final loaded = decoded
+              .map((item) => _ChatMessage.fromJson(item as Map<String, dynamic>))
+              .toList();
+          if (mounted) {
+            setState(() {
+              _persistedMessages.clear();
+              _persistedMessages.addAll(loaded);
+            });
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveChatHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final encoded = jsonEncode(_persistedMessages.map((m) => m.toJson()).toList());
+      await prefs.setString(_prefChatHistoryKey, encoded);
+    } catch (_) {}
   }
 
   Future<void> _checkServerStatus() async {
@@ -79,11 +115,14 @@ Ask anything or tap a prompt suggestion below to begin!''',
     setState(() {
       _serverOnline = res['success'] == true;
       _serverLatencyMs = res['latencyMs'] as int?;
-      if (_serverOnline) {
+      if (_forceOfflineMode) {
+        _serverStatusText = '⚡ On-Device ML (Fast • 100% Offline)';
+      } else if (_serverOnline) {
         final model = res['model'] ?? 'Llama 3.2';
         _serverStatusText = 'Server Online (${_serverLatencyMs}ms • $model)';
       } else {
-        _serverStatusText = 'On-Device ML (Offline Mode)';
+        _serverStatusText = '⚡ On-Device ML (Autonomous Offline)';
+        _selectedModel = 'NEXUS ML-Core';
       }
     });
   }
@@ -112,7 +151,10 @@ Ask anything or tap a prompt suggestion below to begin!''',
     final text = customText ?? _inputController.text.trim();
     if (text.isEmpty || _isSending) return;
 
-    final initialModelLabel = _serverOnline ? 'Llama 3.2 (Live)' : 'NEXUS ML-Core (On-Device)';
+    final forceOffline = _forceOfflineMode || _selectedModel == 'NEXUS ML-Core' || !_serverOnline;
+    final initialModelLabel = forceOffline
+        ? 'NEXUS ML-Core (On-Device)'
+        : (_serverOnline ? 'Llama 3.2 (Live)' : 'NEXUS ML-Core (On-Device)');
     final userMsg = _ChatMessage(text, true);
     final assistantMsg = _ChatMessage('', false, model: initialModelLabel);
 
@@ -123,8 +165,8 @@ Ask anything or tap a prompt suggestion below to begin!''',
       _isSending = true;
       _currentReasoningSteps = [
         'Analyzing query: "$text"',
-        'Extracting domain features & intent profile',
-        'Synthesizing neural response...',
+        forceOffline ? 'Running on-device neural engine (zero-latency)' : 'Connecting to local neural pipeline...',
+        'Synthesizing answer...',
       ];
     });
 
@@ -144,6 +186,8 @@ Ask anything or tap a prompt suggestion below to begin!''',
       message: text,
       sessionId: _sessionId,
       history: history,
+      selectedModel: _selectedModel,
+      forceOffline: forceOffline,
       onSourceResolved: (source) {
         resolvedModel = source;
         if (mounted) {
@@ -194,6 +238,8 @@ Ask anything or tap a prompt suggestion below to begin!''',
           _isSending = false;
         });
         _scrollToBottom();
+        _saveChatHistory();
+        StreakService.incrementActivityCount();
       }
     }).catchError((_) {
       // In the extremely rare event that an unhandled exception occurred, fallback to on-device engine
@@ -203,12 +249,14 @@ Ask anything or tap a prompt suggestion below to begin!''',
           _messages[_messages.length - 1] = _ChatMessage(
             fallback.response,
             false,
-            model: 'On-Device ML-Core',
+            model: 'On-Device ML-Core (Autonomous)',
             reasoningSteps: fallback.reasoningSteps,
           );
           _isSending = false;
         });
         _scrollToBottom();
+        _saveChatHistory();
+        StreakService.incrementActivityCount();
       }
     });
   }
@@ -223,6 +271,7 @@ Ask anything or tap a prompt suggestion below to begin!''',
       ));
       _currentReasoningSteps = [];
     });
+    _saveChatHistory();
   }
 
   void _openServerConfigDialog() {
@@ -562,6 +611,38 @@ Ask anything or tap a prompt suggestion below to begin!''',
         ),
         actions: [
           IconButton(
+            tooltip: _forceOfflineMode
+                ? 'Offline Mode Active (Tap to enable Server check)'
+                : 'Tap to force Instant On-Device ML Mode',
+            onPressed: () {
+              setState(() {
+                _forceOfflineMode = !_forceOfflineMode;
+                if (_forceOfflineMode) {
+                  _selectedModel = 'NEXUS ML-Core';
+                  _serverStatusText = '⚡ On-Device ML (Fast • 100% Offline)';
+                } else {
+                  _checkServerStatus();
+                }
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    _forceOfflineMode
+                        ? '⚡ Switched to Instant On-Device ML (Zero latency • Offline)'
+                        : '🌐 Switched to Auto/Live Server Detection',
+                  ),
+                  backgroundColor: _blue,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            icon: Icon(
+              _forceOfflineMode ? Icons.offline_bolt_rounded : Icons.bolt_rounded,
+              size: 20,
+              color: _forceOfflineMode ? const Color(0xfff59e0b) : const Color(0xff94a3b8),
+            ),
+          ),
+          IconButton(
             tooltip: 'Server Connection Settings',
             onPressed: _openServerConfigDialog,
             icon: Icon(
@@ -844,9 +925,13 @@ Ask anything or tap a prompt suggestion below to begin!''',
                       child: CircularProgressIndicator(strokeWidth: 2, color: _blue),
                     ),
                     const SizedBox(width: 10),
-                    Text(
-                      'Synthesizing response...',
-                      style: TextStyle(fontSize: 12, color: textMuted),
+                    Expanded(
+                      child: Text(
+                        _forceOfflineMode || _selectedModel == 'NEXUS ML-Core'
+                            ? 'Synthesizing with On-Device ML (zero-latency)...'
+                            : 'Synthesizing answer with $_selectedModel...',
+                        style: TextStyle(fontSize: 12, color: textMuted, fontStyle: FontStyle.italic),
+                      ),
                     ),
                   ],
                 ),
@@ -951,4 +1036,21 @@ class _ChatMessage {
     this.model,
     this.reasoningSteps = const [],
   });
+
+  Map<String, dynamic> toJson() => {
+        'text': text,
+        'fromUser': fromUser,
+        'model': model,
+        'reasoningSteps': reasoningSteps,
+      };
+
+  factory _ChatMessage.fromJson(Map<String, dynamic> json) => _ChatMessage(
+        json['text'] as String? ?? '',
+        json['fromUser'] as bool? ?? false,
+        model: json['model'] as String?,
+        reasoningSteps: (json['reasoningSteps'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            const [],
+      );
 }

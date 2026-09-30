@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../services/streak_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   final VoidCallback? onThemeToggle;
@@ -294,72 +295,115 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 22),
 
-          // ── 3. 30-Day Activity Heatmap Grid ──
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: cardBg,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: cardBorder, width: 1.2),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.04),
-                  blurRadius: isDark ? 10 : 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('📈 Neural Activity Pulse', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textPrimary)),
-                    const Text('🔥 24-Day Streak', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xff10b981))),
+          // ── 3. 30-Day Activity Heatmap Grid & Dynamic Streak ──
+          ValueListenableBuilder<StreakData>(
+            valueListenable: StreakService.streakNotifier,
+            builder: (context, streak, _) {
+              return Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: cardBorder, width: 1.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.04),
+                      blurRadius: isDark ? 10 : 8,
+                      offset: const Offset(0, 3),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 10,
-                    mainAxisSpacing: 5,
-                    crossAxisSpacing: 5,
-                    childAspectRatio: 1.2,
-                  ),
-                  itemCount: 30,
-                  itemBuilder: (context, i) {
-                    final ops = (i % 3 == 0) ? 28 : (i % 2 == 0) ? 16 : 8;
-                    Color cellColor;
-                    if (ops > 20) {
-                      cellColor = _blue;
-                    } else if (ops > 12) {
-                      cellColor = const Color(0xff8196fa);
-                    } else {
-                      cellColor = isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0);
-                    }
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: cellColor,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${i + 1}',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            color: ops > 12 ? Colors.white : const Color(0xff64748b),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('📈 Neural Activity Pulse',
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: textPrimary)),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Best: ${streak.bestStreak}d • ${streak.isActiveToday ? "Active Today" : "Check-in pending"}',
+                              style: TextStyle(fontSize: 10.5, color: textMuted),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xff10b981).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xff10b981).withValues(alpha: 0.4)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '🔥 ${streak.currentStreak}-Day Streak',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xff10b981),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 10,
+                        mainAxisSpacing: 5,
+                        crossAxisSpacing: 5,
+                        childAspectRatio: 1.2,
                       ),
-                    );
-                  },
+                      itemCount: streak.past30Days.length,
+                      itemBuilder: (context, i) {
+                        final point = streak.past30Days[i];
+                        final isToday = i == streak.past30Days.length - 1;
+                        Color cellColor;
+                        if (isToday) {
+                          cellColor = const Color(0xff10b981);
+                        } else if (point.isActive) {
+                          cellColor = point.activityCount > 20 ? _blue : const Color(0xff6366f1);
+                        } else {
+                          cellColor = isDark ? const Color(0xff1e293b) : const Color(0xffe2e8f0);
+                        }
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: cellColor,
+                            borderRadius: BorderRadius.circular(6),
+                            border: isToday
+                                ? Border.all(color: Colors.white, width: 1.2)
+                                : null,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${point.date.day}',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: (point.isActive || isToday)
+                                    ? Colors.white
+                                    : const Color(0xff64748b),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
           const SizedBox(height: 22),
 

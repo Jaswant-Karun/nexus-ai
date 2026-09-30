@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../config/routes.dart';
 import '../../services/auth_service.dart';
+import '../../services/biometric_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   final _loginPasswordController = TextEditingController(text: 'password123');
   bool _loginObscure = true;
   bool _isLoggingIn = false;
+  bool _biometricSupported = true;
 
   // Sign Up controllers
   final _signupNameController = TextEditingController();
@@ -32,6 +34,48 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _checkBiometrics();
+  }
+
+  Future<void> _checkBiometrics() async {
+    final supported = await BiometricService.isDeviceSupported();
+    if (mounted) {
+      setState(() => _biometricSupported = supported);
+    }
+  }
+
+  Future<void> _handleBiometricSignIn() async {
+    setState(() => _isLoggingIn = true);
+    final authResult = await BiometricService.authenticate(
+      reason: 'Scan your fingerprint or face to sign in to Nexus AI',
+    );
+    if (!mounted) return;
+    setState(() => _isLoggingIn = false);
+
+    if (authResult.success) {
+      final email = _loginEmailController.text.trim();
+      await AuthService.instance.signInBiometric(email.isNotEmpty ? email : null);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✨ Biometrics verified! Welcome to Nexus AI.'),
+          backgroundColor: Color(0xff10b981),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        AppRoutes.dashboard,
+        (route) => false,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authResult.message),
+          backgroundColor: const Color(0xffef4444),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 
   @override
@@ -298,10 +342,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 13),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              side: BorderSide(color: _blue.withValues(alpha: 0.5)),
             ),
-            onPressed: _handleSignIn,
-            icon: const Icon(Icons.fingerprint_rounded, size: 20),
-            label: const Text('Sign in with Biometrics', style: TextStyle(fontSize: 13)),
+            onPressed: _isLoggingIn ? null : _handleBiometricSignIn,
+            icon: const Icon(Icons.fingerprint_rounded, size: 20, color: _blue),
+            label: Text(
+              _biometricSupported ? 'Sign in with Biometrics' : 'Biometrics (Device Auth)',
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),

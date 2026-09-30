@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexus_mobile/core/local_ml_engine.dart';
 import 'package:nexus_mobile/config/api_config.dart';
+import 'package:nexus_mobile/services/streak_service.dart';
 
 void main() {
   group('LocalMlEngine Offline Tests', () {
@@ -34,6 +35,15 @@ void main() {
     test('Answers open domain questions gracefully', () {
       final res = LocalMlEngine.infer('What is quantum computing?');
       expect(res.response, contains('Detailed Analysis: What is quantum computing'));
+    });
+  });
+
+  group('StreakService Tests', () {
+    test('Calculates and records daily streak correctly', () async {
+      final streak = await StreakService.recordDailyVisit();
+      expect(streak.currentStreak, greaterThanOrEqualTo(1));
+      expect(streak.past30Days.length, equals(30));
+      expect(streak.past30Days.last.isActive, isTrue);
     });
   });
 

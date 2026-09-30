@@ -14,6 +14,7 @@ class ChatService {
     required String sessionId,
     required List<Map<String, String>> history,
     required void Function(Map<String, dynamic> event) onEvent,
+    Duration timeout = const Duration(milliseconds: 2800),
   }) async {
     final uri = Uri.parse(ApiConfig.nexusAgentStreamUrl);
     final request = http.Request('POST', uri)
@@ -27,7 +28,7 @@ class ChatService {
         'model': 'llama3.2',
       });
 
-    final response = await _client.send(request).timeout(const Duration(seconds: 15));
+    final response = await _client.send(request).timeout(timeout);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final body = await response.stream.bytesToString();
       throw Exception('NEXUS Agent HTTP ${response.statusCode}: $body');
@@ -68,23 +69,37 @@ class ChatService {
   }
 
   /// Send message with live thinking steps, token deltas, and zero API keys.
-  /// Falls back smoothly to on-device LocalMlEngine if server is unreachable.
+  /// Seamlessly routes between local Ollama server and on-device ML engine.
   Future<String> sendMessage({
     required String message,
     required String sessionId,
     List<Map<String, String>> history = const [],
+    String? selectedModel,
+    bool forceOffline = false,
     void Function(List<String> steps)? onThinking,
     void Function(String delta)? onDelta,
     void Function(String source)? onSourceResolved,
   }) async {
+    // 1. If user selected On-Device ML or requested offline mode, run ML engine immediately
+    if (forceOffline || selectedModel == 'NEXUS ML-Core') {
+      return _runOnDeviceEngine(
+        message: message,
+        onThinking: onThinking,
+        onDelta: onDelta,
+        onSourceResolved: onSourceResolved,
+        label: 'NEXUS ML-Core (On-Device • 100% Offline)',
+      );
+    }
+
     final StringBuffer fullResponse = StringBuffer();
 
-    // 1. Primary: Next.js NEXUS Agent local stream over LAN/Host
+    // 2. Primary: Next.js NEXUS Agent local stream over LAN/Host with lean 2.8s timeout
     try {
       await streamNexusMessage(
         message: message,
         sessionId: sessionId,
         history: history,
+        timeout: const Duration(milliseconds: 2800),
         onEvent: (event) {
           final type = event['type'];
           if (type == 'thinking' && event['steps'] is List) {
@@ -112,10 +127,10 @@ class ChatService {
         return result;
       }
     } catch (_) {
-      // Continue to local Ollama fallback if available
+      // Server unreachable within 2.8s, attempt short Ollama check or fallback immediately
     }
 
-    // 2. Direct Ollama fallback if stream connection had an issue
+    // 3. Fast Ollama check (1.8s timeout max)
     try {
       final ollamaUri = Uri.parse(ApiConfig.ollamaChatUrl);
       final res = await _client.post(
@@ -132,7 +147,7 @@ class ChatService {
           ],
           'stream': false,
         }),
-      ).timeout(const Duration(seconds: 15));
+      ).timeout(const Duration(milliseconds: 1800));
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -148,8 +163,24 @@ class ChatService {
       // Fall through to on-device ML engine
     }
 
-    // 3. Robust On-Device Machine Learning Engine (100% Offline • Zero Network Required)
-    onSourceResolved?.call('On-Device ML-Core (Offline)');
+    // 4. Robust On-Device Machine Learning Engine (Zero Latency • 100% Offline • Zero Network Required)
+    return _runOnDeviceEngine(
+      message: message,
+      onThinking: onThinking,
+      onDelta: onDelta,
+      onSourceResolved: onSourceResolved,
+      label: 'On-Device ML-Core (Autonomous Offline)',
+    );
+  }
+
+  Future<String> _runOnDeviceEngine({
+    required String message,
+    required void Function(List<String> steps)? onThinking,
+    required void Function(String delta)? onDelta,
+    required void Function(String source)? onSourceResolved,
+    required String label,
+  }) async {
+    onSourceResolved?.call(label);
     final mlResult = LocalMlEngine.infer(message);
 
     // Emit real reasoning steps
@@ -161,7 +192,7 @@ class ChatService {
       final chunkEnd = (i + 3 < words.length) ? i + 3 : words.length;
       final chunk = words.sublist(i, chunkEnd).join(' ') + (chunkEnd < words.length ? ' ' : '');
       onDelta?.call(chunk);
-      await Future.delayed(const Duration(milliseconds: 14));
+      await Future.delayed(const Duration(milliseconds: 12));
     }
 
     return mlResult.response;

@@ -12,6 +12,7 @@ import '../projects/project_list_screen.dart';
 import '../settings/settings_screen.dart';
 import '../tokens/token_screen.dart';
 import '../workflows/workflow_list.dart';
+import '../../services/streak_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -170,13 +171,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: isDark ? const Color(0xff94a3b8) : _muted,
                     fontWeight: FontWeight.w600,
                   )),
-              Text(
-                'Jaswant Karun',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : const Color(0xff0f172a),
-                ),
+              Row(
+                children: [
+                  Text(
+                    'Jaswant Karun',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : const Color(0xff0f172a),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ValueListenableBuilder<StreakData>(
+                    valueListenable: StreakService.streakNotifier,
+                    builder: (context, streak, _) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => ProfileScreen(isDark: isDark)),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xff10b981).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xff10b981).withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            '🔥 ${streak.currentStreak}d',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xff10b981),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
@@ -303,6 +337,78 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 label: const Text('Guide (தமிழ்)', style: TextStyle(fontSize: 12)),
               ),
             ],
+          ),
+          const SizedBox(height: 14),
+          ValueListenableBuilder<StreakData>(
+            valueListenable: StreakService.streakNotifier,
+            builder: (context, streak, _) {
+              final daysInCycle = streak.currentStreak % 7 == 0 ? 7 : (streak.currentStreak % 7);
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Text('🔥', style: TextStyle(fontSize: 15)),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${streak.currentStreak}-Day Active Streak',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xff10b981).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            streak.isActiveToday ? 'Day Checked In ✅' : 'Check In Active',
+                            style: const TextStyle(
+                              color: Color(0xff86efac),
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: daysInCycle / 7.0,
+                        minHeight: 5,
+                        backgroundColor: Colors.white.withValues(alpha: 0.15),
+                        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xff4ade80)),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Milestone: $daysInCycle/7 days to weekly reward (Best: ${streak.bestStreak}d)',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),

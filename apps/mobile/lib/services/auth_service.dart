@@ -122,6 +122,19 @@ class AuthService {
     return true;
   }
 
+  Future<bool> signInBiometric([String? fallbackEmail]) async {
+    final email = fallbackEmail ?? 'jaswant@nexus.ai';
+    _token = 'nx_jwt_biometric_${DateTime.now().millisecondsSinceEpoch}';
+    _currentUser = UserProfile(
+      id: 'usr_jaswant_biometric',
+      name: 'Jaswant Karun',
+      email: email,
+      role: 'ADMIN',
+      orgName: 'Nexus AI Enterprise',
+    );
+    return true;
+  }
+
   void signOut() {
     _token = null;
     _currentUser = null;
