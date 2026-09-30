@@ -166,18 +166,30 @@ class _ApiSettingsScreenState extends State<ApiSettingsScreen> {
                   runSpacing: 8,
                   children: [
                     ActionChip(
-                      label: Text('Wi-Fi LAN (${ApiConfig.defaultLanIp})'),
+                      avatar: const Icon(Icons.public_rounded, size: 14, color: _blue),
+                      label: const Text('Any Network • Global Cloud', style: TextStyle(fontWeight: FontWeight.bold)),
+                      backgroundColor: _blue.withValues(alpha: 0.1),
+                      side: const BorderSide(color: _blue),
+                      onPressed: () {
+                        setState(() => _hostController.text = ApiConfig.defaultPublicHost);
+                      },
+                    ),
+                    ActionChip(
+                      avatar: const Icon(Icons.wifi_rounded, size: 14),
+                      label: Text('Local Wi-Fi (${ApiConfig.defaultLanIp})'),
                       onPressed: () {
                         setState(() => _hostController.text = ApiConfig.defaultLanIp);
                       },
                     ),
                     ActionChip(
+                      avatar: const Icon(Icons.phone_android_rounded, size: 14),
                       label: const Text('Emulator (10.0.2.2)'),
                       onPressed: () {
                         setState(() => _hostController.text = ApiConfig.defaultEmulatorIp);
                       },
                     ),
                     ActionChip(
+                      avatar: const Icon(Icons.usb_rounded, size: 14),
                       label: const Text('USB Cable (localhost)'),
                       onPressed: () {
                         setState(() => _hostController.text = ApiConfig.defaultLocalhost);

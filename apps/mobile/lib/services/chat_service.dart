@@ -21,6 +21,7 @@ class ChatService {
       ..headers['Content-Type'] = 'application/json'
       ..headers['Accept'] = 'text/event-stream'
       ..headers['Authorization'] = 'Bearer nx_live_mobile_client'
+      ..headers['bypass-tunnel-reminder'] = 'true'
       ..body = jsonEncode({
         'message': message,
         'session_id': sessionId,
@@ -216,7 +217,10 @@ class ChatService {
       final uri = Uri.parse(ApiConfig.feedbackUrl);
       final res = await _client.post(
         uri,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'bypass-tunnel-reminder': 'true',
+        },
         body: jsonEncode({
           'sample_id': sampleId,
           'rating': rating,
